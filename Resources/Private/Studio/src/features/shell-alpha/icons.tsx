@@ -129,12 +129,6 @@ export const PhoneIcon = (props: IconProps) => (
   </Svg>
 )
 
-export const CollapseLeftIcon = (props: IconProps) => (
-  <Svg width={5} height={8} viewBox="0 0 5 8" strokeWidth={1.4} {...props}>
-    <path d="M4 1L1 4l3 3" />
-  </Svg>
-)
-
 export const EditorModeIcon = (props: IconProps) => (
   <Svg width={14} height={14} viewBox="0 0 14 14" strokeWidth={1.5} {...props}>
     <rect x=".8" y=".8" width="12.4" height="12.4" rx="2.5" />
@@ -360,5 +354,12 @@ export const LayoutIcon = (props: IconProps) => (
   <Svg width={14} height={12} viewBox="0 0 14 12" strokeWidth={1.3} {...props}>
     <rect x=".7" y=".7" width="12.6" height="10.6" rx="2" />
     <path d="M4.5 .7v10.6" />
+  </Svg>
+)
+
+export const KeepOpenIcon = (props: IconProps) => (
+  <Svg width={12} height={12} viewBox="0 0 12 12" strokeWidth={1.3} {...props}>
+    <rect x="1" y="1.5" width="10" height="9" rx="1.5" />
+    <path d="M4.5 1.5v9" />
   </Svg>
 )

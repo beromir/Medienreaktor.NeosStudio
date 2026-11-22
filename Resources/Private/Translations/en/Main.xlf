@@ -1952,6 +1952,9 @@
       <trans-unit id="shellAlpha.account.profile" xml:space="preserve">
         <source>Profile &amp; password</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.account.trayOnSelection" xml:space="preserve">
+        <source>Open settings on selection</source>
+      </trans-unit>
       <trans-unit id="shellAlpha.add" xml:space="preserve">
         <source>Add</source>
       </trans-unit>
@@ -1970,6 +1973,9 @@
       <trans-unit id="shellAlpha.back" xml:space="preserve">
         <source>Back</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.closeTray" xml:space="preserve">
+        <source>Close the tray or menu</source>
+      </trans-unit>
       <trans-unit id="shellAlpha.collapseModes" xml:space="preserve">
         <source>Collapse modes</source>
       </trans-unit>
@@ -1981,9 +1987,6 @@
       </trans-unit>
       <trans-unit id="shellAlpha.copyForMcp" xml:space="preserve">
         <source>Copy for MCP</source>
-      </trans-unit>
-      <trans-unit id="shellAlpha.device.collapse" xml:space="preserve">
-        <source>Collapse</source>
       </trans-unit>
       <trans-unit id="shellAlpha.device.desktop" xml:space="preserve">
         <source>Desktop</source>
@@ -1997,6 +2000,12 @@
       <trans-unit id="shellAlpha.device.tablet" xml:space="preserve">
         <source>Tablet</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.keepOpen" xml:space="preserve">
+        <source>Keep open</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.keepOpenHint" xml:space="preserve">
+        <source>Keep the properties open in a panel on the left</source>
+      </trans-unit>
       <trans-unit id="shellAlpha.mode.editor" xml:space="preserve">
         <source>Editor</source>
       </trans-unit>
@@ -2009,11 +2018,17 @@
       <trans-unit id="shellAlpha.page" xml:space="preserve">
         <source>page</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.pageGroup" xml:space="preserve">
+        <source>Page</source>
+      </trans-unit>
       <trans-unit id="shellAlpha.pageTree" xml:space="preserve">
         <source>Pages</source>
       </trans-unit>
       <trans-unit id="shellAlpha.preview" xml:space="preserve">
         <source>Preview</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.properties" xml:space="preserve">
+        <source>Properties</source>
       </trans-unit>
       <trans-unit id="shellAlpha.rail" xml:space="preserve">
         <source>Modes and panels</source>

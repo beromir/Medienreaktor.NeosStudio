@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils'
 import { ActionBar } from './ActionBar'
 import { CloseIcon } from './icons'
 import { IconButton } from './primitives'
+import { PropertiesPanel } from './PropertiesPanel'
 import { Rail } from './Rail'
 import { DEVICE_WIDTHS, type Device, TopBar } from './TopBar'
 
@@ -29,6 +30,14 @@ const DEVICE_KEY = 'neos-studio.alpha.device'
 /** Panels with a place of their own in this layout, not in the rail. */
 const PLACED_ELSEWHERE = new Set(['documents', 'inspector'])
 const EDITOR_TOOLS = ['outline', 'clipboard', 'trash']
+/** The Properties panel: the shell's own, not a registered panel. */
+export const PROPERTIES = 'shellAlpha:properties'
+const PROPERTIES_DEFINITION: PanelDefinition = {
+  id: PROPERTIES,
+  title: () => t('shellAlpha.properties', 'Properties'),
+  component: () => null,
+  defaultPlacement: { kind: 'dock', region: 'sidebar' },
+}
 
 /**
  * The alpha layout: top bar, rail, one docked panel and the preview card
@@ -89,6 +98,7 @@ export function AlphaShell({
     const history = others.find((definition) => definition.id === 'history')
     const second = [...rest, ...(history ? [history] : [])]
     return [
+      PROPERTIES_DEFINITION,
       ...tools,
       ...(tools.length && second.length ? [null] : []),
       ...second,
@@ -97,9 +107,11 @@ export function AlphaShell({
 
   const [docked, setDocked] = usePersistedState<string | null>(DOCKED_KEY, null)
   const dockedDefinition =
-    mode === EDITOR
-      ? definitions.find((definition) => definition.id === docked)
-      : undefined
+    mode !== EDITOR
+      ? undefined
+      : docked === PROPERTIES
+        ? PROPERTIES_DEFINITION
+        : definitions.find((definition) => definition.id === docked)
 
   // Reveal requests for panels that are not modes open them docked (the
   // panel system handles the modes itself).
@@ -159,11 +171,15 @@ export function AlphaShell({
             setDocked((current) => (current === panel ? null : panel))
           }
         />
-        {dockedDefinition && (
-          <DockedPanel
-            definition={dockedDefinition}
-            onClose={() => setDocked(null)}
-          />
+        {dockedDefinition?.id === PROPERTIES ? (
+          <PropertiesPanel onClose={() => setDocked(null)} />
+        ) : (
+          dockedDefinition && (
+            <DockedPanel
+              definition={dockedDefinition}
+              onClose={() => setDocked(null)}
+            />
+          )
         )}
         <main className="flex min-w-0 flex-1 flex-col rounded-shell-surface border border-shell-border bg-shell-surface p-1.5">
           <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-shell-site">
@@ -189,6 +205,8 @@ export function AlphaShell({
               <ActionBar
                 onOpenPanel={setDocked}
                 onOpenMode={activate}
+                propertiesDocked={dockedDefinition?.id === PROPERTIES}
+                onKeepOpen={() => setDocked(PROPERTIES)}
                 onHistoryApplied={onReload}
                 onReveal={onReveal}
               />

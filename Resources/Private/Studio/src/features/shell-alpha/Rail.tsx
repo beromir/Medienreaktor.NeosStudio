@@ -16,6 +16,7 @@ import { translate as t } from '@/lib/i18n'
 import { setLayoutMode } from '@/lib/layoutMode'
 import { cn } from '@/lib/utils'
 import {
+  CheckIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   ClipboardIcon,
@@ -30,6 +31,7 @@ import {
   MediaModeIcon,
   OutlineIcon,
   PersonIcon,
+  SettingsIcon,
   TasksModeIcon,
   TrashIcon,
   WorkspacesModeIcon,
@@ -40,6 +42,7 @@ import {
   ShellMenuSeparator,
   surfacePopup,
 } from './primitives'
+import { useTrayOnSelection } from './preferences'
 
 /** A mode of the rail: a main-region panel shown in place of the preview. */
 export interface RailMode {
@@ -56,6 +59,7 @@ const MODE_ICONS: Record<string, React.ReactNode> = {
 }
 
 const PANEL_ICONS: Record<string, React.ReactNode> = {
+  'shellAlpha:properties': <SettingsIcon />,
   outline: <OutlineIcon />,
   clipboard: <ClipboardIcon />,
   trash: <TrashIcon />,
@@ -85,7 +89,7 @@ function PluginGlyph() {
 }
 
 const railButton =
-  'relative inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-shell-muted outline-none transition-colors hover:bg-shell-hover hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-[active=true]:bg-shell-active data-[active=true]:text-shell-text data-popup-open:bg-shell-active data-popup-open:text-shell-text'
+  'relative inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-shell-muted outline-none transition-colors hover:bg-shell-hover hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-[active=true]:bg-shell-active data-[active=true]:text-shell-text data-popup-open:bg-shell-active data-popup-open:text-shell-text [--knob:var(--color-shell-surface)] hover:[--knob:var(--color-shell-hover)] data-[active=true]:[--knob:var(--color-shell-active)]'
 
 export function Rail({
   modes,
@@ -259,6 +263,7 @@ function useOpenTaskCount(): number {
 function AccountMenu() {
   const { data: me } = useMe()
   const { openSettings } = useModals()
+  const [trayOnSelection, setTrayOnSelection] = useTrayOnSelection()
   const name = me?.user?.label ?? me?.account.identifier ?? ''
   const role = me?.account.roles
     .map((identifier) => identifier.split(':').pop() ?? identifier)
@@ -323,6 +328,23 @@ function AccountMenu() {
               }
             >
               {t('shellAlpha.account.help', 'Help & documentation')}
+            </ShellMenuItem>
+            <ShellMenuItem
+              icon={<SettingsIcon width={12} height={12} />}
+              closeOnClick={false}
+              trailing={
+                trayOnSelection ? (
+                  <span className="text-shell-accent-light">
+                    <CheckIcon />
+                  </span>
+                ) : undefined
+              }
+              onClick={() => setTrayOnSelection(!trayOnSelection)}
+            >
+              {t(
+                'shellAlpha.account.trayOnSelection',
+                'Open settings on selection',
+              )}
             </ShellMenuItem>
             <ShellMenuItem
               icon={<LayoutIcon />}

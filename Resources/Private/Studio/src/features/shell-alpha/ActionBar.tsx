@@ -37,6 +37,7 @@ import { buildInspectorSchema } from '@/features/inspector/inspectorSchema'
 import { PanelBody } from '@/features/panels/PanelSystem'
 import { panelRegistry } from '@/features/panels/registry'
 import {
+  onPreviewEscape,
   onPreviewPointerNearBottom,
   onPreviewScroll,
   setPreviewChrome,
@@ -50,11 +51,10 @@ import {
   BackIcon,
   CheckIcon,
   ChevronDownIcon,
+  KeepOpenIcon,
   CloseIcon,
   CopyIcon,
   DoubleChevronIcon,
-  FolderIcon,
-  GlobeIcon,
   MoreIcon,
   PageIcon,
   PlusIcon,
@@ -71,6 +71,8 @@ import {
   LabelButton,
   Surface,
 } from './primitives'
+import { PathMenu } from './PathMenu'
+import { useTrayOnSelection } from './preferences'
 
 type Open = 'settings' | 'add' | 'search' | null
 
@@ -90,8 +92,14 @@ export function ActionBar({
   onOpenMode,
   onHistoryApplied,
   onReveal,
+  propertiesDocked,
+  onKeepOpen,
 }: {
   onOpenPanel: (panel: string) => void
+  /** The Properties panel is docked: selecting no longer opens the tray. */
+  propertiesDocked: boolean
+  /** "Keep open": dock the tray's fields as the Properties panel. */
+  onKeepOpen: () => void
   onOpenMode: (panel: string) => void
   onHistoryApplied: () => void
   onReveal: (location: HistoryLocation) => void
@@ -106,11 +114,26 @@ export function ActionBar({
   const node = isContent ? inspectedNode : null
   // A tray about a node closes with its selection.
   const nodeKey = node?.nodeAggregateId ?? null
+  const [trayOnSelection] = useTrayOnSelection()
   const [trayNode, setTrayNode] = React.useState(nodeKey)
   if (trayNode !== nodeKey) {
     setTrayNode(nodeKey)
-    if (open === 'settings') setOpen(null)
+    if (nodeKey !== null && trayOnSelection && !propertiesDocked)
+      setOpen('settings')
+    else if (open === 'settings') setOpen(null)
   }
+
+  React.useEffect(() => onPreviewEscape(() => setOpen(null)), [])
+  useKeyboardShortcut({
+    id: 'shellAlpha.closeSurface',
+    combo: 'escape',
+    title: t('shellAlpha.closeTray', 'Close the tray or menu'),
+    category: t('shortcuts.category.editing', 'Editing'),
+    handler: () => {
+      if (open === null) return false
+      setOpen(null)
+    },
+  })
 
   const faded = useFade(open !== null, nodeKey)
 
@@ -151,6 +174,10 @@ export function ActionBar({
             onOpenInspector={() => {
               setOpen(null)
               onOpenPanel('inspector')
+            }}
+            onKeepOpen={() => {
+              setOpen(null)
+              onKeepOpen()
             }}
           />
         )}
@@ -351,7 +378,26 @@ function NodePill({
 
   return (
     <BarPill>
-      <SelectionPath node={node} typeLabel={typeLabel} ancestors={ancestors} />
+      <PathMenu
+        node={node}
+        side="top"
+        sideOffset={14}
+        trigger={
+          <button
+            type="button"
+            className="inline-flex h-9 cursor-pointer items-center gap-1.75 rounded-full px-2.5 type-shell-control font-medium text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover"
+            title={t('shellAlpha.selectionPath', 'Selection path')}
+          >
+            <NodeTypeIcon
+              nodeTypes={nodeTypes}
+              nodeTypeName={node.nodeType}
+              className="type-icon-s text-shell-muted"
+            />
+            <span className="max-w-40 truncate">{typeLabel}</span>
+            <ChevronDownIcon className="text-shell-muted" />
+          </button>
+        }
+      />
       <IconButton
         open={settingsOpen}
         aria-expanded={settingsOpen}
@@ -418,112 +464,6 @@ function NodePill({
   )
 }
 
-/** The node type button and its selection path menu. */
-function SelectionPath({
-  node,
-  typeLabel,
-  ancestors,
-}: {
-  node: Node
-  typeLabel: string
-  ancestors: Node[] | undefined
-}) {
-  const { data: nodeTypes } = useNodeTypes()
-  const { inspectNode } = useStudio()
-  const [open, setOpen] = React.useState(false)
-  // Up to and including the document, outermost first.
-  const path: Node[] = []
-  for (const ancestor of ancestors ?? []) {
-    path.unshift(ancestor)
-    if (nodeTypes && isOfType(nodeTypes, ancestor.nodeType, DOCUMENT_NODE_TYPE))
-      break
-  }
-  return (
-    <SelectPrimitive.Root
-      open={open}
-      onOpenChange={setOpen}
-      value={node.nodeAggregateId}
-      onValueChange={(id) => {
-        const target = path.find((entry) => entry.nodeAggregateId === id)
-        if (target) inspectNode(target)
-      }}
-    >
-      <SelectPrimitive.Trigger
-        className="inline-flex h-9 cursor-pointer items-center gap-1.75 rounded-full px-2.5 type-shell-control font-medium text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover"
-        title={t('shellAlpha.selectionPath', 'Selection path')}
-      >
-        <NodeTypeIcon
-          nodeTypes={nodeTypes}
-          nodeTypeName={node.nodeType}
-          className="type-icon-s text-shell-muted"
-        />
-        <span className="max-w-40 truncate">{typeLabel}</span>
-        <ChevronDownIcon className="text-shell-muted" />
-      </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
-        <SelectPrimitive.Positioner
-          side="top"
-          align="start"
-          sideOffset={14}
-          alignItemWithTrigger={false}
-          className="z-200 outline-none"
-        >
-          <SelectPrimitive.Popup className="w-65 origin-(--transform-origin) rounded-shell-surface border border-white/8 bg-shell-tile p-1 shadow-shell-surface outline-none">
-            {[...path, node].map((entry, depth) => {
-              const current = entry.nodeAggregateId === node.nodeAggregateId
-              const isDocument =
-                nodeTypes !== undefined &&
-                isOfType(nodeTypes, entry.nodeType, DOCUMENT_NODE_TYPE)
-              return (
-                <SelectPrimitive.Item
-                  key={entry.nodeAggregateId}
-                  value={entry.nodeAggregateId}
-                  disabled={isDocument}
-                  style={{ paddingLeft: `${0.625 + depth * 0.75}rem` }}
-                  className={cn(
-                    'flex h-8 cursor-default items-center gap-2 rounded-shell-control pr-2.5 type-shell-secondary outline-none select-none data-highlighted:bg-shell-hover',
-                    current
-                      ? 'font-semibold text-shell-accent-light'
-                      : isDocument
-                        ? 'text-shell-muted'
-                        : 'text-shell-text',
-                  )}
-                >
-                  {isDocument ? (
-                    <GlobeIcon className="text-shell-muted" />
-                  ) : current ? (
-                    <NodeTypeIcon
-                      nodeTypes={nodeTypes}
-                      nodeTypeName={entry.nodeType}
-                      className="type-icon-s"
-                    />
-                  ) : (
-                    <FolderIcon />
-                  )}
-                  <span className="min-w-0 flex-1 truncate">
-                    {entry.label || entry.nodeAggregateId}
-                  </span>
-                  {isDocument && (
-                    <span className="text-[0.6875rem] leading-3.5 text-[#5a5a5a]">
-                      {t('shellAlpha.page', 'page')}
-                    </span>
-                  )}
-                  {!isDocument && depth === path.length - 1 && (
-                    <span className="text-[0.6875rem] leading-3.5 text-shell-subtle">
-                      ⌥↑
-                    </span>
-                  )}
-                  {current && <CheckIcon />}
-                </SelectPrimitive.Item>
-              )
-            })}
-          </SelectPrimitive.Popup>
-        </SelectPrimitive.Positioner>
-      </SelectPrimitive.Portal>
-    </SelectPrimitive.Root>
-  )
-}
-
 const FULL_INSPECTOR = '__full-inspector'
 
 /** Attached above the bar: one inspector group's fields in a row. */
@@ -531,10 +471,12 @@ function SettingsTray({
   node,
   onClose,
   onOpenInspector,
+  onKeepOpen,
 }: {
   node: Node
   onClose: () => void
   onOpenInspector: () => void
+  onKeepOpen: () => void
 }) {
   const { data: nodeTypes } = useNodeTypes()
   const { data: nodeType } = useNodeType(node.nodeType)
@@ -616,6 +558,18 @@ function SettingsTray({
               </SelectPrimitive.Portal>
             </SelectPrimitive.Root>
           )}
+          <button
+            type="button"
+            onClick={onKeepOpen}
+            title={t(
+              'shellAlpha.keepOpenHint',
+              'Keep the properties open in a panel on the left',
+            )}
+            className="flex h-7 cursor-pointer items-center gap-1.5 rounded-full pr-2.5 pl-2 type-shell-secondary text-shell-muted outline-none hover:bg-shell-hover hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60"
+          >
+            <KeepOpenIcon />
+            {t('shellAlpha.keepOpen', 'Keep open')}
+          </button>
           <IconButton
             size="sm"
             className="size-7 text-shell-muted"
@@ -709,7 +663,7 @@ function AddMenu({
   const { selectDocument, nodesEdited } = useStudio()
   return (
     <>
-      <Surface className="flex max-h-[min(36rem,calc(100svh-12rem))] w-100 flex-col self-start overflow-hidden">
+      <Surface className="flex max-h-[min(36rem,calc(100svh-12rem))] w-100 -translate-x-8.75 flex-col self-center overflow-hidden">
         {target ? (
           <AddMenuBody
             key={JSON.stringify(target.request.referenceAddress)}

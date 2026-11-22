@@ -162,3 +162,7 @@ export function reportPointer(event: MouseEvent): void {
   pointerNearBottom = near
   post({ type: 'neos-studio/pointer-near-bottom', near })
 }
+
+export function reportEscape(event: KeyboardEvent): void {
+  if (event.key === 'Escape') post({ type: 'neos-studio/escape' })
+}

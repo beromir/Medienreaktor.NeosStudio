@@ -345,12 +345,12 @@ img.ProseMirror-separator {
       border-radius: 1px;
       background: #00adee;
     }
-  `}function wC(e,t){let n=document.documentElement;e.minimal?n.setAttribute(_C,`minimal`):n.removeAttribute(_C);let r=document.getElementById(vC);e.scrollSpace>0?(r||(r=document.createElement(`div`),r.id=vC,r.setAttribute(`aria-hidden`,`true`)),r!==document.body.lastElementChild&&document.body.appendChild(r),r.style.height=`${e.scrollSpace}px`):r?.remove();let i=e.bottomInset>xC;xC=e.bottomInset,i&&TC(t)}function TC(e){if(!e||xC===0)return;let t=e.getBoundingClientRect(),n=window.innerHeight-xC-bC;if(t.bottom<=n)return;let r=Math.min(t.bottom-n,t.top-bC);r>0&&window.scrollBy({top:r,behavior:`smooth`})}function EC(){let e=document.getElementById(yC);return e||(e=document.createElement(`div`),e.id=yC,e.setAttribute(`aria-hidden`,`true`),document.body.appendChild(e)),e}function DC(e,t){SC=e?{element:e,mode:t}:null,OC(),e&&TC(e)}function OC(){let e=EC();if(!SC||!SC.element.isConnected){e.style.display=`none`;return}let t=SC.element.getBoundingClientRect(),n=SC.mode===`before`?t.top-9:SC.mode===`after`?t.bottom+1:t.bottom-12;e.style.display=`flex`,e.style.top=`${n}px`,e.style.left=`${t.left}px`,e.style.width=`${t.width}px`}var kC=0;function AC(){kC===0&&(kC=requestAnimationFrame(()=>{kC=0,e({type:`neos-studio/scrolled`})}))}var jC=96,MC=!1;function NC(t){let n=window.innerHeight-t.clientY<jC;n!==MC&&(MC=n,e({type:`neos-studio/pointer-near-bottom`,near:n}))}var Q=`data-__neos-node-contextpath`,PC=`data-__neos-fusion-path`,FC=`data-__neos-studio-collection`,IC=`data-__neos-studio-content`,LC=`data-__neos-studio-hidden`,RC=`data-__neos-studio-node-type`,zC=`data-__neos-studio-allowed-types`,$=`data-__neos-property`,BC=`data-__neos-editable-node-contextpath`,VC=`data-__neos-studio-placeholder`,HC=`data-__neos-studio-inline`,UC=`data-__neos-studio-image-property`,WC=`data-__neos-studio-shine-through`,GC=`neos-studio-hover`,KC=`neos-studio-selected`,qC=`neos-studio-flash`,JC=1800,YC=700,XC=`neos-studio-droppable`,ZC=`neos-studio-drop-target`,QC=`neos-studio-empty`,$C=`neos-studio-drop-indicator`,ew=`neos-studio-element-handle`,tw=`neos-studio-element-add-button`,nw=`neos-studio-handle-action`,rw=`#${ew}, #${tw}, .${nw}`,iw=`neos-studio-collection-add`,aw=`neos-studio-image-overlay`,ow=`neos-studio-shine-variant-button`,sw=`neos-studio-presence`,cw=`neos-studio-presence-badge`,lw=`neos-studio-presence-badge--editing`,uw=`neos-studio-presence-caret`,dw=`neos-studio-locked`,fw=`113, 97, 192`,pw=new Map,mw=null,hw=null,gw=null,_w=null;function vw(){let e=document.createElement(`style`);e.textContent=CC({hiddenInMinimal:`${rw}, .${iw}`,wrapper:Q,hoverClass:GC,selectedClass:KC})+`
-    [${Q}].${GC}:not(.${KC}) {
+  `}function wC(e,t){let n=document.documentElement;e.minimal?n.setAttribute(_C,`minimal`):n.removeAttribute(_C);let r=document.getElementById(vC);e.scrollSpace>0?(r||(r=document.createElement(`div`),r.id=vC,r.setAttribute(`aria-hidden`,`true`)),r!==document.body.lastElementChild&&document.body.appendChild(r),r.style.height=`${e.scrollSpace}px`):r?.remove();let i=e.bottomInset>xC;xC=e.bottomInset,i&&TC(t)}function TC(e){if(!e||xC===0)return;let t=e.getBoundingClientRect(),n=window.innerHeight-xC-bC;if(t.bottom<=n)return;let r=Math.min(t.bottom-n,t.top-bC);r>0&&window.scrollBy({top:r,behavior:`smooth`})}function EC(){let e=document.getElementById(yC);return e||(e=document.createElement(`div`),e.id=yC,e.setAttribute(`aria-hidden`,`true`),document.body.appendChild(e)),e}function DC(e,t){SC=e?{element:e,mode:t}:null,OC(),e&&TC(e)}function OC(){let e=EC();if(!SC||!SC.element.isConnected){e.style.display=`none`;return}let t=SC.element.getBoundingClientRect(),n=SC.mode===`before`?t.top-9:SC.mode===`after`?t.bottom+1:t.bottom-12;e.style.display=`flex`,e.style.top=`${n}px`,e.style.left=`${t.left}px`,e.style.width=`${t.width}px`}var kC=0;function AC(){kC===0&&(kC=requestAnimationFrame(()=>{kC=0,e({type:`neos-studio/scrolled`})}))}var jC=96,MC=!1;function NC(t){let n=window.innerHeight-t.clientY<jC;n!==MC&&(MC=n,e({type:`neos-studio/pointer-near-bottom`,near:n}))}function PC(t){t.key===`Escape`&&e({type:`neos-studio/escape`})}var Q=`data-__neos-node-contextpath`,FC=`data-__neos-fusion-path`,IC=`data-__neos-studio-collection`,LC=`data-__neos-studio-content`,RC=`data-__neos-studio-hidden`,zC=`data-__neos-studio-node-type`,BC=`data-__neos-studio-allowed-types`,$=`data-__neos-property`,VC=`data-__neos-editable-node-contextpath`,HC=`data-__neos-studio-placeholder`,UC=`data-__neos-studio-inline`,WC=`data-__neos-studio-image-property`,GC=`data-__neos-studio-shine-through`,KC=`neos-studio-hover`,qC=`neos-studio-selected`,JC=`neos-studio-flash`,YC=1800,XC=700,ZC=`neos-studio-droppable`,QC=`neos-studio-drop-target`,$C=`neos-studio-empty`,ew=`neos-studio-drop-indicator`,tw=`neos-studio-element-handle`,nw=`neos-studio-element-add-button`,rw=`neos-studio-handle-action`,iw=`#${tw}, #${nw}, .${rw}`,aw=`neos-studio-collection-add`,ow=`neos-studio-image-overlay`,sw=`neos-studio-shine-variant-button`,cw=`neos-studio-presence`,lw=`neos-studio-presence-badge`,uw=`neos-studio-presence-badge--editing`,dw=`neos-studio-presence-caret`,fw=`neos-studio-locked`,pw=`113, 97, 192`,mw=new Map,hw=null,gw=null,_w=null,vw=null;function yw(){let e=document.createElement(`style`);e.textContent=CC({hiddenInMinimal:`${iw}, .${aw}`,wrapper:Q,hoverClass:KC,selectedClass:qC})+`
+    [${Q}].${KC}:not(.${qC}) {
       outline: 2px solid rgba(0, 173, 238, 0.3);
       outline-offset: 5px;
     }
-    [${Q}].${KC} {
+    [${Q}].${qC} {
       outline: 2px solid rgba(0, 173, 238, 1.0);
       outline-offset: 5px;
     }
@@ -363,8 +363,8 @@ img.ProseMirror-separator {
        Two blinks, not a single fade: one gentle swell is easy to miss on a
        page the editor is still taking in, and reads as a rendering artifact
        rather than as a pointer. */
-    [${Q}].${qC} {
-      animation: neos-studio-flash ${JC}ms ease-out 1;
+    [${Q}].${JC} {
+      animation: neos-studio-flash ${YC}ms ease-out 1;
     }
     @keyframes neos-studio-flash {
       0%   { background-color: rgba(0, 173, 238, 0); }
@@ -376,14 +376,14 @@ img.ProseMirror-separator {
     /* Editors who set prefers-reduced-motion still get the emphasis, just
        without the pulsing. */
     @media (prefers-reduced-motion: reduce) {
-      [${Q}].${qC} {
+      [${Q}].${JC} {
         animation: none;
         background-color: rgba(0, 173, 238, 0.18);
       }
     }
     /* Explicitly hidden elements stay editable but read as invisible-to-
        visitors; the opacity dims their whole subtree. */
-    [${Q}][${LC}] {
+    [${Q}][${RC}] {
       opacity: 0.5;
     }
     /* Shine-through content elements (visible only via dimension fallback)
@@ -393,11 +393,11 @@ img.ProseMirror-separator {
        in one block. Content nested inside a shine-through content element
        skips its own dimming and pattern - the outer one already covers the
        area, stacking would darken unevenly. */
-    [${Q}][${WC}][${IC}] {
+    [${Q}][${GC}][${LC}] {
       position: relative;
       opacity: 0.65;
     }
-    [${Q}][${WC}][${IC}]::after {
+    [${Q}][${GC}][${LC}]::after {
       content: '';
       position: absolute;
       inset: 0;
@@ -405,27 +405,27 @@ img.ProseMirror-separator {
       pointer-events: none;
       background: repeating-linear-gradient(
         45deg,
-        rgba(${fw}, 0.22) 0px,
-        rgba(${fw}, 0.22) 10px,
+        rgba(${pw}, 0.22) 0px,
+        rgba(${pw}, 0.22) 10px,
         transparent 10px,
         transparent 20px
       );
     }
-    [${Q}][${WC}][${IC}] [${Q}][${WC}][${IC}] {
+    [${Q}][${GC}][${LC}] [${Q}][${GC}][${LC}] {
       opacity: 1;
     }
-    [${Q}][${WC}][${IC}] [${Q}][${WC}][${IC}]::after {
+    [${Q}][${GC}][${LC}] [${Q}][${GC}][${LC}]::after {
       content: none;
     }
     /* Hidden elements keep their (stronger) dimming when they also shine. */
-    [${Q}][${WC}][${IC}][${LC}] {
+    [${Q}][${GC}][${LC}][${RC}] {
       opacity: 0.5;
     }
     /* The "Create variant" button centered on the hovered shine-through
        element: explicitly materializes it in the viewed dimension. Same
        layer as the image overlay - below the richtext toolbars and the
        element handle. */
-    #${ow} {
+    #${sw} {
       position: fixed;
       z-index: 2147483645;
       display: none;
@@ -435,7 +435,7 @@ img.ProseMirror-separator {
       padding: 6px 12px;
       font: 500 13px/1.2 system-ui, -apple-system, sans-serif;
       color: #fff;
-      background: rgb(${fw});
+      background: rgb(${pw});
       border: none;
       border-radius: 4px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -453,10 +453,10 @@ img.ProseMirror-separator {
     /* No inline editing on shine-through elements (richtext.ts skips
        mounting there) - drop the editing affordances too, so the markup
        does not promise what a click will not deliver. */
-    [${Q}][${WC}] [${$}] {
+    [${Q}][${GC}] [${$}] {
       cursor: default;
     }
-    [${Q}][${WC}] [${$}]:hover {
+    [${Q}][${GC}] [${$}]:hover {
       outline: none;
     }
     /* TipTap mounts its own contenteditable (.tiptap) inside the property
@@ -479,14 +479,14 @@ img.ProseMirror-separator {
        break that line into a block of its own. It only ever holds inline
        content here (see withoutBlocks in formatting.ts), so it can stay
        inline itself. */
-    [${$}][${HC}] .tiptap {
+    [${$}][${UC}] .tiptap {
       display: inline;
     }
     /* Empty inline-editable properties show their configured placeholder
        (translated server-side into the markup), so new nodes are visible
        and invite editing. */
-    [${VC}].${QC}::before {
-      content: attr(${VC});
+    [${HC}].${$C}::before {
+      content: attr(${HC});
       opacity: 0.4;
       pointer-events: none;
     }
@@ -497,7 +497,7 @@ img.ProseMirror-separator {
        box flows around it: placeholder and caret share one line. Inline
        editables need none of this, their ::before sits in the same line
        already. */
-    [${VC}]:not([${HC}]).${QC}::before {
+    [${HC}]:not([${UC}]).${$C}::before {
       float: left;
       height: 0;
     }
@@ -506,26 +506,26 @@ img.ProseMirror-separator {
        editor instead, the caret shows at the start of the line, and the
        placeholder still sizes the host - so its outline and press target
        stay as wide as the text. */
-    [${VC}][${HC}].${QC} {
+    [${HC}][${UC}].${$C} {
       display: inline-flex;
     }
-    [${VC}][${HC}].${QC}::before {
+    [${HC}][${UC}].${$C}::before {
       order: 1;
     }
     /* While a content element is dragged, collections that allow its type
        light up; a minimum height keeps empty collections targetable.
        Specificity beats the collection "outline: none" rules above. */
-    [${Q}][${FC}].${XC} {
+    [${Q}][${IC}].${ZC} {
       outline: 2px dashed rgba(0, 173, 238, 0.5) !important;
       outline-offset: 3px;
       min-height: 1.5rem;
       background-color: rgba(0, 173, 238, 0.04);
     }
-    [${Q}][${FC}].${ZC} {
+    [${Q}][${IC}].${QC} {
       outline: 2px solid rgba(0, 173, 238, 0.9) !important;
       background-color: rgba(0, 173, 238, 0.12);
     }
-    #${$C} {
+    #${ew} {
       position: fixed;
       z-index: 2147483647;
       background: rgb(0, 173, 238);
@@ -535,7 +535,7 @@ img.ProseMirror-separator {
     }
     /* The "..." handle of the hovered/selected content element: opens the
        element menu on click, moves the element on drag. */
-    #${ew} {
+    #${tw} {
       position: fixed;
       /* One below the max so the richtext toolbars (2147483647) sit above it. */
       z-index: 2147483646;
@@ -553,12 +553,12 @@ img.ProseMirror-separator {
       user-select: none;
       -webkit-user-select: none;
     }
-    #${ew}:active {
+    #${tw}:active {
       cursor: grabbing;
     }
     /* The "+" companion of the handle: opens the insertion dialog for the
        element (create before/inside/after). Same look, click-only. */
-    #${tw}, .${nw} {
+    #${nw}, .${rw} {
       position: fixed;
       z-index: 2147483646;
       display: none;
@@ -578,14 +578,14 @@ img.ProseMirror-separator {
     /* The glyph of a plugin's handle button arrives as an image from the
        host (the page has no icon font) and is used as a mask, so it takes
        the button's color like the inline SVGs. */
-    .${nw} > span {
+    .${rw} > span {
       width: 14px;
       height: 14px;
       background-color: currentColor;
       mask: var(--neos-studio-icon) center / contain no-repeat;
     }
     /* No glyph to draw (an unknown icon name): the label's initial. */
-    .${nw} > span[data-initial] {
+    .${rw} > span[data-initial] {
       mask: none;
       background: none;
       font: 600 12px/14px system-ui, -apple-system, sans-serif;
@@ -593,7 +593,7 @@ img.ProseMirror-separator {
     }
     /* The standing "add content" affordance inside empty collections - the
        only way into a collection with nothing to hover. */
-    .${iw} {
+    .${aw} {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -607,7 +607,7 @@ img.ProseMirror-separator {
       border-radius: 4px;
       cursor: pointer;
     }
-    .${iw}:hover {
+    .${aw}:hover {
       background: rgba(0, 173, 238, 0.1);
     }
     /* In-place image picker: hovering a rendered image (whose content element
@@ -616,7 +616,7 @@ img.ProseMirror-separator {
        toolbars and the element handle. Only the button takes the pointer:
        content laid over the image (hero headings) stays hoverable,
        clickable and editable through the wash. */
-    #${aw} {
+    #${ow} {
       position: fixed;
       z-index: 2147483645;
       pointer-events: none;
@@ -627,7 +627,7 @@ img.ProseMirror-separator {
       outline: 2px solid rgba(0, 173, 238, 1);
       outline-offset: -2px;
     }
-    #${aw} button {
+    #${ow} button {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -641,12 +641,12 @@ img.ProseMirror-separator {
       cursor: pointer;
       pointer-events: auto;
     }
-  `,document.head.appendChild(e)}function yw(){pw.clear();for(let e of document.querySelectorAll(`[${Q}]`))try{let t=JSON.parse(e.getAttribute(Q)??``);typeof t.aggregateId==`string`&&!pw.has(t.aggregateId)&&pw.set(t.aggregateId,e)}catch{}}function bw(e){try{let t=JSON.parse(e.getAttribute(Q)??``),n=typeof t.aggregateId==`string`?pw.get(t.aggregateId):void 0;if(n?.isConnected&&n.contains(e))return n}catch{}return e}function xw(t,n){if(mw!==t&&(mw?.classList.remove(KC),mw=t,Rw(),t!==null&&(t.classList.add(KC),n.reveal?t.scrollIntoView({block:`center`,behavior:`smooth`}):TC(t),n.notifyHost))){let n=t.getAttribute(Q);n&&e({type:`neos-studio/node-selected`,nodeAddress:n})}}var Sw=null,Cw,ww=null;function Tw(e){if(ww?.(),ww=null,Cw!==void 0&&(window.clearTimeout(Cw),Cw=void 0),Sw?.classList.remove(qC),Sw=e?.isConnected?e:null,Sw===null)return;let t=Sw,n=!1,r=()=>{n=!0,window.removeEventListener(`scrollend`,i),window.clearTimeout(a)},i=()=>{!n&&t.isConnected&&(r(),ww=null,t.offsetWidth,t.classList.add(qC),Cw=window.setTimeout(()=>{t.classList.remove(qC),Sw===t&&(Sw=null),Cw=void 0},JC))};window.addEventListener(`scrollend`,i);let a=window.setTimeout(i,YC);ww=r}function Ew(){let e=document.getElementById(ew);return e||(e=document.createElement(`div`),e.id=ew,e.setAttribute(`role`,`button`),c(e,`element.options`,[`aria-label`]),e.draggable=!0,e.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`,e.addEventListener(`click`,Ww),e.addEventListener(`dragstart`,Gw),e.addEventListener(`dragend`,()=>ST()),document.body.appendChild(e)),e}var Dw=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`;function Ow(){let e=document.getElementById(tw);return e||(e=document.createElement(`div`),e.id=tw,e.setAttribute(`role`,`button`),c(e,`element.create`,[`aria-label`,`title`]),e.innerHTML=Dw,e.addEventListener(`click`,kw),document.body.appendChild(e)),e}function kw(){let t=Iw,n=t?.getAttribute(Q);t&&n&&(xw(t,{notifyHost:!0}),e({type:`neos-studio/insert-node-request`,nodeAddress:n,parentNodeAddress:aT(t),defaultMode:`after`}))}var Aw=!1,jw=null,Mw=[];function Nw(e){for(let e of Mw)e.remove();Mw=e.map(e=>{let t=document.createElement(`div`);t.className=nw,t.setAttribute(`role`,`button`),t.setAttribute(`aria-label`,e.label),t.title=e.label;let n=document.createElement(`span`);return n.setAttribute(`aria-hidden`,`true`),e.icon===null?(n.dataset.initial=``,n.textContent=e.label.charAt(0)):n.style.setProperty(`--neos-studio-icon`,`url("${e.icon}")`),t.appendChild(n),t.addEventListener(`click`,()=>Fw(e.id)),document.body.appendChild(t),t})}function Pw(t){jw=t,Nw([]);let n=t?.getAttribute(Q);Aw&&n&&e({type:`neos-studio/handle-actions-request`,nodeAddress:n})}function Fw(t){let n=Iw,r=n?.getAttribute(Q);n&&r&&(xw(n,{notifyHost:!0}),e({type:`neos-studio/node-action-request`,actionId:t,nodeAddress:r}))}var Iw=null,Lw=!1;function Rw(){Lw||(Lw=!0,requestAnimationFrame(()=>{Lw=!1,zw()}))}function zw(){let e=Ew(),t=Ow(),n=hw?.hasAttribute(IC)===!0?hw:null,r=mw?.hasAttribute(IC)===!0?mw:null,i=n??r;Iw=i!==null&&i.isConnected?i:null,Iw!==jw&&Pw(Iw);let a=vT===null?Mw:[];if(a.length===0)for(let e of Mw)e.style.display=`none`;if(Iw===null){e.style.display=`none`,t.style.display=`none`;return}let o=Iw.getBoundingClientRect(),s=Hw+a.length*(Bw+Vw),c=Math.max(Vw,o.right-s),l=c+(s-Hw),u=o.bottom+Uw-Bw/2;a.forEach((e,t)=>{e.style.display=`flex`,e.style.left=`${c+t*(Bw+Vw)}px`,e.style.top=`${u}px`}),t.style.display=`flex`,t.style.left=`${l}px`,t.style.top=`${u}px`,e.style.display=`flex`,e.style.left=`${l+Bw+Vw}px`,e.style.top=`${u}px`}var Bw=24,Vw=4,Hw=52,Uw=6;function Ww(){let t=Iw,n=t?.getAttribute(Q);if(!t||!n)return;xw(t,{notifyHost:!0});let r=Ew().getBoundingClientRect();e({type:`neos-studio/element-menu-request`,nodeAddress:n,parentNodeAddress:aT(t),hidden:t.hasAttribute(LC),buttonRect:{left:r.left,top:r.top,width:r.width,height:r.height}})}function Gw(e){let t=Iw,n=t?.getAttribute(RC);if(!t||!n)e.preventDefault();else{if(e.dataTransfer){e.dataTransfer.effectAllowed=`move`,e.dataTransfer.setData(`text/plain`,n);let r=t.getBoundingClientRect();e.dataTransfer.setDragImage(t,Math.min(Math.max(e.clientX-r.left,0),r.width),Math.min(Math.max(e.clientY-r.top,0),r.height))}xT(n,t)}}function Kw(e){if(e.closest(`[${$}]`)||e.closest(`[${Q}][${WC}]`))return null;let t=e.closest(`[${UC}]`)?.getAttribute(UC),n=e.closest(`[${Q}]`)?.getAttribute(Q);return!t||!n?null:{property:t,nodeAddress:n}}function qw(){let e=document.getElementById(aw);if(!e){e=document.createElement(`div`),e.id=aw;let t=document.createElement(`button`);t.type=`button`,t.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.6-3.6a2 2 0 0 0-2.8 0L6 20"/></svg>`;let n=document.createElement(`span`);c(n,`image.select`,[`text`]),t.appendChild(n),e.appendChild(t),t.addEventListener(`click`,Qw),document.body.appendChild(e)}return e}function Jw(e){gw=e;let t=qw(),n=e.getBoundingClientRect();t.style.display=`flex`,t.style.left=`${n.left}px`,t.style.top=`${n.top}px`,t.style.width=`${n.width}px`,t.style.height=`${n.height}px`}function Yw(){gw=null;let e=document.getElementById(aw);e&&(e.style.display=`none`)}var Xw=!1;function Zw(){Xw||gw===null||(Xw=!0,requestAnimationFrame(()=>{Xw=!1,gw!==null&&(gw.isConnected?Jw(gw):Yw())}))}function Qw(t){if(t.preventDefault(),t.stopPropagation(),gw===null)return;let n=Kw(gw);n&&e({type:`neos-studio/image-select-request`,...n})}function $w(){let e=document.getElementById(ow);if(!e){e=document.createElement(`button`),e.type=`button`,e.id=ow,e.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/></svg>`;let t=document.createElement(`span`);c(t,`variant.create`,[`text`]),e.appendChild(t),e.addEventListener(`click`,iT),document.body.appendChild(e)}return e}function eT(e){_w=e;let t=$w(),n=e.getBoundingClientRect();t.style.display=`inline-flex`,t.style.left=`${n.left+n.width/2}px`,t.style.top=`${n.top+n.height/2}px`}function tT(){_w=null;let e=document.getElementById(ow);e&&(e.style.display=`none`)}var nT=!1;function rT(){nT||_w===null||(nT=!0,requestAnimationFrame(()=>{nT=!1,_w!==null&&(_w.isConnected?eT(_w):tT())}))}function iT(t){t.preventDefault(),t.stopPropagation();let n=_w?.getAttribute(Q);n&&e({type:`neos-studio/create-variant-request`,nodeAddress:n})}function aT(e){return e.parentElement?.closest(`[${FC}]`)?.getAttribute(Q)??null}function oT(e){let t=e.getAttribute($),n=e.closest(`[${BC}]`)?.getAttribute(BC)??e.closest(`[${Q}]`)?.getAttribute(Q);return t&&n?{nodeAddress:n,property:t}:null}function sT(t,n){let r=oT(t);r&&e({type:`neos-studio/property-changed`,...r,value:n})}function cT(t,n,r){let i=oT(t);i&&e({type:`neos-studio/live-edit`,...i,value:n,cursor:r})}var lT=null;function uT(e,t){lT=t?e:null}var dT={commit:sT,activity:()=>Rw(),liveUpdate:cT,editingState:uT};function fT(e){return e.closest(`${rw}, #${aw}, #${ow}, .${CS}, .${iw}`)!==null}var pT=`img, picture, video, audio, iframe, svg, canvas, input, textarea, select, button, label, [contenteditable="true"]`;function mT(e){if(e.button!==0||e.detail>1||e.shiftKey||e.metaKey||e.ctrlKey||e.altKey)return;let t=e.target;if(!t?.closest||t.closest(`[${$}]`)||t.closest(pT)||fT(t)||t.closest(`.${dw}`))return;let n=t.closest(`[${Q}]`);if(!n)return;let r=bw(n);if(!r.hasAttribute(IC))return;let i=[...r.querySelectorAll(`[${$}]`)].filter(e=>{let t=e.closest(`[${Q}]`);return t!==null&&bw(t)===r}),[a]=i;i.length===1&&a&&fC(a,e.clientX,e.clientY)&&e.preventDefault()}function hT(t){let n=t.target;if(!n?.closest)return;if(n.closest(`.${dw}`)){t.preventDefault(),t.stopPropagation();return}let r=n.closest(`a[href]`);if(r&&gT(t,r))return;let i=n.closest(`[${Q}]`);i?xw(bw(i),{notifyHost:!0}):fT(n)||(xw(null,{notifyHost:!1}),e({type:`neos-studio/document-selected`}))}function gT(t,n){let r=n.getAttribute(`href`)??``;if(r.startsWith(`#`))return!1;if(n.closest(`[${$}]`)||n.querySelector(`[${$}]`))return t.preventDefault(),!1;t.preventDefault();let i;try{i=new URL(r,window.location.href)}catch{return!0}if(i.origin===window.location.origin&&i.pathname.endsWith(`/neos/preview`)){let t=i.searchParams.get(`node`);if(t)return e({type:`neos-studio/navigate-to-node`,nodeAddress:t}),!0}return window.open(i.href,`_blank`,`noopener`),!0}function _T(e){let t=e.target;if(t?.closest?.(rw)||t?.closest?.(`#${aw}`)||t?.closest?.(`#${ow}`))return;let n=t?.closest?t.closest(`img`):null;n&&!n.closest(`.${dw}`)&&Kw(n)?n!==gw&&Jw(n):Yw();let r=t?.closest?t.closest(`[${Q}][${WC}][${IC}]`):null;r?r!==_w&&eT(r):tT();let i=t?.closest?t.closest(`[${Q}]`):null,a=i?.classList.contains(dw)?null:i;a!==hw&&(hw?.classList.remove(GC),hw=a,hw?.classList.add(GC),Rw())}var vT=null,yT=null;function bT(e,t){try{let n=JSON.parse(e.getAttribute(zC)??`[]`);return Array.isArray(n)&&n.includes(t)}catch{return!1}}function xT(e,t){vT={nodeTypeName:e,movingElement:t},Rw();for(let n of document.querySelectorAll(`[${FC}]`))t.contains(n)||bT(n,e)&&n.classList.add(XC)}function ST(){vT=null,Rw(),OT(null);for(let e of document.querySelectorAll(`.${XC}`))e.classList.remove(XC)}function CT(e){return Array.from(e.querySelectorAll(`[${Q}]`)).filter(t=>t!==vT?.movingElement&&t.parentElement?.closest(`[${FC}]`)===e)}function wT(t=document){let n=`[${Q}][${FC}]`,r=t instanceof HTMLElement&&t.matches(n)?[t]:[];for(let i of[...r,...t.querySelectorAll(n)]){let t=i.getAttribute(Q);if(!t||CT(i).length>0||i.querySelector(`:scope > .${iw}`))continue;let n=document.createElement(`button`);n.type=`button`,n.className=iw,n.innerHTML=Dw;let r=document.createElement(`span`);c(r,`collection.add`,[`text`]),n.appendChild(r),n.addEventListener(`click`,n=>{n.preventDefault(),n.stopPropagation(),xw(i,{notifyHost:!0}),e({type:`neos-studio/insert-node-request`,nodeAddress:t,parentNodeAddress:aT(i),defaultMode:`inside`})}),i.appendChild(n)}}function TT(e,t,n){return e.parentElement?.closest(`[${FC}]`)===t&&n===(CT(t).find(t=>e.compareDocumentPosition(t)&Node.DOCUMENT_POSITION_FOLLOWING)??null)}function ET(e,t,n){let r=CT(e);if(r.length===0)return null;let i=r.map(e=>e.getBoundingClientRect()),a=Math.max(...i.map(e=>e.left+e.width/2))-Math.min(...i.map(e=>e.left+e.width/2))>Math.max(...i.map(e=>e.top+e.height/2))-Math.min(...i.map(e=>e.top+e.height/2));for(let[e,o]of i.entries()){let i=a?o.left+o.width/2:o.top+o.height/2;if((a?t:n)<i)return r[e]??null}return null}function DT(){let e=document.getElementById($C);return e||(e=document.createElement(`div`),e.id=$C,document.body.appendChild(e)),e}function OT(e){yT?.collection!==e?.collection&&(yT?.collection.classList.remove(ZC),e?.collection.classList.add(ZC)),yT=e;let t=DT();if(e===null){t.style.display=`none`;return}let n=CT(e.collection),r=e.collection.getBoundingClientRect(),i=!1,a;if(n.length===0)a=r.top+4;else{let t=n.map(e=>e.getBoundingClientRect());i=Math.max(...t.map(e=>e.left+e.width/2))-Math.min(...t.map(e=>e.left+e.width/2))>Math.max(...t.map(e=>e.top+e.height/2))-Math.min(...t.map(e=>e.top+e.height/2));let r=e.before?.getBoundingClientRect(),o=t[t.length-1];a=i?(r?r.left:o.right)-1:(r?r.top:o.bottom)-1}t.style.display=`block`,i?(t.style.left=`${a}px`,t.style.top=`${r.top}px`,t.style.width=`3px`,t.style.height=`${r.height}px`):(t.style.left=`${r.left}px`,t.style.top=`${a}px`,t.style.width=`${r.width}px`,t.style.height=`3px`)}function kT(e){if(vT===null)return;let t=e.target,n=t?.closest?t.closest(`.${XC}`):null;n?(e.preventDefault(),e.dataTransfer&&(e.dataTransfer.dropEffect=`move`),OT({collection:n,before:ET(n,e.clientX,e.clientY)})):OT(null)}function AT(t){if(vT===null||yT===null)return;t.preventDefault();let n=vT,{collection:r,before:i}=yT,a=r.getAttribute(Q),o=i?.getAttribute(Q)??null,s=null;if(a){let e=n.movingElement.getAttribute(Q);e&&!TT(n.movingElement,r,i)&&(s={type:`neos-studio/move-node-request`,nodeAddress:e,sourceParentNodeAddress:aT(n.movingElement),parentNodeAddress:a,succeedingSiblingNodeAddress:o})}ST(),s&&e(s)}function jT(e){vT!==null&&e.relatedTarget===null&&OT(null)}var MT=[],NT=[],PT=new Map;function FT(){let e=document.createElement(`style`);e.textContent=`
-    [${Q}].${sw}:not(.${KC}) {
-      outline: 2px dashed var(--neos-studio-presence-color, rgba(${fw}, 1));
+  `,document.head.appendChild(e)}function bw(){mw.clear();for(let e of document.querySelectorAll(`[${Q}]`))try{let t=JSON.parse(e.getAttribute(Q)??``);typeof t.aggregateId==`string`&&!mw.has(t.aggregateId)&&mw.set(t.aggregateId,e)}catch{}}function xw(e){try{let t=JSON.parse(e.getAttribute(Q)??``),n=typeof t.aggregateId==`string`?mw.get(t.aggregateId):void 0;if(n?.isConnected&&n.contains(e))return n}catch{}return e}function Sw(t,n){if(hw!==t&&(hw?.classList.remove(qC),hw=t,zw(),t!==null&&(t.classList.add(qC),n.reveal?t.scrollIntoView({block:`center`,behavior:`smooth`}):TC(t),n.notifyHost))){let n=t.getAttribute(Q);n&&e({type:`neos-studio/node-selected`,nodeAddress:n})}}var Cw=null,ww,Tw=null;function Ew(e){if(Tw?.(),Tw=null,ww!==void 0&&(window.clearTimeout(ww),ww=void 0),Cw?.classList.remove(JC),Cw=e?.isConnected?e:null,Cw===null)return;let t=Cw,n=!1,r=()=>{n=!0,window.removeEventListener(`scrollend`,i),window.clearTimeout(a)},i=()=>{!n&&t.isConnected&&(r(),Tw=null,t.offsetWidth,t.classList.add(JC),ww=window.setTimeout(()=>{t.classList.remove(JC),Cw===t&&(Cw=null),ww=void 0},YC))};window.addEventListener(`scrollend`,i);let a=window.setTimeout(i,XC);Tw=r}function Dw(){let e=document.getElementById(tw);return e||(e=document.createElement(`div`),e.id=tw,e.setAttribute(`role`,`button`),c(e,`element.options`,[`aria-label`]),e.draggable=!0,e.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`,e.addEventListener(`click`,Gw),e.addEventListener(`dragstart`,Kw),e.addEventListener(`dragend`,()=>CT()),document.body.appendChild(e)),e}var Ow=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`;function kw(){let e=document.getElementById(nw);return e||(e=document.createElement(`div`),e.id=nw,e.setAttribute(`role`,`button`),c(e,`element.create`,[`aria-label`,`title`]),e.innerHTML=Ow,e.addEventListener(`click`,Aw),document.body.appendChild(e)),e}function Aw(){let t=Lw,n=t?.getAttribute(Q);t&&n&&(Sw(t,{notifyHost:!0}),e({type:`neos-studio/insert-node-request`,nodeAddress:n,parentNodeAddress:oT(t),defaultMode:`after`}))}var jw=!1,Mw=null,Nw=[];function Pw(e){for(let e of Nw)e.remove();Nw=e.map(e=>{let t=document.createElement(`div`);t.className=rw,t.setAttribute(`role`,`button`),t.setAttribute(`aria-label`,e.label),t.title=e.label;let n=document.createElement(`span`);return n.setAttribute(`aria-hidden`,`true`),e.icon===null?(n.dataset.initial=``,n.textContent=e.label.charAt(0)):n.style.setProperty(`--neos-studio-icon`,`url("${e.icon}")`),t.appendChild(n),t.addEventListener(`click`,()=>Iw(e.id)),document.body.appendChild(t),t})}function Fw(t){Mw=t,Pw([]);let n=t?.getAttribute(Q);jw&&n&&e({type:`neos-studio/handle-actions-request`,nodeAddress:n})}function Iw(t){let n=Lw,r=n?.getAttribute(Q);n&&r&&(Sw(n,{notifyHost:!0}),e({type:`neos-studio/node-action-request`,actionId:t,nodeAddress:r}))}var Lw=null,Rw=!1;function zw(){Rw||(Rw=!0,requestAnimationFrame(()=>{Rw=!1,Bw()}))}function Bw(){let e=Dw(),t=kw(),n=gw?.hasAttribute(LC)===!0?gw:null,r=hw?.hasAttribute(LC)===!0?hw:null,i=n??r;Lw=i!==null&&i.isConnected?i:null,Lw!==Mw&&Fw(Lw);let a=yT===null?Nw:[];if(a.length===0)for(let e of Nw)e.style.display=`none`;if(Lw===null){e.style.display=`none`,t.style.display=`none`;return}let o=Lw.getBoundingClientRect(),s=Uw+a.length*(Vw+Hw),c=Math.max(Hw,o.right-s),l=c+(s-Uw),u=o.bottom+Ww-Vw/2;a.forEach((e,t)=>{e.style.display=`flex`,e.style.left=`${c+t*(Vw+Hw)}px`,e.style.top=`${u}px`}),t.style.display=`flex`,t.style.left=`${l}px`,t.style.top=`${u}px`,e.style.display=`flex`,e.style.left=`${l+Vw+Hw}px`,e.style.top=`${u}px`}var Vw=24,Hw=4,Uw=52,Ww=6;function Gw(){let t=Lw,n=t?.getAttribute(Q);if(!t||!n)return;Sw(t,{notifyHost:!0});let r=Dw().getBoundingClientRect();e({type:`neos-studio/element-menu-request`,nodeAddress:n,parentNodeAddress:oT(t),hidden:t.hasAttribute(RC),buttonRect:{left:r.left,top:r.top,width:r.width,height:r.height}})}function Kw(e){let t=Lw,n=t?.getAttribute(zC);if(!t||!n)e.preventDefault();else{if(e.dataTransfer){e.dataTransfer.effectAllowed=`move`,e.dataTransfer.setData(`text/plain`,n);let r=t.getBoundingClientRect();e.dataTransfer.setDragImage(t,Math.min(Math.max(e.clientX-r.left,0),r.width),Math.min(Math.max(e.clientY-r.top,0),r.height))}ST(n,t)}}function qw(e){if(e.closest(`[${$}]`)||e.closest(`[${Q}][${GC}]`))return null;let t=e.closest(`[${WC}]`)?.getAttribute(WC),n=e.closest(`[${Q}]`)?.getAttribute(Q);return!t||!n?null:{property:t,nodeAddress:n}}function Jw(){let e=document.getElementById(ow);if(!e){e=document.createElement(`div`),e.id=ow;let t=document.createElement(`button`);t.type=`button`,t.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.6-3.6a2 2 0 0 0-2.8 0L6 20"/></svg>`;let n=document.createElement(`span`);c(n,`image.select`,[`text`]),t.appendChild(n),e.appendChild(t),t.addEventListener(`click`,$w),document.body.appendChild(e)}return e}function Yw(e){_w=e;let t=Jw(),n=e.getBoundingClientRect();t.style.display=`flex`,t.style.left=`${n.left}px`,t.style.top=`${n.top}px`,t.style.width=`${n.width}px`,t.style.height=`${n.height}px`}function Xw(){_w=null;let e=document.getElementById(ow);e&&(e.style.display=`none`)}var Zw=!1;function Qw(){Zw||_w===null||(Zw=!0,requestAnimationFrame(()=>{Zw=!1,_w!==null&&(_w.isConnected?Yw(_w):Xw())}))}function $w(t){if(t.preventDefault(),t.stopPropagation(),_w===null)return;let n=qw(_w);n&&e({type:`neos-studio/image-select-request`,...n})}function eT(){let e=document.getElementById(sw);if(!e){e=document.createElement(`button`),e.type=`button`,e.id=sw,e.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/></svg>`;let t=document.createElement(`span`);c(t,`variant.create`,[`text`]),e.appendChild(t),e.addEventListener(`click`,aT),document.body.appendChild(e)}return e}function tT(e){vw=e;let t=eT(),n=e.getBoundingClientRect();t.style.display=`inline-flex`,t.style.left=`${n.left+n.width/2}px`,t.style.top=`${n.top+n.height/2}px`}function nT(){vw=null;let e=document.getElementById(sw);e&&(e.style.display=`none`)}var rT=!1;function iT(){rT||vw===null||(rT=!0,requestAnimationFrame(()=>{rT=!1,vw!==null&&(vw.isConnected?tT(vw):nT())}))}function aT(t){t.preventDefault(),t.stopPropagation();let n=vw?.getAttribute(Q);n&&e({type:`neos-studio/create-variant-request`,nodeAddress:n})}function oT(e){return e.parentElement?.closest(`[${IC}]`)?.getAttribute(Q)??null}function sT(e){let t=e.getAttribute($),n=e.closest(`[${VC}]`)?.getAttribute(VC)??e.closest(`[${Q}]`)?.getAttribute(Q);return t&&n?{nodeAddress:n,property:t}:null}function cT(t,n){let r=sT(t);r&&e({type:`neos-studio/property-changed`,...r,value:n})}function lT(t,n,r){let i=sT(t);i&&e({type:`neos-studio/live-edit`,...i,value:n,cursor:r})}var uT=null;function dT(e,t){uT=t?e:null}var fT={commit:cT,activity:()=>zw(),liveUpdate:lT,editingState:dT};function pT(e){return e.closest(`${iw}, #${ow}, #${sw}, .${CS}, .${aw}`)!==null}var mT=`img, picture, video, audio, iframe, svg, canvas, input, textarea, select, button, label, [contenteditable="true"]`;function hT(e){if(e.button!==0||e.detail>1||e.shiftKey||e.metaKey||e.ctrlKey||e.altKey)return;let t=e.target;if(!t?.closest||t.closest(`[${$}]`)||t.closest(mT)||pT(t)||t.closest(`.${fw}`))return;let n=t.closest(`[${Q}]`);if(!n)return;let r=xw(n);if(!r.hasAttribute(LC))return;let i=[...r.querySelectorAll(`[${$}]`)].filter(e=>{let t=e.closest(`[${Q}]`);return t!==null&&xw(t)===r}),[a]=i;i.length===1&&a&&fC(a,e.clientX,e.clientY)&&e.preventDefault()}function gT(t){let n=t.target;if(!n?.closest)return;if(n.closest(`.${fw}`)){t.preventDefault(),t.stopPropagation();return}let r=n.closest(`a[href]`);if(r&&_T(t,r))return;let i=n.closest(`[${Q}]`);i?Sw(xw(i),{notifyHost:!0}):pT(n)||(Sw(null,{notifyHost:!1}),e({type:`neos-studio/document-selected`}))}function _T(t,n){let r=n.getAttribute(`href`)??``;if(r.startsWith(`#`))return!1;if(n.closest(`[${$}]`)||n.querySelector(`[${$}]`))return t.preventDefault(),!1;t.preventDefault();let i;try{i=new URL(r,window.location.href)}catch{return!0}if(i.origin===window.location.origin&&i.pathname.endsWith(`/neos/preview`)){let t=i.searchParams.get(`node`);if(t)return e({type:`neos-studio/navigate-to-node`,nodeAddress:t}),!0}return window.open(i.href,`_blank`,`noopener`),!0}function vT(e){let t=e.target;if(t?.closest?.(iw)||t?.closest?.(`#${ow}`)||t?.closest?.(`#${sw}`))return;let n=t?.closest?t.closest(`img`):null;n&&!n.closest(`.${fw}`)&&qw(n)?n!==_w&&Yw(n):Xw();let r=t?.closest?t.closest(`[${Q}][${GC}][${LC}]`):null;r?r!==vw&&tT(r):nT();let i=t?.closest?t.closest(`[${Q}]`):null,a=i?.classList.contains(fw)?null:i;a!==gw&&(gw?.classList.remove(KC),gw=a,gw?.classList.add(KC),zw())}var yT=null,bT=null;function xT(e,t){try{let n=JSON.parse(e.getAttribute(BC)??`[]`);return Array.isArray(n)&&n.includes(t)}catch{return!1}}function ST(e,t){yT={nodeTypeName:e,movingElement:t},zw();for(let n of document.querySelectorAll(`[${IC}]`))t.contains(n)||xT(n,e)&&n.classList.add(ZC)}function CT(){yT=null,zw(),kT(null);for(let e of document.querySelectorAll(`.${ZC}`))e.classList.remove(ZC)}function wT(e){return Array.from(e.querySelectorAll(`[${Q}]`)).filter(t=>t!==yT?.movingElement&&t.parentElement?.closest(`[${IC}]`)===e)}function TT(t=document){let n=`[${Q}][${IC}]`,r=t instanceof HTMLElement&&t.matches(n)?[t]:[];for(let i of[...r,...t.querySelectorAll(n)]){let t=i.getAttribute(Q);if(!t||wT(i).length>0||i.querySelector(`:scope > .${aw}`))continue;let n=document.createElement(`button`);n.type=`button`,n.className=aw,n.innerHTML=Ow;let r=document.createElement(`span`);c(r,`collection.add`,[`text`]),n.appendChild(r),n.addEventListener(`click`,n=>{n.preventDefault(),n.stopPropagation(),Sw(i,{notifyHost:!0}),e({type:`neos-studio/insert-node-request`,nodeAddress:t,parentNodeAddress:oT(i),defaultMode:`inside`})}),i.appendChild(n)}}function ET(e,t,n){return e.parentElement?.closest(`[${IC}]`)===t&&n===(wT(t).find(t=>e.compareDocumentPosition(t)&Node.DOCUMENT_POSITION_FOLLOWING)??null)}function DT(e,t,n){let r=wT(e);if(r.length===0)return null;let i=r.map(e=>e.getBoundingClientRect()),a=Math.max(...i.map(e=>e.left+e.width/2))-Math.min(...i.map(e=>e.left+e.width/2))>Math.max(...i.map(e=>e.top+e.height/2))-Math.min(...i.map(e=>e.top+e.height/2));for(let[e,o]of i.entries()){let i=a?o.left+o.width/2:o.top+o.height/2;if((a?t:n)<i)return r[e]??null}return null}function OT(){let e=document.getElementById(ew);return e||(e=document.createElement(`div`),e.id=ew,document.body.appendChild(e)),e}function kT(e){bT?.collection!==e?.collection&&(bT?.collection.classList.remove(QC),e?.collection.classList.add(QC)),bT=e;let t=OT();if(e===null){t.style.display=`none`;return}let n=wT(e.collection),r=e.collection.getBoundingClientRect(),i=!1,a;if(n.length===0)a=r.top+4;else{let t=n.map(e=>e.getBoundingClientRect());i=Math.max(...t.map(e=>e.left+e.width/2))-Math.min(...t.map(e=>e.left+e.width/2))>Math.max(...t.map(e=>e.top+e.height/2))-Math.min(...t.map(e=>e.top+e.height/2));let r=e.before?.getBoundingClientRect(),o=t[t.length-1];a=i?(r?r.left:o.right)-1:(r?r.top:o.bottom)-1}t.style.display=`block`,i?(t.style.left=`${a}px`,t.style.top=`${r.top}px`,t.style.width=`3px`,t.style.height=`${r.height}px`):(t.style.left=`${r.left}px`,t.style.top=`${a}px`,t.style.width=`${r.width}px`,t.style.height=`3px`)}function AT(e){if(yT===null)return;let t=e.target,n=t?.closest?t.closest(`.${ZC}`):null;n?(e.preventDefault(),e.dataTransfer&&(e.dataTransfer.dropEffect=`move`),kT({collection:n,before:DT(n,e.clientX,e.clientY)})):kT(null)}function jT(t){if(yT===null||bT===null)return;t.preventDefault();let n=yT,{collection:r,before:i}=bT,a=r.getAttribute(Q),o=i?.getAttribute(Q)??null,s=null;if(a){let e=n.movingElement.getAttribute(Q);e&&!ET(n.movingElement,r,i)&&(s={type:`neos-studio/move-node-request`,nodeAddress:e,sourceParentNodeAddress:oT(n.movingElement),parentNodeAddress:a,succeedingSiblingNodeAddress:o})}CT(),s&&e(s)}function MT(e){yT!==null&&e.relatedTarget===null&&kT(null)}var NT=[],PT=[],FT=new Map;function IT(){let e=document.createElement(`style`);e.textContent=`
+    [${Q}].${cw}:not(.${qC}) {
+      outline: 2px dashed var(--neos-studio-presence-color, rgba(${pw}, 1));
       outline-offset: 5px;
     }
-    .${cw} {
+    .${lw} {
       position: fixed;
       z-index: 2147483644;
       width: 20px;
@@ -659,7 +659,7 @@ img.ProseMirror-separator {
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
     /* The edit-lock badge: a pill ("✏ AB") on the locked text itself. */
-    .${lw} {
+    .${uw} {
       width: auto;
       padding: 0 7px;
       white-space: nowrap;
@@ -668,7 +668,7 @@ img.ProseMirror-separator {
        line in their color (steady, not blinking - the blinking caret is the
        reader's own); their badge rides on top of it while a position is
        known. */
-    .${uw} {
+    .${dw} {
       position: fixed;
       z-index: 2147483644;
       width: 2px;
@@ -680,11 +680,11 @@ img.ProseMirror-separator {
        onClick can swallow the click), but everything inside it takes none -
        no caret placement, no editor focus (which would raise the rich-text
        toolbar), no links, no hover affordances. */
-    [${Q}].${dw} {
+    [${Q}].${fw} {
       cursor: not-allowed !important;
     }
-    [${Q}].${dw} * {
+    [${Q}].${fw} * {
       cursor: not-allowed !important;
       pointer-events: none !important;
     }
-  `,document.head.appendChild(e)}function IT(e,t){let n=pw.get(e);if(!n||!n.isConnected)return null;for(let e of n.querySelectorAll(`[${$}="${CSS.escape(t)}"]`))if(e.closest(`[${Q}]`)===n)return e;return n.getAttribute($)===t?n:null}function LT(e){let t=[];e.hasAttribute($)&&t.push(e);for(let n of e.querySelectorAll(`[${$}]`))n.closest(`[${Q}]`)===e&&t.push(n);return t}var RT=new Set;function zT(){for(let{badge:e,caret:t}of NT)e.remove(),t?.line.remove();NT=[];let t=new Set(MT.flatMap(e=>e.editing===null?[]:[e.editing.aggregateId]));for(let e of PT.keys())t.has(e)||PT.delete(e);for(let e of document.querySelectorAll(`.${sw}`))e.classList.remove(sw),e.style.removeProperty(`--neos-studio-presence-color`);for(let e of document.querySelectorAll(`.${dw}`))e.classList.remove(dw);let n=new Map,i=(e,t,i)=>{let a=document.createElement(`div`);a.className=cw,a.textContent=i?`✏ ${t.initials}`:t.initials,a.title=i?r(`presence.editing`,void 0,{name:t.name}):t.name,a.style.backgroundColor=t.color,i&&a.classList.add(lw),document.body.appendChild(a);let o=n.get(e)??0;n.set(e,o+1),a.dataset.slot=String(o);let s={badge:a,element:e};return NT.push(s),s};for(let e of RT)e.isConnected&&pC(e,!1);RT=new Set;for(let t of MT){if(t.focusedAggregateId!==null){let e=pw.get(t.focusedAggregateId);e&&e.isConnected&&(e.classList.add(sw),e.style.setProperty(`--neos-studio-presence-color`,t.color),i(e,t,!1))}if(t.editing!==null){let n=pw.get(t.editing.aggregateId);if(n&&n.isConnected){if(lT&&n.contains(lT)){let n=lT;lT=null,hC(n),e({type:`neos-studio/editing-rejected`,name:t.name})}n.classList.add(dw);for(let e of LT(n))pC(e,!0),RT.add(e);let r=i((t.editing.property===null?null:IT(t.editing.aggregateId,t.editing.property))??n,t,!0),a=document.createElement(`div`);a.className=uw,a.style.backgroundColor=t.color,a.style.display=`none`,document.body.appendChild(a),r.caret={line:a,aggregateId:t.editing.aggregateId}}}}BT()}function BT(){for(let{badge:e,element:t,caret:n}of NT){if(n!==void 0){let t=PT.get(n.aggregateId),r=t===void 0?null:IT(n.aggregateId,t.property),i=t!==void 0&&r!==null?gC(r,t.cursor):null;if(i!==null){n.line.style.display=`block`,n.line.style.left=`${i.left-1}px`,n.line.style.top=`${i.top}px`,n.line.style.height=`${i.bottom-i.top}px`,e.style.display=`block`,e.style.left=`${i.left-1}px`,e.style.top=`${i.top-24}px`;continue}n.line.style.display=`none`}if(!t.isConnected){e.style.display=`none`;continue}let r=t.getBoundingClientRect(),i=Number(e.dataset.slot??0);e.style.display=`block`,e.style.left=`${r.left-10+i*24}px`,e.style.top=`${r.top-10}px`}}var VT=!1;function HT(){VT||(VT=!0,requestAnimationFrame(()=>{VT=!1,BT()}))}function UT(e,t){let n=pw.get(e);if(!n||!n.isConnected)return!1;let r=document.activeElement;if(document.hasFocus()&&r instanceof HTMLElement&&n.contains(r)&&(r.isContentEditable||r.closest(`[contenteditable="true"]`)))return!0;let i=document.createElement(`template`);i.innerHTML=t;let a=null;for(let t of i.content.querySelectorAll(`[${Q}]`))try{if(JSON.parse(t.getAttribute(Q)??``).aggregateId===e){a=t;break}}catch{}if(!a)return!1;let o=mw!==null&&(mw===n||n.contains(mw));return hw!==null&&(hw===n||n.contains(hw))&&(hw.classList.remove(GC),hw=null),Yw(),tT(),uC(n),n.replaceWith(a),yw(),cC(a,dT),wT(a),o&&(mw=null,xw(a,{notifyHost:!1})),Rw(),zT(),!0}function WT(t){if(t.origin!==window.location.origin||t.source!==window.parent)return;let n=t.data;if(n?.type===`neos-studio/init`&&(l(n.labels),RS()),n?.type===`neos-studio/flush`&&(dC(),e({type:`neos-studio/flushed`,requestId:n.requestId})),n?.type===`neos-studio/select-node`){let e=n.aggregateId===null?null:pw.get(n.aggregateId)??null;xw(e?.isConnected?e:null,{notifyHost:!1,reveal:n.reveal!==!1})}if(n?.type===`neos-studio/handle-actions-changed`&&(Aw=n.available,Pw(Iw),Rw()),n?.type===`neos-studio/handle-actions`&&n.nodeAddress===jw?.getAttribute(Q)&&(Nw(n.actions),Rw()),n?.type===`neos-studio/chrome`&&wC(n,mw),n?.type===`neos-studio/insert-preview`){let e=n.aggregateId===null?null:pw.get(n.aggregateId)??null;DC(e?.isConnected?e:null,n.mode)}if(n?.type===`neos-studio/flash-node`&&Tw(pw.get(n.aggregateId)??null),n?.type===`neos-studio/element-info-request`){let t=pw.get(n.aggregateId);e({type:`neos-studio/element-info`,requestId:n.requestId,fusionPath:t?.isConnected?t.getAttribute(PC)??null:null})}if(n?.type===`neos-studio/replace-element`&&e({type:`neos-studio/element-replaced`,requestId:n.requestId,ok:UT(n.aggregateId,n.html)}),n?.type===`neos-studio/presence-update`&&(MT=n.users,zT()),n?.type===`neos-studio/live-edit-apply`){let e=IT(n.aggregateId,n.property);e&&(mC(e,n.value),n.cursor!==null&&PT.set(n.aggregateId,{property:n.property,cursor:n.cursor}),HT())}n?.type===`neos-studio/link-apply`&&p(n.attributes),n?.type===`neos-studio/link-cancel`&&m()}function GT(){vw(),FT(),yw(),wT(),cC(document,dT),document.addEventListener(`click`,hT,!0),document.addEventListener(`mousedown`,mT,!0),document.addEventListener(`mouseover`,_T),document.addEventListener(`dragover`,kT),document.addEventListener(`drop`,AT),document.addEventListener(`dragleave`,jT),window.addEventListener(`scroll`,Rw,!0),window.addEventListener(`resize`,Rw),window.addEventListener(`scroll`,Zw,!0),window.addEventListener(`resize`,Zw),document.documentElement.addEventListener(`mouseleave`,Yw),window.addEventListener(`scroll`,rT,!0),window.addEventListener(`resize`,rT),window.addEventListener(`scroll`,HT,!0),window.addEventListener(`resize`,HT),window.addEventListener(`scroll`,AC,!0),document.addEventListener(`mousemove`,NC,{passive:!0}),window.addEventListener(`scroll`,OC,!0),window.addEventListener(`resize`,OC),window.addEventListener(`message`,WT),window.addEventListener(`pagehide`,dC),e({type:`neos-studio/guest-ready`,labels:a()})}xS(),document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,GT):GT()})();
+  `,document.head.appendChild(e)}function LT(e,t){let n=mw.get(e);if(!n||!n.isConnected)return null;for(let e of n.querySelectorAll(`[${$}="${CSS.escape(t)}"]`))if(e.closest(`[${Q}]`)===n)return e;return n.getAttribute($)===t?n:null}function RT(e){let t=[];e.hasAttribute($)&&t.push(e);for(let n of e.querySelectorAll(`[${$}]`))n.closest(`[${Q}]`)===e&&t.push(n);return t}var zT=new Set;function BT(){for(let{badge:e,caret:t}of PT)e.remove(),t?.line.remove();PT=[];let t=new Set(NT.flatMap(e=>e.editing===null?[]:[e.editing.aggregateId]));for(let e of FT.keys())t.has(e)||FT.delete(e);for(let e of document.querySelectorAll(`.${cw}`))e.classList.remove(cw),e.style.removeProperty(`--neos-studio-presence-color`);for(let e of document.querySelectorAll(`.${fw}`))e.classList.remove(fw);let n=new Map,i=(e,t,i)=>{let a=document.createElement(`div`);a.className=lw,a.textContent=i?`✏ ${t.initials}`:t.initials,a.title=i?r(`presence.editing`,void 0,{name:t.name}):t.name,a.style.backgroundColor=t.color,i&&a.classList.add(uw),document.body.appendChild(a);let o=n.get(e)??0;n.set(e,o+1),a.dataset.slot=String(o);let s={badge:a,element:e};return PT.push(s),s};for(let e of zT)e.isConnected&&pC(e,!1);zT=new Set;for(let t of NT){if(t.focusedAggregateId!==null){let e=mw.get(t.focusedAggregateId);e&&e.isConnected&&(e.classList.add(cw),e.style.setProperty(`--neos-studio-presence-color`,t.color),i(e,t,!1))}if(t.editing!==null){let n=mw.get(t.editing.aggregateId);if(n&&n.isConnected){if(uT&&n.contains(uT)){let n=uT;uT=null,hC(n),e({type:`neos-studio/editing-rejected`,name:t.name})}n.classList.add(fw);for(let e of RT(n))pC(e,!0),zT.add(e);let r=i((t.editing.property===null?null:LT(t.editing.aggregateId,t.editing.property))??n,t,!0),a=document.createElement(`div`);a.className=dw,a.style.backgroundColor=t.color,a.style.display=`none`,document.body.appendChild(a),r.caret={line:a,aggregateId:t.editing.aggregateId}}}}VT()}function VT(){for(let{badge:e,element:t,caret:n}of PT){if(n!==void 0){let t=FT.get(n.aggregateId),r=t===void 0?null:LT(n.aggregateId,t.property),i=t!==void 0&&r!==null?gC(r,t.cursor):null;if(i!==null){n.line.style.display=`block`,n.line.style.left=`${i.left-1}px`,n.line.style.top=`${i.top}px`,n.line.style.height=`${i.bottom-i.top}px`,e.style.display=`block`,e.style.left=`${i.left-1}px`,e.style.top=`${i.top-24}px`;continue}n.line.style.display=`none`}if(!t.isConnected){e.style.display=`none`;continue}let r=t.getBoundingClientRect(),i=Number(e.dataset.slot??0);e.style.display=`block`,e.style.left=`${r.left-10+i*24}px`,e.style.top=`${r.top-10}px`}}var HT=!1;function UT(){HT||(HT=!0,requestAnimationFrame(()=>{HT=!1,VT()}))}function WT(e,t){let n=mw.get(e);if(!n||!n.isConnected)return!1;let r=document.activeElement;if(document.hasFocus()&&r instanceof HTMLElement&&n.contains(r)&&(r.isContentEditable||r.closest(`[contenteditable="true"]`)))return!0;let i=document.createElement(`template`);i.innerHTML=t;let a=null;for(let t of i.content.querySelectorAll(`[${Q}]`))try{if(JSON.parse(t.getAttribute(Q)??``).aggregateId===e){a=t;break}}catch{}if(!a)return!1;let o=hw!==null&&(hw===n||n.contains(hw));return gw!==null&&(gw===n||n.contains(gw))&&(gw.classList.remove(KC),gw=null),Xw(),nT(),uC(n),n.replaceWith(a),bw(),cC(a,fT),TT(a),o&&(hw=null,Sw(a,{notifyHost:!1})),zw(),BT(),!0}function GT(t){if(t.origin!==window.location.origin||t.source!==window.parent)return;let n=t.data;if(n?.type===`neos-studio/init`&&(l(n.labels),RS()),n?.type===`neos-studio/flush`&&(dC(),e({type:`neos-studio/flushed`,requestId:n.requestId})),n?.type===`neos-studio/select-node`){let e=n.aggregateId===null?null:mw.get(n.aggregateId)??null;Sw(e?.isConnected?e:null,{notifyHost:!1,reveal:n.reveal!==!1})}if(n?.type===`neos-studio/handle-actions-changed`&&(jw=n.available,Fw(Lw),zw()),n?.type===`neos-studio/handle-actions`&&n.nodeAddress===Mw?.getAttribute(Q)&&(Pw(n.actions),zw()),n?.type===`neos-studio/chrome`&&wC(n,hw),n?.type===`neos-studio/insert-preview`){let e=n.aggregateId===null?null:mw.get(n.aggregateId)??null;DC(e?.isConnected?e:null,n.mode)}if(n?.type===`neos-studio/flash-node`&&Ew(mw.get(n.aggregateId)??null),n?.type===`neos-studio/element-info-request`){let t=mw.get(n.aggregateId);e({type:`neos-studio/element-info`,requestId:n.requestId,fusionPath:t?.isConnected?t.getAttribute(FC)??null:null})}if(n?.type===`neos-studio/replace-element`&&e({type:`neos-studio/element-replaced`,requestId:n.requestId,ok:WT(n.aggregateId,n.html)}),n?.type===`neos-studio/presence-update`&&(NT=n.users,BT()),n?.type===`neos-studio/live-edit-apply`){let e=LT(n.aggregateId,n.property);e&&(mC(e,n.value),n.cursor!==null&&FT.set(n.aggregateId,{property:n.property,cursor:n.cursor}),UT())}n?.type===`neos-studio/link-apply`&&p(n.attributes),n?.type===`neos-studio/link-cancel`&&m()}function KT(){yw(),IT(),bw(),TT(),cC(document,fT),document.addEventListener(`click`,gT,!0),document.addEventListener(`mousedown`,hT,!0),document.addEventListener(`mouseover`,vT),document.addEventListener(`dragover`,AT),document.addEventListener(`drop`,jT),document.addEventListener(`dragleave`,MT),window.addEventListener(`scroll`,zw,!0),window.addEventListener(`resize`,zw),window.addEventListener(`scroll`,Qw,!0),window.addEventListener(`resize`,Qw),document.documentElement.addEventListener(`mouseleave`,Xw),window.addEventListener(`scroll`,iT,!0),window.addEventListener(`resize`,iT),window.addEventListener(`scroll`,UT,!0),window.addEventListener(`resize`,UT),window.addEventListener(`scroll`,AC,!0),document.addEventListener(`mousemove`,NC,{passive:!0}),document.addEventListener(`keydown`,PC),window.addEventListener(`scroll`,OC,!0),window.addEventListener(`resize`,OC),window.addEventListener(`message`,GT),window.addEventListener(`pagehide`,dC),e({type:`neos-studio/guest-ready`,labels:a()})}xS(),document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,KT):KT()})();

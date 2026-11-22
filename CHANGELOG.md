@@ -13,7 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (alpha)"): top bar, rail with modes and panels, one docked panel, and the
   preview as a card with a floating action bar - settings tray, Add menu,
   fade on scroll. Dark only. Panels, header actions, node actions and node
-  decorators of plugins keep working. See Documentation/AlphaLayout.md.
+  decorators of plugins keep working. Selecting an element opens the
+  settings tray; "Keep open" docks its fields as a Properties panel. See
+  Documentation/AlphaLayout.md.
 
 ## [2.6.1] - 2026-11-19
 

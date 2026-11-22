@@ -59,6 +59,7 @@ import { handleActionsFor, runHandleAction } from './handleActions'
 import { useGuestBridge } from './useGuestBridge'
 import { usePreviewLayers } from './usePreviewLayers'
 import {
+  reportPreviewEscape,
   reportPreviewPointerNearBottom,
   reportPreviewScroll,
   usePreviewChrome,
@@ -272,6 +273,9 @@ export function PreviewPane({
     switch (message.type) {
       case 'neos-studio/scrolled':
         reportPreviewScroll()
+        break
+      case 'neos-studio/escape':
+        reportPreviewEscape()
         break
       case 'neos-studio/pointer-near-bottom':
         reportPreviewPointerNearBottom(message.near)

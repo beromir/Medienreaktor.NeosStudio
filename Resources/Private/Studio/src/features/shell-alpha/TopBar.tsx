@@ -19,8 +19,8 @@ import { useRegistry } from '@/lib/registry'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import {
+  CheckIcon,
   ChevronDownIcon,
-  CollapseLeftIcon,
   DesktopIcon,
   ExternalIcon,
   LinkIcon,
@@ -29,7 +29,7 @@ import {
   TabletIcon,
 } from './icons'
 import { LocationSeparator } from './LocationSeparator'
-import { ShellPopover } from './primitives'
+import { ShellMenu, ShellMenuItem, ShellPopover } from './primitives'
 
 export type Device = 'desktop' | 'tablet' | 'phone'
 
@@ -119,22 +119,11 @@ export function TopBar({
           workspaceName={activeWorkspace?.name ?? null}
         />
         <PresenceAvatars />
-        <DeviceToggle device={device} onChange={onDeviceChange} />
-        {document && <LinkButton document={document} />}
-        {document && (
-          <a
-            href={previewHref(document)}
-            target={PREVIEW_WINDOW}
-            title={t('preview.openInNewTab', 'Open page in a new tab')}
-            className={cn(
-              topPill,
-              'gap-1.75 pr-3 pl-3.5 type-shell-control font-medium text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60',
-            )}
-          >
-            {t('shellAlpha.preview', 'Preview')}
-            <ExternalIcon />
-          </a>
-        )}
+        <ViewPill
+          document={document}
+          device={device}
+          onDeviceChange={onDeviceChange}
+        />
         {personalWorkspace && activeWorkspace && (
           <WorkspacePill
             editing={editing}
@@ -213,14 +202,20 @@ function PageSegment({ document }: { document: Node | null }) {
   )
 }
 
-function DeviceToggle({
+/**
+ * How the page is viewed: the device preset, sharing a preview link and
+ * opening the page in a new tab - plain buttons in one pill.
+ */
+function ViewPill({
+  document,
   device,
-  onChange,
+  onDeviceChange,
 }: {
+  document: Node | null
   device: Device
-  onChange: (device: Device) => void
+  onDeviceChange: (device: Device) => void
 }) {
-  const [expanded, setExpanded] = React.useState(false)
+  const [sharing, setSharing] = React.useState(false)
   const icons: Record<Device, React.ReactNode> = {
     desktop: <DesktopIcon />,
     tablet: <TabletIcon />,
@@ -231,88 +226,82 @@ function DeviceToggle({
     tablet: t('shellAlpha.device.tablet', 'Tablet'),
     phone: t('shellAlpha.device.phone', 'Phone'),
   }
-  if (!expanded) {
-    return (
-      <button
-        type="button"
-        onClick={() => setExpanded(true)}
-        title={labels[device]}
-        aria-label={t('shellAlpha.device.label', 'Device preview')}
-        aria-expanded={false}
-        className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60"
-      >
-        {icons[device]}
-        <ChevronDownIcon className="text-shell-muted" />
-      </button>
-    )
-  }
-  return (
-    <div
-      role="radiogroup"
-      aria-label={t('shellAlpha.device.label', 'Device preview')}
-      className="flex h-9 items-center gap-0.5 rounded-full bg-shell-input px-0.75"
-    >
-      {(Object.keys(icons) as Device[]).map((option) => (
-        <button
-          key={option}
-          type="button"
-          role="radio"
-          aria-checked={option === device}
-          title={labels[option]}
-          aria-label={labels[option]}
-          onClick={() => onChange(option)}
-          className={cn(
-            'flex size-7.5 cursor-pointer items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
-            option === device
-              ? 'bg-shell-hover-inset text-shell-text'
-              : 'text-shell-muted hover:text-shell-text',
-          )}
-        >
-          {icons[option]}
-        </button>
-      ))}
-      <button
-        type="button"
-        onClick={() => setExpanded(false)}
-        aria-label={t('shellAlpha.device.collapse', 'Collapse')}
-        className="flex h-7.5 w-6.5 cursor-pointer items-center justify-center text-shell-muted outline-none hover:text-shell-text"
-      >
-        <CollapseLeftIcon />
-      </button>
-    </div>
-  )
-}
-
-/** Shares a preview link to the page - Studio's share link dialog. */
-function LinkButton({ document }: { document: Node }) {
-  const [open, setOpen] = React.useState(false)
-  const label = t(
+  const shareLabel = t(
     'share.buttonHint',
     'Share a preview link to this page with people without a login',
   )
+  const plain =
+    'flex h-6.5 shrink-0 cursor-pointer items-center rounded-full text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover'
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        title={label}
-        aria-label={label}
-        className={cn(
-          topPill,
-          'size-8 cursor-pointer justify-center text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60',
-        )}
+    <div className={cn(topPill, 'gap-0.5 px-0.75')}>
+      <ShellMenu
+        align="end"
+        sideOffset={9}
+        className="w-40"
+        trigger={
+          <button
+            type="button"
+            title={labels[device]}
+            aria-label={t('shellAlpha.device.label', 'Device preview')}
+            className={cn(plain, 'gap-1.5 pr-2.5 pl-2.75')}
+          >
+            {icons[device]}
+            <ChevronDownIcon className="text-shell-muted" />
+          </button>
+        }
       >
-        <LinkIcon />
-      </button>
-      {open && (
-        <ShareLinkDialog
-          key={document.nodeAggregateId}
-          document={document}
-          open={open}
-          onOpenChange={setOpen}
-        />
+        {(Object.keys(icons) as Device[]).map((option) => (
+          <ShellMenuItem
+            key={option}
+            icon={icons[option]}
+            trailing={
+              option === device ? (
+                <span className="text-shell-accent-light">
+                  <CheckIcon />
+                </span>
+              ) : undefined
+            }
+            onClick={() => onDeviceChange(option)}
+          >
+            {labels[option]}
+          </ShellMenuItem>
+        ))}
+      </ShellMenu>
+      {document && (
+        <>
+          <div className="h-4 w-px shrink-0 bg-shell-divider" aria-hidden />
+          <button
+            type="button"
+            onClick={() => setSharing(true)}
+            title={shareLabel}
+            aria-label={shareLabel}
+            className={cn(plain, 'w-6.5 justify-center')}
+          >
+            <LinkIcon />
+          </button>
+          <a
+            href={previewHref(document)}
+            target={PREVIEW_WINDOW}
+            title={t('preview.openInNewTab', 'Open page in a new tab')}
+            className={cn(
+              plain,
+              'gap-1.75 pr-3 pl-3.5 type-shell-control font-medium',
+            )}
+          >
+            {t('shellAlpha.preview', 'Preview')}
+            <ExternalIcon />
+          </a>
+          {sharing && (
+            <ShareLinkDialog
+              key={document.nodeAggregateId}
+              document={document}
+              open={sharing}
+              onOpenChange={setSharing}
+            />
+          )}
+        </>
       )}
-    </>
+    </div>
   )
 }
 

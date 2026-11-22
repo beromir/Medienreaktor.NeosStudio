@@ -46,7 +46,11 @@ import {
   deepEqual,
   evaluateInspectorTabs,
 } from './clientEval'
-import { buildInspectorSchema, type InspectorGroup } from './inspectorSchema'
+import {
+  buildInspectorSchema,
+  type InspectorGroup,
+  type InspectorItem,
+} from './inspectorSchema'
 import { PropertyHints } from './hints/registry'
 import { PropertyEditor } from './PropertyEditor'
 import { validateValue } from './validators'
@@ -113,6 +117,7 @@ export function InspectorPanel({
   node,
   onNodeEdited,
   trayGroup,
+  sections,
 }: {
   node: Node | null
   /**
@@ -121,6 +126,12 @@ export function InspectorPanel({
    * that is not visible (hidden by ClientEval) falls back to the first.
    */
   trayGroup?: string | null
+  /**
+   * Render every group as a collapsible section, the first one open, without
+   * header and tabs - the alpha layout's Properties panel. `lead` pulls the
+   * named properties out of their groups into a first section of its own.
+   */
+  sections?: { lead?: { label: string; properties: string[] } }
   /**
    * A property edit for this address was persisted. reload reflects the
    * property's configuration: 'page' (ui.reloadPageIfChanged), 'element'
@@ -410,6 +421,62 @@ export function InspectorPanel({
     )
   }
 
+  if (sections !== undefined) {
+    let groups = visibleTabs?.flatMap((tab) => tab.groups) ?? []
+    const lead = sections.lead
+    if (lead) {
+      const isLead = (item: InspectorItem) =>
+        item.kind === 'property' && lead.properties.includes(item.property.name)
+      const leadItems = groups
+        .flatMap((group) => group.items)
+        .filter(isLead)
+        .sort(
+          (a, b) =>
+            lead.properties.indexOf(
+              a.kind === 'property' ? a.property.name : '',
+            ) -
+            lead.properties.indexOf(
+              b.kind === 'property' ? b.property.name : '',
+            ),
+        )
+      groups = groups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => !isLead(item)),
+        }))
+        .filter((group) => group.items.length > 0)
+      if (leadItems.length > 0)
+        groups = [
+          {
+            id: '__lead',
+            label: lead.label,
+            icon: null,
+            collapsed: false,
+            items: leadItems,
+          },
+          ...groups,
+        ]
+    }
+    return (
+      <div
+        inert={!editable}
+        className={cn('type-body', !editable && 'opacity-60')}
+      >
+        {groups.map((group, index) => (
+          <PropertySection
+            key={group.id}
+            group={group}
+            defaultOpen={index === 0}
+            node={node}
+            validationErrors={validationErrors}
+            onSave={save}
+            onLiveChange={reportLiveChange}
+          />
+        ))}
+      </div>
+    )
+  }
+
   if (trayGroup !== undefined) {
     const groups = visibleTabs?.flatMap((tab) => tab.groups) ?? []
     const group =
@@ -679,6 +746,68 @@ function PropertyGroup(props: PropertyGroupProps) {
     >
       <PropertyItems {...props} />
     </CollapsibleGroup>
+  )
+}
+
+/** A group of the Properties panel: a header that opens and closes it. */
+function PropertySection({
+  defaultOpen,
+  ...props
+}: PropertyGroupProps & { defaultOpen: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+  const { group } = props
+  return (
+    <section className="border-b border-shell-border-strong">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className={cn(
+          'flex w-full cursor-pointer items-center justify-between px-4 text-left outline-none focus-visible:bg-white/4',
+          open ? 'pt-3.5 pb-3.5' : 'h-11',
+        )}
+      >
+        <span className="text-[0.75rem] leading-4 font-semibold text-shell-text">
+          {group.label}
+        </span>
+        {open ? (
+          <svg
+            width="8"
+            height="5"
+            viewBox="0 0 8 5"
+            fill="none"
+            stroke="var(--color-shell-muted)"
+            strokeWidth={1.4}
+            aria-hidden
+          >
+            <path d="M1 1l3 3 3-3" />
+          </svg>
+        ) : (
+          <span className="flex items-center gap-2.5">
+            <span className="text-[0.75rem] leading-4 text-shell-subtle">
+              {group.items.length}
+            </span>
+            <svg
+              width="5"
+              height="8"
+              viewBox="0 0 5 8"
+              fill="none"
+              stroke="var(--color-shell-muted)"
+              strokeWidth={1.4}
+              aria-hidden
+            >
+              <path d="M1 1l3 3-3 3" />
+            </svg>
+          </span>
+        )}
+      </button>
+      {/* Hidden, not unmounted: a closed section keeps its unsaved drafts. */}
+      <div
+        className={cn('flex flex-col gap-3.5 px-4 pb-4.5', !open && 'hidden')}
+      >
+        <PropertyItems {...props} />
+      </div>
+    </section>
   )
 }
 

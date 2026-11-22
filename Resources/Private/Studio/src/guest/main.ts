@@ -52,6 +52,7 @@ import {
   chromeStyles,
   keepVisible,
   positionInsertLine,
+  reportEscape,
   reportPointer,
   reportScroll,
   setInsertPreview,
@@ -1990,6 +1991,7 @@ function init(): void {
   // insert line follows its element.
   window.addEventListener('scroll', reportScroll, true)
   document.addEventListener('mousemove', reportPointer, { passive: true })
+  document.addEventListener('keydown', reportEscape)
   window.addEventListener('scroll', positionInsertLine, true)
   window.addEventListener('resize', positionInsertLine)
   window.addEventListener('message', onHostMessage)

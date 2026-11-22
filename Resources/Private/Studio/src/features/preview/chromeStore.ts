@@ -87,3 +87,17 @@ export function onPreviewPointerNearBottom(
 export function reportPreviewPointerNearBottom(near: boolean): void {
   pointerListeners.forEach((listener) => listener(near))
 }
+
+const escapeListeners = new Set<() => void>()
+
+/** Escape was pressed inside the preview (guest-reported). */
+export function onPreviewEscape(listener: () => void): () => void {
+  escapeListeners.add(listener)
+  return () => {
+    escapeListeners.delete(listener)
+  }
+}
+
+export function reportPreviewEscape(): void {
+  escapeListeners.forEach((listener) => listener())
+}

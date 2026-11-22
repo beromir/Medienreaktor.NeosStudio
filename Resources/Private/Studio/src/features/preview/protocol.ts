@@ -194,6 +194,8 @@ export type GuestToHostMessage =
    * Coalesced to one message per animation frame.
    */
   | { type: 'neos-studio/scrolled' }
+  /** Escape was pressed in the page (the alpha layout closes its tray). */
+  | { type: 'neos-studio/escape' }
   /** The pointer came near the frame's bottom edge, or left it again. */
   | { type: 'neos-studio/pointer-near-bottom'; near: boolean }
 
@@ -420,6 +422,7 @@ const GUEST_MESSAGE_FIELDS: {
   },
   'neos-studio/flushed': { requestId: isNumber },
   'neos-studio/scrolled': {},
+  'neos-studio/escape': {},
   'neos-studio/pointer-near-bottom': {
     near: (value) => typeof value === 'boolean',
   },
