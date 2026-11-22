@@ -36,6 +36,11 @@ export interface StudioConfig {
    */
   uiMode: 'light' | 'dark' | 'system'
   /**
+   * The shell layout the user opted into (the `studio.layout` preference):
+   * today's layout or the new one, still an alpha.
+   */
+  layout: 'classic' | 'alpha'
+  /**
    * Whether a successful publish (review dialog) celebrates with a confetti
    * burst; mirrors the Medienreaktor.NeosStudio.publishCelebration setting,
    * which an operator can turn off installation-wide.
@@ -93,6 +98,7 @@ const fallback: StudioConfig = {
   interfaceLanguage: 'en',
   availableLanguages: [{ value: 'en', label: 'English' }],
   uiMode: 'dark',
+  layout: 'classic',
   publishCelebration: true,
   linkAnchors: { property: 'sectionId', labelProperty: 'anchorName' },
   xliffEndpoint: '/neos/xliff.json',

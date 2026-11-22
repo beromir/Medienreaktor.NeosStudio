@@ -619,6 +619,9 @@
       <trans-unit id="creation.noNodeTypesMatch" xml:space="preserve">
         <source>No node types match the filter.</source>
       </trans-unit>
+      <trans-unit id="creation.noTypesAllowed" xml:space="preserve">
+        <source>Nothing can be created here.</source>
+      </trans-unit>
       <trans-unit id="creation.noTypesHere" xml:space="preserve">
         <source>No {0} types can be created here.</source>
       </trans-unit>
@@ -1934,6 +1937,120 @@
       <trans-unit id="shell.crashed.title" xml:space="preserve">
         <source>Studio stopped working</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.account.classicLayout" xml:space="preserve">
+        <source>Back to the classic layout</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.account.help" xml:space="preserve">
+        <source>Help &amp; documentation</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.account.language" xml:space="preserve">
+        <source>Interface language</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.account.logout" xml:space="preserve">
+        <source>Log out</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.account.profile" xml:space="preserve">
+        <source>Profile &amp; password</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.add" xml:space="preserve">
+        <source>Add</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.addLoading" xml:space="preserve">
+        <source>Loading…</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.addPage" xml:space="preserve">
+        <source>Page</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.addPageBelow" xml:space="preserve">
+        <source>below {0}</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.allProperties" xml:space="preserve">
+        <source>All properties</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.back" xml:space="preserve">
+        <source>Back</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.collapseModes" xml:space="preserve">
+        <source>Collapse modes</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.content" xml:space="preserve">
+        <source>Content</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.copiedForMcp" xml:space="preserve">
+        <source>Copied “{0}” for your assistant</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.copyForMcp" xml:space="preserve">
+        <source>Copy for MCP</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.device.collapse" xml:space="preserve">
+        <source>Collapse</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.device.desktop" xml:space="preserve">
+        <source>Desktop</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.device.label" xml:space="preserve">
+        <source>Device preview</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.device.phone" xml:space="preserve">
+        <source>Phone</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.device.tablet" xml:space="preserve">
+        <source>Tablet</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.mode.editor" xml:space="preserve">
+        <source>Editor</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.mode.media" xml:space="preserve">
+        <source>Media</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.openFullInspector" xml:space="preserve">
+        <source>Open full inspector</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.page" xml:space="preserve">
+        <source>page</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.pageTree" xml:space="preserve">
+        <source>Pages</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.preview" xml:space="preserve">
+        <source>Preview</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.rail" xml:space="preserve">
+        <source>Modes and panels</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.relativeTo" xml:space="preserve">
+        <source>relative to “{0}”</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search" xml:space="preserve">
+        <source>Search</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.searchTypes" xml:space="preserve">
+        <source>Search element types…</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.selectParent" xml:space="preserve">
+        <source>Select the parent element</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.selectionPath" xml:space="preserve">
+        <source>Selection path</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.settings" xml:space="preserve">
+        <source>Settings</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.switchMode" xml:space="preserve">
+        <source>Switch mode</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.toMedia" xml:space="preserve">
+        <source>to Media</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.typeCount" xml:space="preserve">
+        <source>{0} types</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.uploadAsset" xml:space="preserve">
+        <source>Upload asset</source>
+      </trans-unit>
+      <trans-unit id="shortcuts.category.editing" xml:space="preserve">
+        <source>Editing</source>
+      </trans-unit>
       <trans-unit id="shortcuts.category.general" xml:space="preserve">
         <source>General</source>
       </trans-unit>
@@ -2536,6 +2653,9 @@
       <trans-unit id="userMenu.profile" xml:space="preserve">
         <source>Profile</source>
       </trans-unit>
+      <trans-unit id="userMenu.tryNewLayout" xml:space="preserve">
+        <source>Try the new layout (alpha)</source>
+      </trans-unit>
       <trans-unit id="users.activate" xml:space="preserve">
         <source>Activate</source>
       </trans-unit>
@@ -2938,6 +3058,9 @@
       <trans-unit id="workspace.review.selectedOf" xml:space="preserve">
         <source>{0} of {1} selected</source>
       </trans-unit>
+      <trans-unit id="workspace.review.short" xml:space="preserve">
+        <source>Review</source>
+      </trans-unit>
       <trans-unit id="workspace.review.showChanges" xml:space="preserve">
         <source>Show changes</source>
       </trans-unit>
@@ -2970,6 +3093,9 @@
       </trans-unit>
       <trans-unit id="workspace.sync.success" xml:space="preserve">
         <source>Workspace synchronized.</source>
+      </trans-unit>
+      <trans-unit id="workspace.upToDate" xml:space="preserve">
+        <source>Up to date</source>
       </trans-unit>
       <trans-unit id="workspaceGraph.changeCount" xml:space="preserve">
         <source>{0} changes</source>

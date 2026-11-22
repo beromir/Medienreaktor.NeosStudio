@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+import { LocationSeparator } from '@/features/shell-alpha/LocationSeparator'
 import {
   type ContentDimension,
   parseDimensionSpacePoint,
@@ -75,6 +77,7 @@ export function DimensionSwitcher({
   onChange,
   documentCoverage,
   onCreateVariant,
+  segment = false,
 }: {
   dimensions: ContentDimension[]
   /** Every dimension space point the content dimension configuration allows (JSON). */
@@ -91,6 +94,11 @@ export function DimensionSwitcher({
   /** Dimension space points the selected document exists in; omit for no document context */
   documentCoverage?: string[]
   onCreateVariant?: (point: string) => void
+  /**
+   * Segments of the alpha layout's location pill: label only, no icon or
+   * chevron, each after a "/" separator.
+   */
+  segment?: boolean
 }) {
   const documentExistsAt = (point: string) =>
     documentCoverage === undefined ||
@@ -113,95 +121,106 @@ export function DimensionSwitcher({
         const dimensionLabel = dimension.label ?? dimension.id
 
         return (
-          <Select
-            key={dimension.id}
-            value={coordinates[dimension.id] ?? undefined}
-            onValueChange={(v) => {
-              const next = resolveSwitch(
-                value,
-                dimension.id,
-                v as string,
-                permittedPoints,
-              )
-              if (!next || sameDimensionSpacePoint(next, value)) return
-              if (!documentExistsAt(next) && onCreateVariant) {
-                onCreateVariant(next)
-              } else {
-                onChange(next)
-              }
-            }}
-            // Lets SelectValue render the label for the selected value.
-            items={items}
-          >
-            <SelectTrigger title={dimensionLabel}>
-              <div className="flex items-center gap-2">
-                {dimension.icon && (
-                  <Icon
-                    name={dimension.icon}
-                    size="s"
-                    className="text-muted-foreground"
-                  />
-                )}
-                <SelectValue
-                  className="hidden @[75rem]:inline"
-                  placeholder={dimensionLabel}
-                />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {dimension.values.map((dimensionValue) => {
-                const target = resolveSwitch(
+          <Fragment key={dimension.id}>
+            {segment && <LocationSeparator />}
+            <Select
+              value={coordinates[dimension.id] ?? undefined}
+              onValueChange={(v) => {
+                const next = resolveSwitch(
                   value,
                   dimension.id,
-                  dimensionValue.value,
+                  v as string,
                   permittedPoints,
                 )
-                // Reachable in the content model but with no permitted point
-                // to land on: an access role, not the model, is what stops it.
-                const locked =
-                  reachable.has(dimensionValue.value) && target === null
-                const missingVariant =
-                  target !== null && !documentExistsAt(target)
-                return (
-                  <SelectItem
-                    key={dimensionValue.value}
-                    value={dimensionValue.value}
-                    disabled={!reachable.has(dimensionValue.value) || locked}
-                    title={
-                      locked
-                        ? t(
-                            'dimension.accessLocked',
-                            'Outside your access role - an administrator can widen it.',
-                          )
-                        : missingVariant
+                if (!next || sameDimensionSpacePoint(next, value)) return
+                if (!documentExistsAt(next) && onCreateVariant) {
+                  onCreateVariant(next)
+                } else {
+                  onChange(next)
+                }
+              }}
+              // Lets SelectValue render the label for the selected value.
+              items={items}
+            >
+              <SelectTrigger
+                title={dimensionLabel}
+                hideIcon={segment}
+                data-segment={segment || undefined}
+                className={
+                  segment
+                    ? 'h-6.5 gap-1.75 rounded-full border-0 bg-transparent px-2.5 shadow-none type-shell-control text-shell-text hover:bg-shell-hover data-popup-open:bg-shell-hover'
+                    : undefined
+                }
+              >
+                <div className="flex items-center gap-2">
+                  {!segment && dimension.icon && (
+                    <Icon
+                      name={dimension.icon}
+                      size="s"
+                      className="text-muted-foreground"
+                    />
+                  )}
+                  <SelectValue
+                    className={segment ? undefined : 'hidden @[75rem]:inline'}
+                    placeholder={dimensionLabel}
+                  />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {dimension.values.map((dimensionValue) => {
+                  const target = resolveSwitch(
+                    value,
+                    dimension.id,
+                    dimensionValue.value,
+                    permittedPoints,
+                  )
+                  // Reachable in the content model but with no permitted point
+                  // to land on: an access role, not the model, is what stops it.
+                  const locked =
+                    reachable.has(dimensionValue.value) && target === null
+                  const missingVariant =
+                    target !== null && !documentExistsAt(target)
+                  return (
+                    <SelectItem
+                      key={dimensionValue.value}
+                      value={dimensionValue.value}
+                      disabled={!reachable.has(dimensionValue.value) || locked}
+                      title={
+                        locked
                           ? t(
-                              'dimension.missingVariant',
-                              'The selected document does not exist here yet - create it?',
+                              'dimension.accessLocked',
+                              'Outside your access role - an administrator can widen it.',
                             )
-                          : undefined
-                    }
-                  >
-                    {/* Specializations are listed right after their generalization;
-                        indentation makes the hierarchy visible. */}
-                    <span
-                      className={`inline-flex items-center gap-1.5${missingVariant ? ' text-muted-foreground' : ''}`}
-                      style={{
-                        paddingLeft: `${dimensionValue.specializationDepth * 0.75}rem`,
-                      }}
+                          : missingVariant
+                            ? t(
+                                'dimension.missingVariant',
+                                'The selected document does not exist here yet - create it?',
+                              )
+                            : undefined
+                      }
                     >
-                      {dimensionValue.label ?? dimensionValue.value}
-                      {locked && (
-                        <i className="fas fa-lock type-icon-m" aria-hidden />
-                      )}
-                      {missingVariant && (
-                        <i className="fas fa-plus type-icon-l" aria-hidden />
-                      )}
-                    </span>
-                  </SelectItem>
-                )
-              })}
-            </SelectContent>
-          </Select>
+                      {/* Specializations are listed right after their generalization;
+                        indentation makes the hierarchy visible. */}
+                      <span
+                        className={`inline-flex items-center gap-1.5${missingVariant ? ' text-muted-foreground' : ''}`}
+                        style={{
+                          paddingLeft: `${dimensionValue.specializationDepth * 0.75}rem`,
+                        }}
+                      >
+                        {dimensionValue.label ?? dimensionValue.value}
+                        {locked && (
+                          <i className="fas fa-lock type-icon-m" aria-hidden />
+                        )}
+                        {missingVariant && (
+                          <i className="fas fa-plus type-icon-l" aria-hidden />
+                        )}
+                      </span>
+                    </SelectItem>
+                  )
+                })}
+              </SelectContent>
+            </Select>
+          </Fragment>
         )
       })}
     </>

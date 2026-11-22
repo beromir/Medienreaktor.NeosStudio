@@ -11139,8 +11139,9 @@ declare function SearchInput({ className, wrapperClassName, ...props }: React$1.
 declare function Select<Value, Multiple extends boolean | undefined = false>(props: SelectRoot.Props<Value, Multiple>): React$1.JSX.Element;
 declare function SelectGroup({ ...props }: React$1.ComponentProps<typeof SelectGroup$1>): React$1.JSX.Element;
 declare function SelectValue({ ...props }: React$1.ComponentProps<typeof SelectValue$1>): React$1.JSX.Element;
-declare function SelectTrigger({ className, size, children, ...props }: React$1.ComponentProps<typeof SelectTrigger$1> & {
+declare function SelectTrigger({ className, size, hideIcon, children, ...props }: React$1.ComponentProps<typeof SelectTrigger$1> & {
   size?: 'sm' | 'default';
+  hideIcon?: boolean;
 }): React$1.JSX.Element;
 declare function SelectContent({ className, children, side, align, sideOffset, ...props }: React$1.ComponentProps<typeof SelectPopup> & {
   side?: React$1.ComponentProps<typeof SelectPositioner>['side'];

@@ -47,6 +47,15 @@ import {
   type RichTextHooks,
 } from './richtext'
 import { relabelToolbars, TOOLBAR_CLASS } from './toolbar'
+import {
+  applyChrome,
+  chromeStyles,
+  keepVisible,
+  positionInsertLine,
+  reportPointer,
+  reportScroll,
+  setInsertPreview,
+} from './chrome'
 
 const WRAPPER_ATTRIBUTE = 'data-__neos-node-contextpath'
 const FUSION_PATH_ATTRIBUTE = 'data-__neos-fusion-path'
@@ -108,7 +117,14 @@ let hoveredShineElement: HTMLElement | null = null
 
 function injectStyles(): void {
   const style = document.createElement('style')
-  style.textContent = `
+  style.textContent =
+    chromeStyles({
+      hiddenInMinimal: `${HANDLE_ROW_SELECTOR}, .${COLLECTION_ADD_CLASS}`,
+      wrapper: WRAPPER_ATTRIBUTE,
+      hoverClass: HOVER_CLASS,
+      selectedClass: SELECTED_CLASS,
+    }) +
+    `
     [${WRAPPER_ATTRIBUTE}].${HOVER_CLASS}:not(.${SELECTED_CLASS}) {
       outline: 2px solid rgba(0, 173, 238, 0.3);
       outline-offset: 5px;
@@ -471,6 +487,7 @@ function select(
   element.classList.add(SELECTED_CLASS)
   if (options.reveal)
     element.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  else keepVisible(element)
   if (options.notifyHost) {
     const nodeAddress = element.getAttribute(WRAPPER_ATTRIBUTE)
     if (nodeAddress) post({ type: 'neos-studio/node-selected', nodeAddress })
@@ -1877,6 +1894,16 @@ function onHostMessage(event: MessageEvent): void {
     setHandleActions(message.actions)
     scheduleHandleUpdate()
   }
+  if (message?.type === 'neos-studio/chrome') {
+    applyChrome(message, selectedElement)
+  }
+  if (message?.type === 'neos-studio/insert-preview') {
+    const indexed =
+      message.aggregateId === null
+        ? null
+        : (elementsByAggregateId.get(message.aggregateId) ?? null)
+    setInsertPreview(indexed?.isConnected ? indexed : null, message.mode)
+  }
   if (message?.type === 'neos-studio/flash-node') {
     flash(elementsByAggregateId.get(message.aggregateId) ?? null)
   }
@@ -1959,6 +1986,12 @@ function init(): void {
   // ... and the collaborators' presence badges.
   window.addEventListener('scroll', schedulePresenceUpdate, true)
   window.addEventListener('resize', schedulePresenceUpdate)
+  // The alpha layout fades its action bar while the page scrolls, and the
+  // insert line follows its element.
+  window.addEventListener('scroll', reportScroll, true)
+  document.addEventListener('mousemove', reportPointer, { passive: true })
+  window.addEventListener('scroll', positionInsertLine, true)
+  window.addEventListener('resize', positionInsertLine)
   window.addEventListener('message', onHostMessage)
   // Leaving the page (reload, navigation, frame removal) must not swallow
   // the edits still waiting out their debounce - post them now. The host

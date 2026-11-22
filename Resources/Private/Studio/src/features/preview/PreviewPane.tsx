@@ -58,6 +58,11 @@ import type {
 import { handleActionsFor, runHandleAction } from './handleActions'
 import { useGuestBridge } from './useGuestBridge'
 import { usePreviewLayers } from './usePreviewLayers'
+import {
+  reportPreviewPointerNearBottom,
+  reportPreviewScroll,
+  usePreviewChrome,
+} from './chromeStore'
 
 /**
  * URL of the Studio's own preview endpoint for a node. Its complete identity -
@@ -265,6 +270,12 @@ export function PreviewPane({
       }
     }
     switch (message.type) {
+      case 'neos-studio/scrolled':
+        reportPreviewScroll()
+        break
+      case 'neos-studio/pointer-near-bottom':
+        reportPreviewPointerNearBottom(message.near)
+        break
       case 'neos-studio/node-selected': {
         const address = addressOf(message.nodeAddress)
         if (address) onSelectNode(address)
@@ -630,6 +641,28 @@ export function PreviewPane({
     postToGuest({ type: 'neos-studio/presence-update', users: presence })
   }, [guestReady, presence, postToGuest])
 
+  // The shell's wishes for the in-page chrome (see chromeStore), again
+  // right after every guest boot.
+  const chrome = usePreviewChrome()
+  const { minimal, scrollSpace, bottomInset, insertPreview } = chrome
+  useEffect(() => {
+    if (!guestReady) return
+    postToGuest({
+      type: 'neos-studio/chrome',
+      minimal,
+      scrollSpace,
+      bottomInset,
+    })
+  }, [guestReady, minimal, scrollSpace, bottomInset, postToGuest])
+  useEffect(() => {
+    if (!guestReady) return
+    postToGuest({
+      type: 'neos-studio/insert-preview',
+      aggregateId: insertPreview?.aggregateId ?? null,
+      mode: insertPreview?.mode ?? 'after',
+    })
+  }, [guestReady, insertPreview, postToGuest])
+
   // Forward collaborators' live-typing ticks into the guest, which paints
   // them into the locked inline text. The guest ignores ticks for elements
   // not on this page.
@@ -653,7 +686,14 @@ export function PreviewPane({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="relative min-h-0 w-full flex-1">
+      <div
+        className="relative mx-auto min-h-0 w-full flex-1 transition-[max-width] duration-200"
+        style={
+          chrome.deviceWidth !== null
+            ? { maxWidth: `${chrome.deviceWidth}px` }
+            : undefined
+        }
+      >
         {layers.layers.map((layer) => (
           <iframe
             key={layer.id}

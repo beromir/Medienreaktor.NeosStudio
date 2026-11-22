@@ -3,6 +3,7 @@ import { useNode } from '@/api/neos/endpoints/nodes'
 import { siteNodeAddress } from '@/api/neos/endpoints/sites'
 import type { Site } from '@/api/neos/schema'
 import { translate as t } from '@/lib/i18n'
+import { GlobeIcon } from '@/features/shell-alpha/icons'
 import {
   Select,
   SelectContent,
@@ -25,6 +26,7 @@ export function SiteSwitcher({
   dimensionSpacePoint,
   value,
   onChange,
+  segment = false,
 }: {
   sites: Site[]
   /** The workspace the shell edits - where the site nodes are looked up. */
@@ -34,6 +36,8 @@ export function SiteSwitcher({
   /** nodeName of the active site */
   value: string | null
   onChange: (nodeName: string) => void
+  /** A segment of the alpha layout's location pill. */
+  segment?: boolean
 }) {
   return (
     <Select
@@ -42,14 +46,28 @@ export function SiteSwitcher({
       // Lets SelectValue render the site name for the selected nodeName.
       items={sites.map((site) => ({ value: site.nodeName, label: site.name }))}
     >
-      <SelectTrigger title={t('sites.activeSite', 'Active site')}>
+      <SelectTrigger
+        title={t('sites.activeSite', 'Active site')}
+        hideIcon={segment}
+        data-segment={segment || undefined}
+        className={
+          segment
+            ? 'h-6.5 gap-1.75 rounded-full border-0 bg-transparent px-2.5 shadow-none type-shell-control text-shell-text hover:bg-shell-hover data-popup-open:bg-shell-hover' +
+              ' pr-2.5 pl-2'
+            : undefined
+        }
+      >
         <div className="flex items-center gap-2">
-          <i
-            className={`fa fa-globe fa-fw type-icon-s text-muted-foreground`}
-            aria-hidden
-          />
+          {segment ? (
+            <GlobeIcon className="shrink-0 text-shell-muted" />
+          ) : (
+            <i
+              className={`fa fa-globe fa-fw type-icon-s text-muted-foreground`}
+              aria-hidden
+            />
+          )}
           <SelectValue
-            className="hidden @[75rem]:inline"
+            className={segment ? undefined : 'hidden @[75rem]:inline'}
             placeholder={t('sites.selectPlaceholder', 'Select site…')}
           />
         </div>

@@ -129,145 +129,26 @@ function OpenInsertNodeDialog({
   onCreated: (node: Node, creation: CreateNodeRequest) => void
   onClose: () => void
 }) {
-  const { superTypes } = ROLES[role]
-  const noun =
-    role === 'document'
-      ? t('creation.nounDocument', 'document')
-      : t('creation.nounElement', 'element')
-  const [selectedMode, setSelectedMode] = useState<InsertMode>(
-    request.defaultMode ?? 'inside',
-  )
-  const [filter, setFilter] = useState('')
-  // Groups the user opened/closed by hand, overriding the configured default.
-  const [toggled, setToggled] = useState<Record<string, boolean>>({})
-  // The picked type's creation flow is running; the picker steps aside.
-  const [creation, setCreation] = useState<CreateNodeRequest | null>(null)
-  // An "after" pick is looking up the reference's next sibling.
-  const [resolving, setResolving] = useState(false)
-
-  // Only for the description: a failed read leaves it blank, it never holds
-  // up the picker.
-  const { data: reference, isError: referenceFailed } = useNode(
-    request.referenceAddress,
-  )
-
-  // The parent, for sibling insertion: as passed by the caller, or resolved
-  // through the ancestors relation. A root parent (the sites node) means no
-  // sibling creation - a sibling of the site would be a new site.
-  const needsParentResolution = request.parentAddress === undefined
-  const { data: ancestors } = useNodeAncestors(
-    needsParentResolution ? request.referenceAddress : null,
-  )
-  const parentAddress: NodeAddress | null | undefined = !needsParentResolution
-    ? request.parentAddress
-    : ancestors === undefined
-      ? undefined // still resolving
-      : insertionParentOf(ancestors)
-
-  const { data: insideAllowed } = useAllowedChildNodeTypes(
-    request.referenceAddress,
-  )
-  const { data: siblingAllowed } = useAllowedChildNodeTypes(
-    parentAddress ?? null,
-  )
-
-  const creatable = useCreatableNodeTypes(superTypes)
-
-  // The creatable groups per mode, cut down to the types allowed at that
-  // insertion point; null while the lists load.
-  const groupsFor = (mode: InsertMode): CreatableNodeTypeGroup[] | null => {
-    const allowed =
-      mode === 'inside'
-        ? insideAllowed
-        : parentAddress === null
-          ? []
-          : siblingAllowed
-    if (creatable === null || allowed === undefined) return null
-    const allowedSet = new Set(allowed)
-    return filterCreatableGroups(creatable.groups, (nodeType) =>
-      allowedSet.has(nodeType.name),
-    )
-  }
-  const modeGroups: Record<InsertMode, CreatableNodeTypeGroup[] | null> = {
-    before: groupsFor('before'),
-    inside: groupsFor('inside'),
-    after: groupsFor('after'),
-  }
-  // The selected mode, or - once its list resolved empty - the first usable
-  // one, so the dialog opens on something creatable without an effect dance.
-  const activeMode =
-    (modeGroups[selectedMode]?.length ?? 0) > 0 ||
-    modeGroups[selectedMode] === null
-      ? selectedMode
-      : (MODES.map(({ mode }) => mode).find(
-          (mode) => (modeGroups[mode]?.length ?? 0) > 0,
-        ) ?? selectedMode)
-
-  // Everything the picker shows, loaded: rendering only then means it
-  // appears in one piece - no description popping in, no spinner swapped
-  // for the grid, no mode switching away once its list turns out empty.
-  const ready =
-    (reference !== undefined || referenceFailed) &&
-    modeGroups.before !== null &&
-    modeGroups.inside !== null &&
-    modeGroups.after !== null
-  const [graceOver, setGraceOver] = useState(false)
-  useEffect(() => {
-    const timer = setTimeout(() => setGraceOver(true), OPEN_GRACE_MS)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const groups = ready ? modeGroups[activeMode] : null
-  const query = filter.trim().toLowerCase()
-  const visibleGroups =
-    groups !== null && query !== ''
-      ? filterCreatableGroups(
-          groups,
-          (nodeType) =>
-            nodeType.label.toLowerCase().includes(query) ||
-            nodeType.name.toLowerCase().includes(query),
-        )
-      : groups
-
-  const pick = async (nodeTypeName: string) => {
-    if (resolving) return
-    let parent = request.referenceAddress
-    let succeedingSibling: NodeAddress | null = null
-    if (activeMode !== 'inside') {
-      if (!parentAddress) return
-      parent = parentAddress
-      if (activeMode === 'before') {
-        succeedingSibling = request.referenceAddress
-      } else {
-        // "After" needs the reference's next sibling (null appends at the
-        // end). Unfiltered children, so nodes of other roles between two
-        // siblings don't shift the insertion point.
-        setResolving(true)
-        try {
-          const siblings = await fetchChildren(parent)
-          // One subgraph - the aggregate id tells the siblings apart.
-          const index = siblings.findIndex(
-            (node) =>
-              node.nodeAggregateId === request.referenceAddress.nodeAggregateId,
-          )
-          const next = index >= 0 ? siblings[index + 1] : undefined
-          succeedingSibling = next ? nodeAddressOf(next) : null
-        } catch (e) {
-          toast.error(e, {
-            title: t('creation.creatingFailed', 'Creating failed'),
-          })
-          return
-        } finally {
-          setResolving(false)
-        }
-      }
-    }
-    setCreation({
-      nodeTypeName,
-      parentAddress: parent,
-      succeedingSiblingAddress: succeedingSibling,
-    })
-  }
+  const {
+    noun,
+    activeMode,
+    setSelectedMode,
+    filter,
+    setFilter,
+    toggled,
+    setToggled,
+    creation,
+    setCreation,
+    resolving,
+    reference,
+    ready,
+    graceOver,
+    modeGroups,
+    visibleGroups,
+    creatable,
+    pick,
+    query,
+  } = useInsertion(request, role)
 
   return (
     <>
@@ -416,4 +297,172 @@ function OpenInsertNodeDialog({
       )}
     </>
   )
+}
+
+/**
+ * The insertion's state and logic, shared by the dialog and the alpha
+ * layout's Add menu: the mode, the node types allowed per mode, the filter,
+ * and the pick that resolves the insertion point and starts the creation.
+ */
+export function useInsertion(request: InsertRequest, role: InsertRole) {
+  const { superTypes } = ROLES[role]
+  const noun =
+    role === 'document'
+      ? t('creation.nounDocument', 'document')
+      : t('creation.nounElement', 'element')
+  const [selectedMode, setSelectedMode] = useState<InsertMode>(
+    request.defaultMode ?? 'inside',
+  )
+  const [filter, setFilter] = useState('')
+  // Groups the user opened/closed by hand, overriding the configured default.
+  const [toggled, setToggled] = useState<Record<string, boolean>>({})
+  // The picked type's creation flow is running; the picker steps aside.
+  const [creation, setCreation] = useState<CreateNodeRequest | null>(null)
+  // An "after" pick is looking up the reference's next sibling.
+  const [resolving, setResolving] = useState(false)
+
+  // Only for the description: a failed read leaves it blank, it never holds
+  // up the picker.
+  const { data: reference, isError: referenceFailed } = useNode(
+    request.referenceAddress,
+  )
+
+  // The parent, for sibling insertion: as passed by the caller, or resolved
+  // through the ancestors relation. A root parent (the sites node) means no
+  // sibling creation - a sibling of the site would be a new site.
+  const needsParentResolution = request.parentAddress === undefined
+  const { data: ancestors } = useNodeAncestors(
+    needsParentResolution ? request.referenceAddress : null,
+  )
+  const parentAddress: NodeAddress | null | undefined = !needsParentResolution
+    ? request.parentAddress
+    : ancestors === undefined
+      ? undefined // still resolving
+      : insertionParentOf(ancestors)
+
+  const { data: insideAllowed } = useAllowedChildNodeTypes(
+    request.referenceAddress,
+  )
+  const { data: siblingAllowed } = useAllowedChildNodeTypes(
+    parentAddress ?? null,
+  )
+
+  const creatable = useCreatableNodeTypes(superTypes)
+
+  // The creatable groups per mode, cut down to the types allowed at that
+  // insertion point; null while the lists load.
+  const groupsFor = (mode: InsertMode): CreatableNodeTypeGroup[] | null => {
+    const allowed =
+      mode === 'inside'
+        ? insideAllowed
+        : parentAddress === null
+          ? []
+          : siblingAllowed
+    if (creatable === null || allowed === undefined) return null
+    const allowedSet = new Set(allowed)
+    return filterCreatableGroups(creatable.groups, (nodeType) =>
+      allowedSet.has(nodeType.name),
+    )
+  }
+  const modeGroups: Record<InsertMode, CreatableNodeTypeGroup[] | null> = {
+    before: groupsFor('before'),
+    inside: groupsFor('inside'),
+    after: groupsFor('after'),
+  }
+  // The selected mode, or - once its list resolved empty - the first usable
+  // one, so the dialog opens on something creatable without an effect dance.
+  const activeMode =
+    (modeGroups[selectedMode]?.length ?? 0) > 0 ||
+    modeGroups[selectedMode] === null
+      ? selectedMode
+      : (MODES.map(({ mode }) => mode).find(
+          (mode) => (modeGroups[mode]?.length ?? 0) > 0,
+        ) ?? selectedMode)
+
+  // Everything the picker shows, loaded: rendering only then means it
+  // appears in one piece - no description popping in, no spinner swapped
+  // for the grid, no mode switching away once its list turns out empty.
+  const ready =
+    (reference !== undefined || referenceFailed) &&
+    modeGroups.before !== null &&
+    modeGroups.inside !== null &&
+    modeGroups.after !== null
+  const [graceOver, setGraceOver] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setGraceOver(true), OPEN_GRACE_MS)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const groups = ready ? modeGroups[activeMode] : null
+  const query = filter.trim().toLowerCase()
+  const visibleGroups =
+    groups !== null && query !== ''
+      ? filterCreatableGroups(
+          groups,
+          (nodeType) =>
+            nodeType.label.toLowerCase().includes(query) ||
+            nodeType.name.toLowerCase().includes(query),
+        )
+      : groups
+
+  const pick = async (nodeTypeName: string) => {
+    if (resolving) return
+    let parent = request.referenceAddress
+    let succeedingSibling: NodeAddress | null = null
+    if (activeMode !== 'inside') {
+      if (!parentAddress) return
+      parent = parentAddress
+      if (activeMode === 'before') {
+        succeedingSibling = request.referenceAddress
+      } else {
+        // "After" needs the reference's next sibling (null appends at the
+        // end). Unfiltered children, so nodes of other roles between two
+        // siblings don't shift the insertion point.
+        setResolving(true)
+        try {
+          const siblings = await fetchChildren(parent)
+          // One subgraph - the aggregate id tells the siblings apart.
+          const index = siblings.findIndex(
+            (node) =>
+              node.nodeAggregateId === request.referenceAddress.nodeAggregateId,
+          )
+          const next = index >= 0 ? siblings[index + 1] : undefined
+          succeedingSibling = next ? nodeAddressOf(next) : null
+        } catch (e) {
+          toast.error(e, {
+            title: t('creation.creatingFailed', 'Creating failed'),
+          })
+          return
+        } finally {
+          setResolving(false)
+        }
+      }
+    }
+    setCreation({
+      nodeTypeName,
+      parentAddress: parent,
+      succeedingSiblingAddress: succeedingSibling,
+    })
+  }
+
+  return {
+    noun,
+    activeMode,
+    setSelectedMode,
+    filter,
+    setFilter,
+    toggled,
+    setToggled,
+    creation,
+    setCreation,
+    resolving,
+    reference,
+    ready,
+    graceOver,
+    modeGroups,
+    visibleGroups,
+    creatable,
+    pick,
+    query,
+  }
 }

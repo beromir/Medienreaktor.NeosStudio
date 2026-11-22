@@ -31,10 +31,15 @@ export function toUiMode(value: unknown): UiMode {
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 
 let current: UiMode = 'dark'
+// The alpha layout has no light theme yet: it pins dark without touching the
+// user's preference, so switching back restores their mode.
+let pinnedDark = false
 
 function repaint() {
   const dark =
-    current === 'dark' || (current === 'system' && systemDark.matches)
+    pinnedDark ||
+    current === 'dark' ||
+    (current === 'system' && systemDark.matches)
   const html = document.documentElement
   html.dataset.theme = dark ? 'dark' : 'light'
   html.classList.toggle('dark', dark)
@@ -43,6 +48,11 @@ function repaint() {
 /** Switch the live theme, e.g. right after the preference was saved. */
 export function applyUiMode(mode: UiMode) {
   current = mode
+  repaint()
+}
+
+export function pinDarkTheme(pinned: boolean) {
+  pinnedDark = pinned
   repaint()
 }
 

@@ -189,6 +189,13 @@ export type GuestToHostMessage =
    * property-changed - the frame can be retired without losing keystrokes.
    */
   | { type: 'neos-studio/flushed'; requestId: number }
+  /**
+   * The page scrolled (the alpha layout fades its action bar meanwhile).
+   * Coalesced to one message per animation frame.
+   */
+  | { type: 'neos-studio/scrolled' }
+  /** The pointer came near the frame's bottom edge, or left it again. */
+  | { type: 'neos-studio/pointer-near-bottom'; near: boolean }
 
 /**
  * A collaborator's live position on the rendered page: the element of the
@@ -221,6 +228,29 @@ export interface HandleAction {
 }
 
 export type HostToGuestMessage =
+  /**
+   * How much shell chrome the page draws. minimal (the alpha layout): no
+   * element handle, no "+" buttons, a thin selection outline - the action
+   * bar outside the page takes their place. scrollSpace (px) is added at
+   * the page's end, so its footer can scroll above the bar; bottomInset (px)
+   * is what the bar and whatever it opened cover right now - the selection
+   * is kept visible above it.
+   */
+  | {
+      type: 'neos-studio/chrome'
+      minimal: boolean
+      scrollSpace: number
+      bottomInset: number
+    }
+  /**
+   * Draw the insert line where a new element would go, relative to the
+   * element of this node; null removes it.
+   */
+  | {
+      type: 'neos-studio/insert-preview'
+      aggregateId: string | null
+      mode: 'before' | 'after' | 'inside'
+    }
   /**
    * Answer to guest-ready: the guest's label catalogue, translated into the
    * shell's interface language (keys the shell does not know keep their
@@ -389,6 +419,10 @@ const GUEST_MESSAGE_FIELDS: {
     ok: (value) => typeof value === 'boolean',
   },
   'neos-studio/flushed': { requestId: isNumber },
+  'neos-studio/scrolled': {},
+  'neos-studio/pointer-near-bottom': {
+    near: (value) => typeof value === 'boolean',
+  },
 }
 
 /**

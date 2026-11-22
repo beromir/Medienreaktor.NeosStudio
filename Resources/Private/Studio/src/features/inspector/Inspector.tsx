@@ -112,8 +112,15 @@ function hiddenByAncestor(node: Node): boolean {
 export function InspectorPanel({
   node,
   onNodeEdited,
+  trayGroup,
 }: {
   node: Node | null
+  /**
+   * Render a single group's fields in a row, without header and tabs - the
+   * alpha layout's settings tray. Absent: the full inspector. A group id
+   * that is not visible (hidden by ClientEval) falls back to the first.
+   */
+  trayGroup?: string | null
   /**
    * A property edit for this address was persisted. reload reflects the
    * property's configuration: 'page' (ui.reloadPageIfChanged), 'element'
@@ -403,6 +410,38 @@ export function InspectorPanel({
     )
   }
 
+  if (trayGroup !== undefined) {
+    const groups = visibleTabs?.flatMap((tab) => tab.groups) ?? []
+    const group =
+      groups.find((candidate) => candidate.id === trayGroup) ?? groups[0]
+    return (
+      <div
+        inert={!editable}
+        className={cn(
+          'flex flex-wrap items-end gap-x-4 gap-y-3.5 type-body *:min-w-44 *:flex-1',
+          !editable && 'opacity-60',
+        )}
+      >
+        {group ? (
+          <PropertyItems
+            group={group}
+            node={node}
+            validationErrors={validationErrors}
+            onSave={save}
+            onLiveChange={reportLiveChange}
+          />
+        ) : (
+          <p className="type-small text-muted-foreground">
+            {t(
+              'inspector.noProperties',
+              'This node type has no inspector properties.',
+            )}
+          </p>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="type-body">
       <div className="py-3.5 px-3">
@@ -614,13 +653,7 @@ function ElementLockNotice({ node }: { node: Node }) {
   )
 }
 
-function PropertyGroup({
-  group,
-  node,
-  validationErrors,
-  onSave,
-  onLiveChange,
-}: {
+interface PropertyGroupProps {
   group: InspectorGroup
   node: Node
   /** Property name -> errors for the property's current (live) value. */
@@ -628,7 +661,10 @@ function PropertyGroup({
   onSave: (propertyName: string, value: unknown) => void
   /** A keystroke-level (pre-commit) value change - feeds ClientEval. */
   onLiveChange: (propertyName: string, value: unknown) => void
-}) {
+}
+
+function PropertyGroup(props: PropertyGroupProps) {
+  const { group } = props
   return (
     <CollapsibleGroup
       defaultOpen={!group.collapsed}
@@ -641,53 +677,63 @@ function PropertyGroup({
       }
       bodyClassName="space-y-3.5"
     >
-      {group.items.map((item) => {
-        if (item.kind !== 'property') {
-          return (
-            <div key={item.view.name}>
-              <InspectorViewRenderer view={item.view} node={node} />
-            </div>
-          )
-        }
-        // Hidden through an ancestor: nothing to toggle on this node - the
-        // box shows it disabled, the hint says where it comes from.
-        const inheritedHidden =
-          item.property.name === HIDDEN_PROPERTY && hiddenByAncestor(node)
-        return (
-          <div key={item.property.name}>
-            <PropertyEditor
-              // Reset drafts when the inspected node changes, keep them
-              // across the refetch after a save.
-              key={`${nodeAddressKey(node)}:${item.property.name}`}
-              property={
-                inheritedHidden
-                  ? {
-                      ...item.property,
-                      editorOptions: {
-                        ...item.property.editorOptions,
-                        disabled: true,
-                      },
-                    }
-                  : item.property
-              }
-              value={propertyValue(node, item.property.name)}
-              nodeAddress={node}
-              errors={validationErrors[item.property.name]}
-              onSave={onSave}
-              onLiveChange={onLiveChange}
-            />
-            <PropertyHints node={node} propertyName={item.property.name} />
-            {inheritedHidden && (
-              <p className="mt-1 type-small text-muted-foreground">
-                {t(
-                  'inspector.hiddenByAncestor',
-                  'Hidden because a page or element above it is hidden.',
-                )}
-              </p>
-            )}
-          </div>
-        )
-      })}
+      <PropertyItems {...props} />
     </CollapsibleGroup>
   )
+}
+
+function PropertyItems({
+  group,
+  node,
+  validationErrors,
+  onSave,
+  onLiveChange,
+}: PropertyGroupProps) {
+  return group.items.map((item) => {
+    if (item.kind !== 'property') {
+      return (
+        <div key={item.view.name}>
+          <InspectorViewRenderer view={item.view} node={node} />
+        </div>
+      )
+    }
+    // Hidden through an ancestor: nothing to toggle on this node - the
+    // box shows it disabled, the hint says where it comes from.
+    const inheritedHidden =
+      item.property.name === HIDDEN_PROPERTY && hiddenByAncestor(node)
+    return (
+      <div key={item.property.name}>
+        <PropertyEditor
+          // Reset drafts when the inspected node changes, keep them
+          // across the refetch after a save.
+          key={`${nodeAddressKey(node)}:${item.property.name}`}
+          property={
+            inheritedHidden
+              ? {
+                  ...item.property,
+                  editorOptions: {
+                    ...item.property.editorOptions,
+                    disabled: true,
+                  },
+                }
+              : item.property
+          }
+          value={propertyValue(node, item.property.name)}
+          nodeAddress={node}
+          errors={validationErrors[item.property.name]}
+          onSave={onSave}
+          onLiveChange={onLiveChange}
+        />
+        <PropertyHints node={node} propertyName={item.property.name} />
+        {inheritedHidden && (
+          <p className="mt-1 type-small text-muted-foreground">
+            {t(
+              'inspector.hiddenByAncestor',
+              'Hidden because a page or element above it is hidden.',
+            )}
+          </p>
+        )}
+      </div>
+    )
+  })
 }

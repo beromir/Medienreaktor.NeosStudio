@@ -16,6 +16,7 @@ import {
 import { PROFILE_SETTINGS } from '@/features/modals/builtin'
 import { useModals } from '@/features/modals/ModalHost'
 import { translate as t } from '@/lib/i18n'
+import { setLayoutMode } from '@/lib/layoutMode'
 
 /**
  * The logged-in user in the sidebar header: an initials avatar (no avatar
@@ -60,6 +61,13 @@ export function UserMenu() {
           <DropdownMenuItem onClick={() => openSettings(PROFILE_SETTINGS)}>
             <i className="fas fa-user w-3.5 text-center" aria-hidden />
             {t('userMenu.profile', 'Profile')}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => void setLayoutMode('alpha')}>
+            <i
+              className="fas fa-wand-magic-sparkles w-3.5 text-center"
+              aria-hidden
+            />
+            {t('userMenu.tryNewLayout', 'Try the new layout (alpha)')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => void logoutEverywhere()}>
             <i

@@ -39,10 +39,12 @@ import { registerBuiltinNodeDecorators } from './features/tree/builtinDecorators
 import { registerAccessNodeDecorator } from './features/access/accessDecorator'
 import { installPluginApiGlobals } from './plugin-api'
 import { initUiMode } from './lib/uiMode'
+import { initLayoutMode } from './lib/layoutMode'
 
 // Theme first: apply the user's UI mode preference (from the boot config)
 // before anything renders, so a non-default mode never flashes dark.
 initUiMode()
+initLayoutMode()
 
 // Publish React and the plugin API on `window` before anything else, so the
 // deferred plugin `type="module"` tags the StudioController injects after this

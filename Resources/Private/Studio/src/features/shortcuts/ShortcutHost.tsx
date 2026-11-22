@@ -25,10 +25,24 @@ import { useKeyboardShortcut } from './useKeyboardShortcut'
  * shortcuts (publish, reload preview, ...) register in the components that
  * own the action instead, via useKeyboardShortcut.
  */
+const overviewOpeners = new Set<(open: boolean) => void>()
+
+/** Open the shortcut overview from a menu (the alpha layout's account menu). */
+export function openShortcutOverview(): void {
+  overviewOpeners.forEach((open) => open(true))
+}
+
 export function ShortcutHost() {
   const { toggleSidebar } = useSidebar()
   const { openSettings } = useModals()
   const [overviewOpen, setOverviewOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    overviewOpeners.add(setOverviewOpen)
+    return () => {
+      overviewOpeners.delete(setOverviewOpen)
+    }
+  }, [])
 
   // The preview frames forward theirs on their own (see usePreviewLayers).
   React.useEffect(() => captureShortcuts(window), [])

@@ -76,6 +76,8 @@ import { ShortcutHost } from '@/features/shortcuts/ShortcutHost'
 import { NotificationBell } from '@/features/notifications/NotificationBell'
 import { UserMenu } from '@/features/profile/UserMenu'
 import { ALL_NODES } from '@/features/tree/useNodeEditRefresh'
+import { AlphaShell } from '@/features/shell-alpha/AlphaShell'
+import { useLayoutMode } from '@/lib/layoutMode'
 
 export function App() {
   return (
@@ -95,6 +97,7 @@ function Shell() {
   // The user id tells the collaboration feed which events are the own ones.
   const { data: me } = useMe()
   const { sidebarWidth, isResizing, resizeHandleProps } = useResizableSidebar()
+  const alpha = useLayoutMode() === 'alpha'
   // The task data the workspace decorators badge task branches with.
   useTaskDecorationData()
   const access = useAccess()
@@ -486,7 +489,10 @@ function Shell() {
               panels (the Inspector is portalled out by the panel system) can
               still open the asset picker; the bridge inside does the tab switch. */}
             <AssetPickerProvider>
-              <PanelsProvider floatingVisibleForMainPanel="visual-editor">
+              <PanelsProvider
+                floatingVisibleForMainPanel="visual-editor"
+                headless={alpha}
+              >
                 {/* Keydown dispatcher + shell-level shortcuts + the overview
                   dialog. Inside ModalProvider and SidebarProvider so the
                   settings and sidebar shortcuts reach their contexts. */}
@@ -514,65 +520,94 @@ function Shell() {
                     onRemoteWorkspaceChange={handlers.remoteWorkspaceChanged}
                   />
                 )}
-                <Sidebar>
-                  {/* Fixed to the main header's height (h-14, plus an
+                {alpha ? (
+                  <>
+                    <AlphaShell
+                      editing={editing}
+                      document={selectedDocument}
+                      onSelectSite={handlers.selectSite}
+                      onChangeDimension={handlers.changeDimension}
+                      onVariantCreated={handlers.variantCreated}
+                      onSwitchEditingContext={handlers.switchEditingContext}
+                      onNavigate={actions.navigateToNodeInWorkspace}
+                      onReload={handlers.reload}
+                      onReveal={handlers.reveal}
+                    />
+                    <WorkspaceLockoutDialog
+                      access={access}
+                      workspaces={editing.workspaces}
+                      personalWorkspace={personalWorkspace}
+                      activeWorkspace={activeWorkspace}
+                      onSwitchEditingContext={
+                        handlers.forceSwitchEditingContext
+                      }
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Sidebar>
+                      {/* Fixed to the main header's height (h-14, plus an
                     invisible border matching its border-b) so the row does
                     not shift when the avatar mounts after /me resolves. */}
-                  <SidebarHeader className="h-11 shrink-0 justify-center border-b border-transparent">
-                    <div className="flex items-center justify-between gap-2.5 px-2 pt-2">
-                      <div className="flex items-center gap-1.5">
-                        {/* The classic backend modules - hidden when
+                      <SidebarHeader className="h-11 shrink-0 justify-center border-b border-transparent">
+                        <div className="flex items-center justify-between gap-2.5 px-2 pt-2">
+                          <div className="flex items-center gap-1.5">
+                            {/* The classic backend modules - hidden when
                           enableLegacyModules is disabled (see Settings.yaml). */}
-                        <LegacyModulesMenu />
-                        <NeosLogo />
-                      </div>
+                            <LegacyModulesMenu />
+                            <NeosLogo />
+                          </div>
 
-                      <div className="flex items-center gap-1">
-                        <NotificationBell />
-                        <UserMenu />
-                      </div>
-                    </div>
-                  </SidebarHeader>
-                  <SidebarContent className="overflow-hidden p-1 pt-2">
-                    <PanelDock region="sidebar" />
-                  </SidebarContent>
-                  <SidebarResizeHandle {...resizeHandleProps} />
-                </Sidebar>
+                          <div className="flex items-center gap-1">
+                            <NotificationBell />
+                            <UserMenu />
+                          </div>
+                        </div>
+                      </SidebarHeader>
+                      <SidebarContent className="overflow-hidden p-1 pt-2">
+                        <PanelDock region="sidebar" />
+                      </SidebarContent>
+                      <SidebarResizeHandle {...resizeHandleProps} />
+                    </Sidebar>
 
-                <SidebarInset>
-                  <ShellHeader
-                    editing={editing}
-                    document={selectedDocument}
-                    onSelectSite={handlers.selectSite}
-                    onChangeDimension={handlers.changeDimension}
-                    onVariantCreated={handlers.variantCreated}
-                    onReload={handlers.reload}
-                    onSwitchEditingContext={handlers.switchEditingContext}
-                    onNavigate={actions.navigateToNodeInWorkspace}
-                    onReveal={handlers.reveal}
-                  />
+                    <SidebarInset>
+                      <ShellHeader
+                        editing={editing}
+                        document={selectedDocument}
+                        onSelectSite={handlers.selectSite}
+                        onChangeDimension={handlers.changeDimension}
+                        onVariantCreated={handlers.variantCreated}
+                        onReload={handlers.reload}
+                        onSwitchEditingContext={handlers.switchEditingContext}
+                        onNavigate={actions.navigateToNodeInWorkspace}
+                        onReveal={handlers.reveal}
+                      />
 
-                  {/* The main area and the optional right-hand sidebar. The Visual
+                      {/* The main area and the optional right-hand sidebar. The Visual
                   Editor (preview) and Media Library live here as panels; the
                   secondary dock belongs to the Visual Editor, so it only shows
                   while that is the active main tab - not for the Media Library. */}
-                  <div className="flex min-h-0 flex-1">
-                    <PanelDock region="main" />
-                    <SecondaryDock visibleForMainPanel="visual-editor" />
-                  </div>
+                      <div className="flex min-h-0 flex-1">
+                        <PanelDock region="main" />
+                        <SecondaryDock visibleForMainPanel="visual-editor" />
+                      </div>
 
-                  {/* Blocking, undismissable: a role handed out mid-session
+                      {/* Blocking, undismissable: a role handed out mid-session
                     can leave the account writing into a workspace the content
                     repository now refuses. Better one dialog than a stream of
                     failed saves. */}
-                  <WorkspaceLockoutDialog
-                    access={access}
-                    workspaces={editing.workspaces}
-                    personalWorkspace={personalWorkspace}
-                    activeWorkspace={activeWorkspace}
-                    onSwitchEditingContext={handlers.forceSwitchEditingContext}
-                  />
-                </SidebarInset>
+                      <WorkspaceLockoutDialog
+                        access={access}
+                        workspaces={editing.workspaces}
+                        personalWorkspace={personalWorkspace}
+                        activeWorkspace={activeWorkspace}
+                        onSwitchEditingContext={
+                          handlers.forceSwitchEditingContext
+                        }
+                      />
+                    </SidebarInset>
+                  </>
+                )}
               </PanelsProvider>
             </AssetPickerProvider>
           </ModalProvider>

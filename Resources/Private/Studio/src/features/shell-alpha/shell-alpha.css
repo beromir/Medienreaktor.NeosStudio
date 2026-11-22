@@ -1,0 +1,120 @@
+/*
+ * The alpha layout's tokens, hand-written: styles/ is generated from the
+ * Figma file and must not be edited. Everything here waits to move into the
+ * Figma source (medienreaktor/figma-tools) once the design settles - see
+ * Documentation/AlphaLayout.md for the list.
+ */
+@theme {
+  --color-shell-ground: #262626;
+  --color-shell-surface: #1a1a1a;
+  --color-shell-bar: #1a1a1af2;
+  --color-shell-border: #ffffff0d;
+  --color-shell-border-strong: #ffffff0f;
+  --color-shell-divider: #ffffff1a;
+  --color-shell-input: #0e0e0e;
+  --color-shell-hover: #2f2f2f;
+  --color-shell-hover-inset: #2a2a2a;
+  --color-shell-tile: #232323;
+  --color-shell-active: #3a3a3a;
+  --color-shell-text: #ededed;
+  --color-shell-muted: #9a9a9a;
+  --color-shell-subtle: #8a8a8a;
+  --color-shell-disabled: #6a6a6a;
+  --color-shell-faint: #4a4a4a;
+  --color-shell-accent: #00adee;
+  --color-shell-accent-light: #5cc9f5;
+  --color-shell-accent-tint: #00adee33;
+  --color-shell-conflict: #ff8700;
+
+  --radius-shell-surface: 1rem;
+  --radius-shell-site: 0.625rem;
+  --radius-shell-control: 0.5rem;
+  --radius-shell-segment: 0.3125rem;
+
+  --shadow-shell-bar: 0 0.625rem 1.875rem #00000066;
+  --shadow-shell-surface: 0 1rem 2.5rem #00000066;
+}
+
+/* 13px controls, 12px secondary text, 11px counts. */
+@utility type-shell-control {
+  font-size: 0.8125rem;
+  line-height: 1rem;
+}
+@utility type-shell-secondary {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+@utility type-shell-count {
+  font-size: 0.6875rem;
+  line-height: 0.875rem;
+  font-weight: 600;
+}
+
+/*
+ * Inside the alpha layout the existing components (panels, inspector
+ * editors, menus, dialogs) take the new surface colours through the semantic
+ * tokens. On body, not the shell root: popups portal there. More specific
+ * than the generated :where([data-theme]) > * rules.
+ */
+:root[data-layout='alpha'] > body {
+  --color-background: var(--color-shell-surface);
+  --color-foreground: var(--color-shell-text);
+  --color-card: var(--color-shell-surface);
+  --color-card-foreground: var(--color-shell-text);
+  --color-popover: var(--color-shell-surface);
+  --color-popover-foreground: var(--color-shell-text);
+  --color-secondary: var(--color-shell-hover);
+  --color-muted: var(--color-shell-hover-inset);
+  --color-muted-foreground: var(--color-shell-muted);
+  --color-accent: var(--color-shell-hover-inset);
+  --color-border: var(--color-shell-border-strong);
+  --color-input: var(--color-shell-divider);
+  --color-divider: var(--color-shell-border-strong);
+  background-color: var(--color-shell-ground);
+}
+
+/* The round rule for popups the shell does not draw itself. */
+:root[data-layout='alpha']
+  :is(
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='context-menu-content'],
+    [data-slot='popover-content'],
+    [data-slot='select-content'],
+    [data-slot='combobox-content'],
+    [data-slot='dialog-content']
+  ) {
+  border-radius: var(--radius-shell-surface);
+  border-color: var(--color-shell-border-strong);
+  box-shadow: var(--shadow-shell-surface);
+}
+:root[data-layout='alpha']
+  :is(
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='context-menu-content'],
+    [data-slot='select-content']
+  ) {
+  padding: 0.3125rem;
+}
+:root[data-layout='alpha']
+  :is(
+    [data-slot='dropdown-menu-item'],
+    [data-slot='dropdown-menu-checkbox-item'],
+    [data-slot='context-menu-item'],
+    [data-slot='select-item'],
+    [data-slot='combobox-item']
+  ) {
+  border-radius: var(--radius-shell-control);
+}
+/* Controls inside a surface: 8px, on the input colour. */
+:root[data-layout='alpha']
+  :is(
+    [data-slot='input'],
+    [data-slot='textarea'],
+    [data-slot='select-trigger']:not([data-segment]),
+    [data-slot='combobox-input']
+  ) {
+  border-radius: var(--radius-shell-control);
+  background-color: var(--color-shell-input);
+}

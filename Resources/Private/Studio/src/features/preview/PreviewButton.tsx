@@ -33,16 +33,7 @@ export function PreviewButton({
   className?: string
 }) {
   const label = t('preview.openInNewTab', 'Open page in a new tab')
-  const deleted = isRemoved(document)
-  const href =
-    document.workspaceName === 'live' && !deleted
-      ? `${config.previewBase}/live?${new URLSearchParams({
-          contentRepositoryId: document.contentRepositoryId,
-          workspaceName: document.workspaceName,
-          dimensionSpacePoint: document.dimensionSpacePoint,
-          nodeAggregateId: document.nodeAggregateId,
-        })}`
-      : previewUrl(document, undefined, deleted)
+  const href = previewHref(document)
   return (
     <Button
       asChild
@@ -57,4 +48,19 @@ export function PreviewButton({
       </a>
     </Button>
   )
+}
+
+export const PREVIEW_WINDOW = PREVIEW_WINDOW_NAME
+
+/** Where "open in a new tab" leads for a document. */
+export function previewHref(document: Node): string {
+  const deleted = isRemoved(document)
+  return document.workspaceName === 'live' && !deleted
+    ? `${config.previewBase}/live?${new URLSearchParams({
+        contentRepositoryId: document.contentRepositoryId,
+        workspaceName: document.workspaceName,
+        dimensionSpacePoint: document.dimensionSpacePoint,
+        nodeAggregateId: document.nodeAggregateId,
+      })}`
+    : previewUrl(document, undefined, deleted)
 }

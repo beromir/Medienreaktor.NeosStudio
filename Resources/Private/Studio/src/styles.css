@@ -29,6 +29,7 @@
 @import './styles/semantics.css' theme(static);
 @import './styles/sizes.css';
 @import './styles/texts.css';
+@import './features/shell-alpha/shell-alpha.css';
 
 /*
  * The theme is picked with data-theme on <html> - "light" or "dark" -, set by

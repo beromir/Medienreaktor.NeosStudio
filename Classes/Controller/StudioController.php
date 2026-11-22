@@ -158,6 +158,9 @@ class StudioController extends ActionController
             // roundtrip. Schema-less preference array: coerce out-of-range
             // values to the dark default.
             'uiMode' => $this->uiMode(),
+            // The shell layout the user opted into: "classic" (default) or the
+            // new "alpha" layout. Applied before mount, like the UI mode.
+            'layout' => $this->layout(),
             // Whether a successful publish (review dialog) celebrates with a
             // confetti burst; the publishCelebration setting, off for the whole
             // installation when an operator sets it to false.
@@ -231,6 +234,18 @@ class StudioController extends ActionController
         $uiMode = $this->userService->getUserPreference('studio.uiMode');
 
         return in_array($uiMode, ['light', 'dark', 'system'], true) ? $uiMode : 'dark';
+    }
+
+    /**
+     * The backend user's shell layout ("classic" | "alpha"), from the
+     * `studio.layout` user preference. Classic is the default; the new
+     * layout is an opt-in alpha.
+     */
+    private function layout(): string
+    {
+        $layout = $this->userService->getUserPreference('studio.layout');
+
+        return $layout === 'alpha' ? 'alpha' : 'classic';
     }
 
     /**

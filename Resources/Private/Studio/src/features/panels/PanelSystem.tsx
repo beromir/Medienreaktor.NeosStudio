@@ -300,8 +300,15 @@ function findDropTarget(x: number, y: number): DropTarget {
 export function PanelsProvider({
   children,
   floatingVisibleForMainPanel,
+  headless = false,
 }: {
   children: React.ReactNode
+  /**
+   * The alpha layout places the panels itself (see features/shell-alpha):
+   * the provider keeps the layout state and the panel APIs working, but
+   * draws no floating windows of its own.
+   */
+  headless?: boolean
   /**
    * When set, floating groups are contextual to the main area's active tab -
    * same as SecondaryDock's `visibleForMainPanel`: they show only while this
@@ -388,8 +395,9 @@ export function PanelsProvider({
   // one they belong to (the main region coalesces to a single group, so its
   // active tab decides). Kept mounted-but-hidden so their state survives.
   const floatingHidden =
-    floatingVisibleForMainPanel !== undefined &&
-    layout.docks.main[0]?.active !== floatingVisibleForMainPanel
+    headless ||
+    (floatingVisibleForMainPanel !== undefined &&
+      layout.docks.main[0]?.active !== floatingVisibleForMainPanel)
 
   const isDragging = drag !== null
   React.useEffect(() => {
@@ -1044,7 +1052,7 @@ function GroupBody({
  * pointermove while a floating group moves or a tab is dragged - and none of
  * that concerns the panel's own content.
  */
-const PanelBody = React.memo(function PanelBody({
+export const PanelBody = React.memo(function PanelBody({
   panel,
   component: Component,
   visible,

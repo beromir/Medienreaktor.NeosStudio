@@ -32,6 +32,7 @@ import {
 import { WorkspaceDecorationBadges } from '@/features/workspaces/WorkspaceDecorationBadges'
 import { afterWorkspaceRewrite } from '@/features/workspaces/invalidate'
 import { WorkspaceIcon } from '@/features/workspaces/WorkspaceIcon'
+import { ArrowRightIcon } from '@/features/shell-alpha/icons'
 
 /**
  * Topbar dropdown for the editing context - a menu (not a select) so the
@@ -63,6 +64,7 @@ export function WorkspaceSwitcher({
   activeWorkspace,
   targets,
   onSwitchEditingContext,
+  segment = false,
 }: {
   personalWorkspace: Workspace
   /** The workspace being edited: personal, or a shared one (collaborative). */
@@ -71,6 +73,8 @@ export function WorkspaceSwitcher({
   targets: Workspace[]
   /** Move the editing context to a shared workspace, or null = personal. */
   onSwitchEditingContext: (workspaceName: string | null) => void
+  /** The source → target segment of the alpha layout's workspace pill. */
+  segment?: boolean
 }) {
   const { workspaceContentChanged } = useStudioActions()
   const collaborative = activeWorkspace.name !== personalWorkspace.name
@@ -200,28 +204,44 @@ export function WorkspaceSwitcher({
             'Editing in {0}, publishing to {1}',
             [sourceLabel, targetLabel],
           )}
-          className="flex h-8.5 w-fit items-center justify-between gap-2 rounded-md border border-border bg-input/30 hover:bg-input/50 px-3 py-2 type-body whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+          className={
+            segment
+              ? 'flex h-8 cursor-pointer items-center gap-1 rounded-l-full pr-1 pl-3 type-shell-control whitespace-nowrap text-shell-text outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-shell-accent/60 disabled:opacity-50'
+              : 'flex h-8.5 w-fit items-center justify-between gap-2 rounded-md border border-border bg-input/30 hover:bg-input/50 px-3 py-2 type-body whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50'
+          }
         >
-          <span className="flex items-center gap-2">
-            {/* Only the icon carries the workspace's color (a task's status
+          {segment ? (
+            <>
+              <span className="max-w-37.5 truncate">{sourceLabel}</span>
+              <ArrowRightIcon className="text-shell-disabled" />
+              <span className="max-w-37.5 truncate text-shell-muted">
+                {targetLabel}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="flex items-center gap-2">
+                {/* Only the icon carries the workspace's color (a task's status
                 color, purple for shared) - text and button stay neutral. */}
-            {switchBase.isPending ? (
+                {switchBase.isPending ? (
+                  <i
+                    className="fa fa-fw fa-spinner fa-spin type-icon-s text-muted-foreground"
+                    aria-hidden
+                  />
+                ) : (
+                  <WorkspaceIcon workspace={activeWorkspace} />
+                )}
+                <span className="hidden @[52.5rem]:inline max-w-37.5 truncate">
+                  {sourceLabel}
+                </span>
+              </span>
+              <PublishTargetBadge workspace={activeWorkspace} />
               <i
-                className="fa fa-fw fa-spinner fa-spin type-icon-s text-muted-foreground"
+                className="fas fa-chevron-down type-icon-xl text-placeholder"
                 aria-hidden
               />
-            ) : (
-              <WorkspaceIcon workspace={activeWorkspace} />
-            )}
-            <span className="hidden @[52.5rem]:inline max-w-37.5 truncate">
-              {sourceLabel}
-            </span>
-          </span>
-          <PublishTargetBadge workspace={activeWorkspace} />
-          <i
-            className="fas fa-chevron-down type-icon-xl text-placeholder"
-            aria-hidden
-          />
+            </>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="min-w-60">
           <DropdownMenuGroup>
