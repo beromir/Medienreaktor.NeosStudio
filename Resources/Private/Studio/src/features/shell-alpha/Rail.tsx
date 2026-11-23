@@ -83,6 +83,17 @@ export function modeLabel(definition: PanelDefinition): string {
   }
 }
 
+/** Open, the switcher always lists the modes in this order, plugin modes last. */
+const MODE_ORDER = ['visual-editor', 'media-library', 'workspaces', 'tasks']
+
+function orderedModes(modes: PanelDefinition[]): PanelDefinition[] {
+  const rank = (definition: PanelDefinition) => {
+    const index = MODE_ORDER.indexOf(definition.id)
+    return index === -1 ? MODE_ORDER.length : index
+  }
+  return [...modes].sort((a, b) => rank(a) - rank(b))
+}
+
 export function modeIcon(panel: string): React.ReactNode {
   return MODE_ICONS[panel] ?? <PluginGlyph />
 }
@@ -132,7 +143,7 @@ export function Rail({
               aria-expanded={false}
             >
               {modeIcon(mode)}
-              {openTasks > 0 && mode !== 'tasks' && (
+              {openTasks > 0 && (
                 <span className="absolute top-1 right-1 size-1.75 rounded-full border-[1.5px] border-shell-active bg-shell-accent" />
               )}
             </button>
@@ -147,14 +158,12 @@ export function Rail({
             </button>
           </div>
         ) : (
-          modes.map((definition) => {
-            const active = definition.id === mode
-            return (
-              <div
-                key={definition.id}
-                className="flex w-9 flex-col items-center gap-px"
-              >
+          <>
+            {orderedModes(modes).map((definition) => {
+              const active = definition.id === mode
+              return (
                 <button
+                  key={definition.id}
                   type="button"
                   data-active={active}
                   className={railButton}
@@ -168,24 +177,20 @@ export function Rail({
                 >
                   {modeIcon(definition.id)}
                   {definition.id === 'tasks' && openTasks > 0 && (
-                    <span className="absolute top-1.25 right-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-shell-accent px-0.75 text-[0.5625rem] leading-3 font-bold text-white">
-                      {openTasks}
-                    </span>
+                    <span className="absolute top-2 right-2 size-1.75 rounded-full border-[1.5px] border-(--knob) bg-shell-accent" />
                   )}
                 </button>
-                {active && (
-                  <button
-                    type="button"
-                    className="flex h-3 w-9 cursor-pointer items-center justify-center text-shell-subtle hover:text-shell-text"
-                    onClick={() => setModesOpen(false)}
-                    aria-label={t('shellAlpha.collapseModes', 'Collapse modes')}
-                  >
-                    <ChevronUpIcon />
-                  </button>
-                )}
-              </div>
-            )
-          })
+              )
+            })}
+            <button
+              type="button"
+              className="flex h-3 w-9 cursor-pointer items-center justify-center text-shell-subtle hover:text-shell-text"
+              onClick={() => setModesOpen(false)}
+              aria-label={t('shellAlpha.collapseModes', 'Collapse modes')}
+            >
+              <ChevronUpIcon />
+            </button>
+          </>
         )}
       </RailPill>
 
