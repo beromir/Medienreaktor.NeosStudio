@@ -2582,6 +2582,82 @@
         <source>Pin</source>
         <target xml:lang="de">Anheften</target>
       </trans-unit>
+      <trans-unit id="shellAlpha.publish.button" xml:space="preserve">
+        <source>Publish</source>
+        <target xml:lang="de">Veröffentlichen</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.cannotUndo" xml:space="preserve">
+        <source>This can’t be undone.</source>
+        <target xml:lang="de">Das lässt sich nicht rückgängig machen.</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.changed" xml:space="preserve">
+        <source>{0} changed</source>
+        <target xml:lang="de">{0} geändert</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.changes" xml:space="preserve">
+        <source>{0} changes</source>
+        <target xml:lang="de">{0} Änderungen</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.discardChanges" xml:space="preserve">
+        <source>Discard {0}</source>
+        <target xml:lang="de">{0} verwerfen</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.discardQuestion" xml:space="preserve">
+        <source>Discard {0}?</source>
+        <target xml:lang="de">{0} verwerfen?</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.moved" xml:space="preserve">
+        <source>{0} moved</source>
+        <target xml:lang="de">{0} verschoben</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.new" xml:space="preserve">
+        <source>{0} new</source>
+        <target xml:lang="de">{0} neu</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.nothing" xml:space="preserve">
+        <source>Nothing to publish from {0}.</source>
+        <target xml:lang="de">Nichts zu veröffentlichen aus {0}.</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.oneChange" xml:space="preserve">
+        <source>1 change</source>
+        <target xml:lang="de">1 Änderung</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.onePage" xml:space="preserve">
+        <source>1 page</source>
+        <target xml:lang="de">1 Seite</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.otherWorkspaces" xml:space="preserve">
+        <source>Review other workspaces</source>
+        <target xml:lang="de">Andere Workspaces prüfen</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.pages" xml:space="preserve">
+        <source>{0} pages</source>
+        <target xml:lang="de">{0} Seiten</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.publishChanges" xml:space="preserve">
+        <source>Publish {0}</source>
+        <target xml:lang="de">{0} veröffentlichen</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.removed" xml:space="preserve">
+        <source>{0} removed</source>
+        <target xml:lang="de">{0} entfernt</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.show" xml:space="preserve">
+        <source>Show</source>
+        <target xml:lang="de">Zeigen</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.summary" xml:space="preserve">
+        <source>{0} on {1}, from {2}</source>
+        <target xml:lang="de">{0} auf {1}, aus {2}</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.thisPage" xml:space="preserve">
+        <source>This page</source>
+        <target xml:lang="de">Diese Seite</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.title" xml:space="preserve">
+        <source>Publish to {0}</source>
+        <target xml:lang="de">Nach {0} veröffentlichen</target>
+      </trans-unit>
       <trans-unit id="shellAlpha.unpin" xml:space="preserve">
         <source>Unpin</source>
         <target xml:lang="de">Lösen</target>
@@ -3752,6 +3828,18 @@
         <source>Collaborative editing (with everyone in the workspace)</source>
         <target xml:lang="de">Gemeinsames Bearbeiten (mit allen im Arbeitsbereich)</target>
       </trans-unit>
+      <trans-unit id="workspace.conflict.alphaDescription" xml:space="preserve">
+        <source>Someone published a change to the same element while you were editing. Discard your version to publish the rest, or cancel and look at it first.</source>
+        <target xml:lang="de">Jemand hat eine Änderung am selben Element veröffentlicht, während du bearbeitet hast. Verwirf deine Fassung, um den Rest zu veröffentlichen, oder brich ab und sieh es dir zuerst an.</target>
+      </trans-unit>
+      <trans-unit id="workspace.conflict.alphaTitleMany" xml:space="preserve">
+        <source>{0} changes conflict with {1}</source>
+        <target xml:lang="de">{0} Änderungen stehen im Konflikt mit {1}</target>
+      </trans-unit>
+      <trans-unit id="workspace.conflict.alphaTitleOne" xml:space="preserve">
+        <source>1 change conflicts with {0}</source>
+        <target xml:lang="de">1 Änderung steht im Konflikt mit {0}</target>
+      </trans-unit>
       <trans-unit id="workspace.conflict.countMany" xml:space="preserve">
         <source>{0} conflicting changes</source>
         <target xml:lang="de">{0} widersprüchliche Änderungen</target>
@@ -3772,6 +3860,10 @@
         <source>Discard conflicting changes</source>
         <target xml:lang="de">Widersprüchliche Änderungen verwerfen</target>
       </trans-unit>
+      <trans-unit id="workspace.conflict.discardMyVersion" xml:space="preserve">
+        <source>Discard my version</source>
+        <target xml:lang="de">Meine Fassung verwerfen</target>
+      </trans-unit>
       <trans-unit id="workspace.conflict.nodeDeleted" xml:space="preserve">
         <source>It was deleted in the target workspace since you changed it.</source>
         <target xml:lang="de">Er wurde im Ziel-Arbeitsbereich gelöscht, seit Du ihn geändert hast.</target>
@@ -3787,6 +3879,10 @@
       <trans-unit id="workspace.conflict.resolvedPublished" xml:space="preserve">
         <source>Conflicting changes discarded; the rest was published.</source>
         <target xml:lang="de">Widersprüchliche Änderungen verworfen; der Rest wurde veröffentlicht.</target>
+      </trans-unit>
+      <trans-unit id="workspace.conflict.showOn" xml:space="preserve">
+        <source>Show on {0}</source>
+        <target xml:lang="de">Auf {0} zeigen</target>
       </trans-unit>
       <trans-unit id="workspace.conflict.unknownNode" xml:space="preserve">
         <source>Unknown node</source>

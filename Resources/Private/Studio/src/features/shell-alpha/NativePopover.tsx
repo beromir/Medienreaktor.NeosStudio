@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils'
 /** Where the popover sits relative to its anchor. */
 export interface Placement {
   side: 'top' | 'bottom'
-  /** The anchor edge (or centre) the popover's left edge starts from. */
-  align: 'start' | 'center'
+  /** The anchor edge (or centre) the popover's left edge starts from; end: the right edges line up. */
+  align: 'start' | 'center' | 'end'
   /** Gap to the anchor, px. */
   offset: number
   /** Horizontal shift from the aligned edge, px. */
@@ -95,14 +95,27 @@ export function NativePopover({
       const target = document.querySelector(`[data-anchor="${anchor}"]`)
       if (!target) return
       const rect = target.getBoundingClientRect()
-      const left =
-        (placement.align === 'center'
-          ? rect.left + rect.width / 2
-          : rect.left) + (placement.shift ?? 0)
+      const horizontal =
+        placement.align === 'end'
+          ? {
+              right:
+                document.documentElement.clientWidth -
+                rect.right -
+                (placement.shift ?? 0),
+            }
+          : {
+              left:
+                (placement.align === 'center'
+                  ? rect.left + rect.width / 2
+                  : rect.left) + (placement.shift ?? 0),
+            }
       setFallback(
         placement.side === 'top'
-          ? { left, bottom: window.innerHeight - rect.top + placement.offset }
-          : { left, top: rect.bottom + placement.offset },
+          ? {
+              ...horizontal,
+              bottom: window.innerHeight - rect.top + placement.offset,
+            }
+          : { ...horizontal, top: rect.bottom + placement.offset },
       )
     }
     measure()
@@ -118,7 +131,9 @@ export function NativePopover({
   const anchored: React.CSSProperties = anchorPositioning
     ? ({
         positionAnchor: anchor,
-        left: `calc(anchor(${edge}) + ${placement.shift ?? 0}px)`,
+        ...(placement.align === 'end'
+          ? { right: `calc(anchor(right) - ${placement.shift ?? 0}px)` }
+          : { left: `calc(anchor(${edge}) + ${placement.shift ?? 0}px)` }),
         ...(placement.side === 'top'
           ? { bottom: `calc(anchor(top) + ${placement.offset}px)` }
           : { top: `calc(anchor(bottom) + ${placement.offset}px)` }),

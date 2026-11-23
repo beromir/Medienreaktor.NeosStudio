@@ -529,7 +529,6 @@ function Shell() {
                       onChangeDimension={handlers.changeDimension}
                       onVariantCreated={handlers.variantCreated}
                       onSwitchEditingContext={handlers.switchEditingContext}
-                      onNavigate={actions.navigateToNodeInWorkspace}
                       onReload={handlers.reload}
                       onReveal={handlers.reveal}
                     />

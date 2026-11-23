@@ -29,17 +29,11 @@ export function PublishReviewButton({
   workspaces,
   activeWorkspace,
   onNavigate,
-  segment = false,
 }: {
   workspaces: Workspace[]
   activeWorkspace: Workspace
   /** See ReviewChangesDialog: show a document, switching the context first. */
   onNavigate: (address: NodeAddress, workspaceName: string) => void
-  /**
-   * The trailing segment of the alpha layout's workspace pill: the pending
-   * count and "Review", or "Up to date" - neutral either way.
-   */
-  segment?: boolean
 }) {
   const [open, setOpen] = useState(false)
   // Same query the trees' dirty markers use, so the bubble always agrees.
@@ -97,43 +91,6 @@ export function PublishReviewButton({
       preselectAll
     />
   )
-
-  if (segment) {
-    return (
-      <>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          title={t(
-            'workspace.review.buttonHint',
-            'Review pending changes between workspaces',
-          )}
-          className={
-            hasChanges
-              ? 'flex h-6.5 cursor-pointer items-center gap-1.75 rounded-full bg-shell-ground pr-2.5 pl-2 type-shell-control font-medium text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60'
-              : 'flex h-6.5 cursor-pointer items-center rounded-full px-2.5 type-shell-control text-[#5a5a5a] outline-none hover:text-shell-muted focus-visible:ring-2 focus-visible:ring-shell-accent/60'
-          }
-        >
-          {hasChanges ? (
-            <>
-              <span
-                className="flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-shell-accent-tint px-1.25 type-shell-count text-shell-accent-light"
-                aria-label={t('workspace.pendingBadge', '{0} pending changes', [
-                  changeCount,
-                ])}
-              >
-                {changeCount}
-              </span>
-              {t('workspace.review.short', 'Review')}
-            </>
-          ) : (
-            t('workspace.upToDate', 'Up to date')
-          )}
-        </button>
-        {dialog}
-      </>
-    )
-  }
 
   return (
     <>

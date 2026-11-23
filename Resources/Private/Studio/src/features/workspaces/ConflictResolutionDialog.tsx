@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { ConflictingChange, NodeAddress } from '@/api/neos/schema'
 import { translate as t } from '@/lib/i18n'
+import { useLayoutMode } from '@/lib/layoutMode'
 import { useConflictDetails } from './historyData'
 import { Button } from '@/components/ui/button'
 import {
@@ -133,6 +134,7 @@ export function ConflictResolutionDialog({
   onForce,
   onDiscardAll,
   onNavigate,
+  targetLabel,
 }: {
   open: boolean
   /**
@@ -149,11 +151,140 @@ export function ConflictResolutionDialog({
   onForce?: () => void
   onDiscardAll?: () => void
   onNavigate?: (documentAddress: NodeAddress) => void
+  /** The workspace the changes conflict with, named in the alpha layout's title. */
+  targetLabel?: string
 }) {
   const conflicts = useResolvedConflicts(
     open ? workspaceName : null,
     reportedConflicts,
   )
+  const alpha = useLayoutMode() === 'alpha'
+  if (alpha) {
+    const title =
+      conflicts.length === 1
+        ? t('workspace.conflict.alphaTitleOne', '1 change conflicts with {0}', [
+            targetLabel ?? t('workspace.live', 'Live'),
+          ])
+        : t(
+            'workspace.conflict.alphaTitleMany',
+            '{0} changes conflict with {1}',
+            [conflicts.length, targetLabel ?? t('workspace.live', 'Live')],
+          )
+    return (
+      <Dialog open={open} onOpenChange={(next) => !next && !busy && onCancel()}>
+        <DialogContent showCloseButton={false} className="max-w-130">
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>
+              {partial
+                ? t(
+                    'workspace.conflict.partialDescription',
+                    'These changes can’t be published on their own - they depend on other pending changes. Publish everything instead, or discard them.',
+                  )
+                : t(
+                    'workspace.conflict.alphaDescription',
+                    'Someone published a change to the same element while you were editing. Discard your version to publish the rest, or cancel and look at it first.',
+                  )}
+            </DialogDescription>
+          </DialogHeader>
+          <ul className="flex max-h-60 flex-col gap-1 overflow-y-auto">
+            {conflicts.map((conflict, index) => {
+              const kind = changeKind(conflict.typeOfChange)
+              const meta = kind ? TYPE_META[kind] : undefined
+              const canNavigate =
+                onNavigate !== undefined &&
+                conflict.documentAddress !== null &&
+                conflict.documentLabel !== null
+              return (
+                <li
+                  key={conflict.nodeAggregateId ?? index}
+                  className="flex items-start gap-3 rounded-shell-control bg-shell-row px-3.5 py-3"
+                >
+                  <span className="flex h-4.5 w-4 shrink-0 items-center justify-center text-shell-muted">
+                    <i
+                      className={`fas ${meta?.icon ?? 'fa-circle-exclamation'} text-[0.6875rem]`}
+                      aria-hidden
+                    />
+                  </span>
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.75">
+                    <span className="text-[0.8125rem] leading-4.5 break-words text-shell-text">
+                      {conflict.nodeLabel ??
+                        conflict.documentLabel ??
+                        conflict.nodeAggregateId ??
+                        t('workspace.conflict.unknownNode', 'Unknown node')}
+                      {meta && (
+                        <span className="text-shell-subtle">
+                          {' · '}
+                          {t(meta.verbKey, meta.verb)}
+                        </span>
+                      )}
+                    </span>
+                    <span className="type-shell-secondary text-shell-subtle">
+                      {reasonText(conflict)}
+                    </span>
+                    {canNavigate && (
+                      <button
+                        type="button"
+                        className="cursor-pointer self-start type-shell-secondary text-shell-accent-light outline-none hover:underline focus-visible:underline"
+                        onClick={() => onNavigate(conflict.documentAddress!)}
+                      >
+                        {t('workspace.conflict.showOn', 'Show on {0}', [
+                          conflict.documentLabel!,
+                        ])}
+                      </button>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+          <DialogFooter className="sm:justify-between">
+            {!partial && onDiscardAll ? (
+              <Button variant="ghost" onClick={onDiscardAll} disabled={busy}>
+                {t(
+                  'workspace.conflict.discardAllChanges',
+                  'Discard all changes',
+                )}
+              </Button>
+            ) : (
+              <span />
+            )}
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={onCancel} disabled={busy}>
+                {t('action.cancel', 'Cancel')}
+              </Button>
+              {partial
+                ? onDiscardAll && (
+                    <Button
+                      variant="destructive"
+                      onClick={onDiscardAll}
+                      disabled={busy}
+                    >
+                      {t(
+                        'workspace.conflict.discardAllChanges',
+                        'Discard all changes',
+                      )}
+                    </Button>
+                  )
+                : onForce && (
+                    <Button
+                      variant="destructive"
+                      onClick={onForce}
+                      disabled={busy}
+                    >
+                      {t(
+                        'workspace.conflict.discardMyVersion',
+                        'Discard my version',
+                      )}
+                    </Button>
+                  )}
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={(next) => !next && !busy && onCancel()}>
       <DialogContent size="lg">

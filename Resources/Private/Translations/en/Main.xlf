@@ -2030,6 +2030,63 @@
       <trans-unit id="shellAlpha.properties" xml:space="preserve">
         <source>Properties</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.publish.button" xml:space="preserve">
+        <source>Publish</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.cannotUndo" xml:space="preserve">
+        <source>This can’t be undone.</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.changed" xml:space="preserve">
+        <source>{0} changed</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.changes" xml:space="preserve">
+        <source>{0} changes</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.discardChanges" xml:space="preserve">
+        <source>Discard {0}</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.discardQuestion" xml:space="preserve">
+        <source>Discard {0}?</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.moved" xml:space="preserve">
+        <source>{0} moved</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.new" xml:space="preserve">
+        <source>{0} new</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.nothing" xml:space="preserve">
+        <source>Nothing to publish from {0}.</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.oneChange" xml:space="preserve">
+        <source>1 change</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.onePage" xml:space="preserve">
+        <source>1 page</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.otherWorkspaces" xml:space="preserve">
+        <source>Review other workspaces</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.pages" xml:space="preserve">
+        <source>{0} pages</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.publishChanges" xml:space="preserve">
+        <source>Publish {0}</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.removed" xml:space="preserve">
+        <source>{0} removed</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.show" xml:space="preserve">
+        <source>Show</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.summary" xml:space="preserve">
+        <source>{0} on {1}, from {2}</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.thisPage" xml:space="preserve">
+        <source>This page</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.publish.title" xml:space="preserve">
+        <source>Publish to {0}</source>
+      </trans-unit>
       <trans-unit id="shellAlpha.rail" xml:space="preserve">
         <source>Modes and panels</source>
       </trans-unit>
@@ -2947,6 +3004,15 @@
       <trans-unit id="workspace.collaborativeGroup" xml:space="preserve">
         <source>Collaborative editing (with everyone in the workspace)</source>
       </trans-unit>
+      <trans-unit id="workspace.conflict.alphaDescription" xml:space="preserve">
+        <source>Someone published a change to the same element while you were editing. Discard your version to publish the rest, or cancel and look at it first.</source>
+      </trans-unit>
+      <trans-unit id="workspace.conflict.alphaTitleMany" xml:space="preserve">
+        <source>{0} changes conflict with {1}</source>
+      </trans-unit>
+      <trans-unit id="workspace.conflict.alphaTitleOne" xml:space="preserve">
+        <source>1 change conflicts with {0}</source>
+      </trans-unit>
       <trans-unit id="workspace.conflict.countMany" xml:space="preserve">
         <source>{0} conflicting changes</source>
       </trans-unit>
@@ -2962,6 +3028,9 @@
       <trans-unit id="workspace.conflict.discardConflicting" xml:space="preserve">
         <source>Discard conflicting changes</source>
       </trans-unit>
+      <trans-unit id="workspace.conflict.discardMyVersion" xml:space="preserve">
+        <source>Discard my version</source>
+      </trans-unit>
       <trans-unit id="workspace.conflict.nodeDeleted" xml:space="preserve">
         <source>It was deleted in the target workspace since you changed it.</source>
       </trans-unit>
@@ -2973,6 +3042,9 @@
       </trans-unit>
       <trans-unit id="workspace.conflict.resolvedPublished" xml:space="preserve">
         <source>Conflicting changes discarded; the rest was published.</source>
+      </trans-unit>
+      <trans-unit id="workspace.conflict.showOn" xml:space="preserve">
+        <source>Show on {0}</source>
       </trans-unit>
       <trans-unit id="workspace.conflict.unknownNode" xml:space="preserve">
         <source>Unknown node</source>
@@ -3075,9 +3147,6 @@
       </trans-unit>
       <trans-unit id="workspace.review.selectedOf" xml:space="preserve">
         <source>{0} of {1} selected</source>
-      </trans-unit>
-      <trans-unit id="workspace.review.short" xml:space="preserve">
-        <source>Review</source>
       </trans-unit>
       <trans-unit id="workspace.review.showChanges" xml:space="preserve">
         <source>Show changes</source>

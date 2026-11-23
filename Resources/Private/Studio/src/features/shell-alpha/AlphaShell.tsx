@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type { Node, NodeAddress } from '@/api/neos/schema'
+import type { Node } from '@/api/neos/schema'
 import { useStudio } from '@/app/StudioContext'
 import type { EditingContext } from '@/app/useEditingContext'
 import type { HistoryLocation } from '@/features/history/location'
@@ -62,7 +62,6 @@ export function AlphaShell({
   onChangeDimension,
   onVariantCreated,
   onSwitchEditingContext,
-  onNavigate,
   onReload,
   onReveal,
 }: {
@@ -72,7 +71,6 @@ export function AlphaShell({
   onChangeDimension: (point: string) => void
   onVariantCreated: (point: string) => void
   onSwitchEditingContext: (workspaceName: string | null) => void
-  onNavigate: (address: NodeAddress, workspaceName: string) => void
   onReload: () => void
   onReveal: (location: HistoryLocation) => void
 }) {
@@ -187,7 +185,7 @@ export function AlphaShell({
         onChangeDimension={onChangeDimension}
         onVariantCreated={onVariantCreated}
         onSwitchEditingContext={onSwitchEditingContext}
-        onNavigate={onNavigate}
+        onOpenMode={activate}
       />
       <div className="flex min-h-0 flex-1 gap-2">
         <Rail

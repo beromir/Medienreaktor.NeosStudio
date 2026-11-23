@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useWorkspaceChanges } from '@/api/neos/endpoints/workspaces'
 import { useNodeVariants } from '@/api/neos/endpoints/nodes'
-import type { Node, NodeAddress } from '@/api/neos/schema'
+import type { Node } from '@/api/neos/schema'
 import type { EditingContext } from '@/app/useEditingContext'
 import { PresenceAvatars } from '@/features/collaboration/PresenceAvatars'
 import { HeaderActions } from '@/features/actions/HeaderActions'
@@ -12,7 +12,6 @@ import { panelRegistry } from '@/features/panels/registry'
 import { PREVIEW_WINDOW, previewHref } from '@/features/preview/PreviewButton'
 import { ShareLinkDialog } from '@/features/sharing/ShareLinkDialog'
 import { SiteSwitcher } from '@/features/sites/SiteSwitcher'
-import { PublishReviewButton } from '@/features/workspaces/PublishReviewButton'
 import { SyncWorkspaceButton } from '@/features/workspaces/SyncWorkspaceButton'
 import { WorkspaceSwitcher } from '@/features/workspaces/WorkspaceSwitcher'
 import { useRegistry } from '@/lib/registry'
@@ -29,6 +28,7 @@ import {
   TabletIcon,
 } from './icons'
 import { LocationSeparator } from './LocationSeparator'
+import { PublishSegment } from './PublishPopover'
 import { anchorProps, NativePopover, type Placement } from './NativePopover'
 import { ShellMenu, ShellMenuItem, Surface } from './primitives'
 
@@ -52,7 +52,7 @@ export function TopBar({
   onChangeDimension,
   onVariantCreated,
   onSwitchEditingContext,
-  onNavigate,
+  onOpenMode,
 }: {
   editing: EditingContext
   document: Node | null
@@ -62,7 +62,7 @@ export function TopBar({
   onChangeDimension: (point: string) => void
   onVariantCreated: (point: string) => void
   onSwitchEditingContext: (workspaceName: string | null) => void
-  onNavigate: (address: NodeAddress, workspaceName: string) => void
+  onOpenMode: (panel: string) => void
 }) {
   const {
     sites,
@@ -129,7 +129,7 @@ export function TopBar({
           <WorkspacePill
             editing={editing}
             onSwitchEditingContext={onSwitchEditingContext}
-            onNavigate={onNavigate}
+            onOpenMode={onOpenMode}
           />
         )}
       </div>
@@ -321,18 +321,21 @@ function ViewPill({
   )
 }
 
+const WORKSPACE_ANCHOR = '--shell-alpha-workspace-pill'
+
 function WorkspacePill({
   editing,
   onSwitchEditingContext,
-  onNavigate,
+  onOpenMode,
 }: {
   editing: EditingContext
   onSwitchEditingContext: (workspaceName: string | null) => void
-  onNavigate: (address: NodeAddress, workspaceName: string) => void
+  onOpenMode: (panel: string) => void
 }) {
   const { workspaces, personalWorkspace, activeWorkspace, baseTargets } =
     editing
   const { data: changes } = useWorkspaceChanges(activeWorkspace?.name ?? null)
+  const [conflict, setConflict] = React.useState(false)
   if (!personalWorkspace || !activeWorkspace) return null
   const outdated = changes?.workspace.status === 'outdated'
   return (
@@ -340,8 +343,10 @@ function WorkspacePill({
       className={cn(
         topPill,
         'gap-1 pr-1',
-        outdated && 'border border-shell-conflict/40 bg-shell-conflict/12',
+        (outdated || conflict) &&
+          'border border-shell-conflict/40 bg-shell-conflict/12',
       )}
+      {...anchorProps(WORKSPACE_ANCHOR)}
     >
       {baseTargets.length > 0 ? (
         <WorkspaceSwitcher
@@ -360,11 +365,12 @@ function WorkspacePill({
       {outdated ? (
         <SyncWorkspaceButton segment workspaceName={activeWorkspace.name} />
       ) : (
-        <PublishReviewButton
-          segment
+        <PublishSegment
           workspaces={workspaces}
           activeWorkspace={activeWorkspace}
-          onNavigate={onNavigate}
+          anchor={WORKSPACE_ANCHOR}
+          onConflictChange={setConflict}
+          onOpenWorkspaces={() => onOpenMode('workspaces')}
         />
       )}
     </div>
