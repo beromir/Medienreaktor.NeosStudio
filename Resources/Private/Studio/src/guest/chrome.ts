@@ -7,6 +7,8 @@ const INSERT_LINE_ID = 'neos-studio-insert-line'
 const REVEAL_MARGIN = 12
 
 let bottomInset = 0
+/** The selection was made in the page: the page keeps its scroll position. */
+let selectedInPage = false
 let insertPreview: {
   element: HTMLElement
   mode: 'before' | 'after' | 'inside'
@@ -87,7 +89,15 @@ export function applyChrome(
 
   const grew = message.bottomInset > bottomInset
   bottomInset = message.bottomInset
-  if (grew) keepVisible(selected)
+  if (grew && !selectedInPage) keepVisible(selected)
+}
+
+/**
+ * Where the current selection was made: a click in the page leaves the
+ * scroll position alone, also when the shell then covers more of it.
+ */
+export function setSelectedInPage(value: boolean): void {
+  selectedInPage = value
 }
 
 /** Scroll the element clear of the bottom inset, if it sits under it. */

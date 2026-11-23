@@ -57,6 +57,7 @@ import {
   reportPointerDown,
   reportScroll,
   setInsertPreview,
+  setSelectedInPage,
 } from './chrome'
 
 const WRAPPER_ATTRIBUTE = 'data-__neos-node-contextpath'
@@ -487,9 +488,11 @@ function select(
   scheduleHandleUpdate()
   if (element === null) return
   element.classList.add(SELECTED_CLASS)
+  // Picked in the page: it is where the editor is looking already.
+  setSelectedInPage(options.notifyHost)
   if (options.reveal)
     element.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  else keepVisible(element)
+  else if (!options.notifyHost) keepVisible(element)
   if (options.notifyHost) {
     const nodeAddress = element.getAttribute(WRAPPER_ATTRIBUTE)
     if (nodeAddress) {
