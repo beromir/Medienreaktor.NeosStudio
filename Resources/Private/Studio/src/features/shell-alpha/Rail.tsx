@@ -324,7 +324,6 @@ function AccountMenu() {
             </ShellMenuItem>
             <ShellMenuItem
               icon={<KeyboardIcon />}
-              trailing={<span className="font-mono text-[0.6875rem]">⇧?</span>}
               onClick={openShortcutOverview}
             >
               {t('shortcuts.overview.title', 'Keyboard shortcuts')}
