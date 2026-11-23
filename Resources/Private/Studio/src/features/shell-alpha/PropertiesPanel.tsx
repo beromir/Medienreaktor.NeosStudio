@@ -29,7 +29,7 @@ export function PropertiesPanel({ onClose }: { onClose: () => void }) {
       aria-label={t('shellAlpha.properties', 'Properties')}
       className="flex w-75 shrink-0 flex-col overflow-hidden rounded-shell-surface border border-shell-border bg-shell-surface"
     >
-      <div className="flex h-13 shrink-0 items-center justify-between border-b border-shell-border-strong px-2">
+      <div className="flex h-13 shrink-0 items-center justify-between px-2">
         {node ? <Header key="header" /> : <span />}
         <IconButton
           size="sm"
@@ -40,25 +40,21 @@ export function PropertiesPanel({ onClose }: { onClose: () => void }) {
           <CloseIcon />
         </IconButton>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {node && (
-          <InspectorPanel
-            key={node.nodeAggregateId}
-            node={node}
-            onNodeEdited={nodeEdited}
-            sections={
-              isPage
-                ? {
-                    lead: {
-                      label: t('shellAlpha.pageGroup', 'Page'),
-                      properties: PAGE_LEAD,
-                    },
-                  }
-                : {}
-            }
-          />
-        )}
-      </div>
+      {node && (
+        <InspectorPanel
+          node={node}
+          onNodeEdited={nodeEdited}
+          layout="panel"
+          lead={
+            isPage
+              ? {
+                  label: t('shellAlpha.pageGroup', 'Page'),
+                  properties: PAGE_LEAD,
+                }
+              : undefined
+          }
+        />
+      )}
     </aside>
   )
 }

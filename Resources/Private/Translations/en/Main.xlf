@@ -1967,9 +1967,6 @@
       <trans-unit id="shellAlpha.addPageBelow" xml:space="preserve">
         <source>below {0}</source>
       </trans-unit>
-      <trans-unit id="shellAlpha.allProperties" xml:space="preserve">
-        <source>All properties</source>
-      </trans-unit>
       <trans-unit id="shellAlpha.back" xml:space="preserve">
         <source>Back</source>
       </trans-unit>
@@ -2011,9 +2008,6 @@
       </trans-unit>
       <trans-unit id="shellAlpha.mode.media" xml:space="preserve">
         <source>Media</source>
-      </trans-unit>
-      <trans-unit id="shellAlpha.openFullInspector" xml:space="preserve">
-        <source>Open full inspector</source>
       </trans-unit>
       <trans-unit id="shellAlpha.page" xml:space="preserve">
         <source>page</source>

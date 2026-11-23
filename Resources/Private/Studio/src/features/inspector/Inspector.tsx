@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { useMemo, useState } from 'react'
 import {
   dimensionSpacePointLabel,
@@ -22,6 +23,7 @@ import {
 } from '@/api/neos/schema'
 import { toast } from '@/components/ui/toast'
 import { CollapsibleGroup } from '@/components/ui/collapsible-group'
+import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Placeholder } from '@/components/ui/placeholder'
 import {
@@ -50,6 +52,7 @@ import {
   buildInspectorSchema,
   type InspectorGroup,
   type InspectorItem,
+  type InspectorTab,
 } from './inspectorSchema'
 import { PropertyHints } from './hints/registry'
 import { PropertyEditor } from './PropertyEditor'
@@ -116,22 +119,22 @@ function hiddenByAncestor(node: Node): boolean {
 export function InspectorPanel({
   node,
   onNodeEdited,
-  trayGroup,
-  sections,
+  layout,
+  lead,
+  tabsEnd,
 }: {
   node: Node | null
   /**
-   * Render a single group's fields in a row, without header and tabs - the
-   * alpha layout's settings tray. Absent: the full inspector. A group id
-   * that is not visible (hidden by ClientEval) falls back to the first.
+   * The alpha layout's inspector: the tabs as muted pills, every group of
+   * the active tab open unless configured collapsed - 'panel' stacks the
+   * fields (the Properties panel), 'tray' lays each group's fields out in a
+   * row (the settings tray). Absent: the full inspector.
    */
-  trayGroup?: string | null
-  /**
-   * Render every group as a collapsible section, the first one open, without
-   * header and tabs - the alpha layout's Properties panel. `lead` pulls the
-   * named properties out of their groups into a first section of its own.
-   */
-  sections?: { lead?: { label: string; properties: string[] } }
+  layout?: 'panel' | 'tray'
+  /** Pulls the named properties out of their groups into a first group of their own (alpha layouts only). */
+  lead?: { label: string; properties: string[] }
+  /** Rendered at the end of the alpha tab row - the tray's own buttons. */
+  tabsEnd?: React.ReactNode
   /**
    * A property edit for this address was persisted. reload reflects the
    * property's configuration: 'page' (ui.reloadPageIfChanged), 'element'
@@ -421,90 +424,40 @@ export function InspectorPanel({
     )
   }
 
-  if (sections !== undefined) {
-    let groups = visibleTabs?.flatMap((tab) => tab.groups) ?? []
-    const lead = sections.lead
-    if (lead) {
-      const isLead = (item: InspectorItem) =>
-        item.kind === 'property' && lead.properties.includes(item.property.name)
-      const leadItems = groups
-        .flatMap((group) => group.items)
-        .filter(isLead)
-        .sort(
-          (a, b) =>
-            lead.properties.indexOf(
-              a.kind === 'property' ? a.property.name : '',
-            ) -
-            lead.properties.indexOf(
-              b.kind === 'property' ? b.property.name : '',
-            ),
-        )
-      groups = groups
-        .map((group) => ({
-          ...group,
-          items: group.items.filter((item) => !isLead(item)),
-        }))
-        .filter((group) => group.items.length > 0)
-      if (leadItems.length > 0)
-        groups = [
-          {
-            id: '__lead',
-            label: lead.label,
-            icon: null,
-            collapsed: false,
-            items: leadItems,
-          },
-          ...groups,
-        ]
-    }
+  if (layout !== undefined) {
     return (
       <div
-        inert={!editable}
-        className={cn('type-body', !editable && 'opacity-60')}
-      >
-        {groups.map((group, index) => (
-          <PropertySection
-            key={group.id}
-            group={group}
-            defaultOpen={index === 0}
-            node={node}
-            validationErrors={validationErrors}
-            onSave={save}
-            onLiveChange={reportLiveChange}
-          />
-        ))}
-      </div>
-    )
-  }
-
-  if (trayGroup !== undefined) {
-    const groups = visibleTabs?.flatMap((tab) => tab.groups) ?? []
-    const group =
-      groups.find((candidate) => candidate.id === trayGroup) ?? groups[0]
-    return (
-      <div
-        inert={!editable}
         className={cn(
-          'flex flex-wrap items-end gap-x-4 gap-y-3.5 type-body *:min-w-44 *:flex-1',
-          !editable && 'opacity-60',
+          'flex min-h-0 flex-1 flex-col type-body',
+          layout === 'tray' && 'max-h-[50svh]',
         )}
       >
-        {group ? (
-          <PropertyItems
-            group={group}
-            node={node}
-            validationErrors={validationErrors}
-            onSave={save}
-            onLiveChange={reportLiveChange}
-          />
-        ) : (
-          <p className="type-small text-muted-foreground">
-            {t(
-              'inspector.noProperties',
-              'This node type has no inspector properties.',
-            )}
-          </p>
-        )}
+        <AlphaTabs
+          layout={layout}
+          tabs={visibleTabs ? withLead(visibleTabs, lead) : []}
+          activeTab={activeTab}
+          onTabChange={setSelectedTab}
+          validationErrors={validationErrors}
+          visited={visitedTabs}
+          end={tabsEnd}
+        >
+          {(tab) => (
+            <div inert={!editable} className={cn(!editable && 'opacity-60')}>
+              {tab.groups.map((group, index) => (
+                <PropertySection
+                  key={`${node.nodeType}:${group.id}`}
+                  layout={layout}
+                  last={index === tab.groups.length - 1}
+                  group={group}
+                  node={node}
+                  validationErrors={validationErrors}
+                  onSave={save}
+                  onLiveChange={reportLiveChange}
+                />
+              ))}
+            </div>
+          )}
+        </AlphaTabs>
       </div>
     )
   }
@@ -749,63 +702,259 @@ function PropertyGroup(props: PropertyGroupProps) {
   )
 }
 
-/** A group of the Properties panel: a header that opens and closes it. */
-function PropertySection({
-  defaultOpen,
-  ...props
-}: PropertyGroupProps & { defaultOpen: boolean }) {
-  const [open, setOpen] = useState(defaultOpen)
-  const { group } = props
+/**
+ * The alpha layout's tab row: the active tab a muted pill with icon and
+ * label, the others icon only (their label as tooltip and accessible name).
+ */
+function AlphaTabs({
+  layout,
+  tabs,
+  activeTab,
+  onTabChange,
+  validationErrors,
+  visited,
+  end,
+  children,
+}: {
+  layout: 'panel' | 'tray'
+  tabs: InspectorTab[]
+  activeTab: string | null
+  visited: ReadonlySet<string>
+  onTabChange: (tab: string) => void
+  validationErrors: Record<string, string[]>
+  end?: React.ReactNode
+  children: (tab: InspectorTab) => React.ReactNode
+}) {
+  const current = tabs.find((tab) => tab.id === activeTab)
   return (
-    <section className="border-b border-shell-border-strong">
+    <TabsPrimitive.Root
+      value={activeTab}
+      onValueChange={(value) => onTabChange(value as string)}
+      className="flex min-h-0 flex-1 flex-col"
+    >
+      <div
+        className={cn(
+          'flex shrink-0 items-center justify-between gap-2 px-2',
+          layout === 'panel'
+            ? 'h-11 border-b border-shell-border-strong pb-2'
+            : 'h-11',
+        )}
+      >
+        <TabsPrimitive.List className="flex min-w-0 flex-wrap items-center gap-0.5">
+          {tabs.map((tab) => {
+            const errorCount = tab.groups
+              .flatMap((group) => group.items)
+              .filter(
+                (item) =>
+                  item.kind === 'property' &&
+                  validationErrors[item.property.name] !== undefined,
+              ).length
+            const active = tab.id === activeTab
+            const labelled = active || !tab.icon
+            return (
+              <TabsPrimitive.Tab
+                key={tab.id}
+                value={tab.id}
+                title={labelled ? undefined : tab.label}
+                className={cn(
+                  'flex h-7 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-shell-control outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
+                  active
+                    ? cn(
+                        'bg-shell-ground pr-3 text-shell-text',
+                        layout === 'tray' ? 'pl-1.5' : 'pl-2',
+                      )
+                    : labelled
+                      ? 'px-2.5 text-shell-muted hover:bg-shell-hover-inset hover:text-shell-text'
+                      : 'min-w-7.5 px-2 text-shell-muted hover:bg-shell-hover-inset hover:text-shell-text',
+                )}
+              >
+                {tab.icon && (
+                  <Icon
+                    name={tab.icon}
+                    className="text-[0.8125rem] leading-none"
+                  />
+                )}
+                <span
+                  className={cn(
+                    'text-[0.75rem] leading-4 font-medium',
+                    !labelled && 'sr-only',
+                  )}
+                >
+                  {tab.label}
+                </span>
+                {errorCount > 0 && (
+                  <span className="inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-1 type-count text-destructive-foreground">
+                    {errorCount}
+                  </span>
+                )}
+              </TabsPrimitive.Tab>
+            )
+          })}
+        </TabsPrimitive.List>
+        {end}
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {current ? (
+          // Visited tabs stay mounted, so a draft survives a tab switch.
+          tabs
+            .filter((tab) => visited.has(tab.id))
+            .map((tab) => (
+              <TabsPrimitive.Panel
+                key={tab.id}
+                value={tab.id}
+                keepMounted
+                className="outline-none data-hidden:hidden"
+              >
+                {children(tab)}
+              </TabsPrimitive.Panel>
+            ))
+        ) : (
+          <p className="px-4 py-3.5 type-shell-secondary text-shell-muted">
+            {t(
+              'inspector.noProperties',
+              'This node type has no inspector properties.',
+            )}
+          </p>
+        )}
+      </div>
+    </TabsPrimitive.Root>
+  )
+}
+
+/**
+ * Pulls the lead properties out of their groups into a group of their own,
+ * first in the tab that holds the first of them.
+ */
+function withLead(
+  tabs: InspectorTab[],
+  lead: { label: string; properties: string[] } | undefined,
+): InspectorTab[] {
+  if (!lead) return tabs
+  const isLead = (item: InspectorItem) =>
+    item.kind === 'property' && lead.properties.includes(item.property.name)
+  const order = (item: InspectorItem) =>
+    lead.properties.indexOf(item.kind === 'property' ? item.property.name : '')
+  return tabs.map((tab) => {
+    const leadItems = tab.groups
+      .flatMap((group) => group.items)
+      .filter(isLead)
+      .sort((a, b) => order(a) - order(b))
+    if (leadItems.length === 0) return tab
+    const groups = tab.groups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => !isLead(item)),
+      }))
+      .filter((group) => group.items.length > 0)
+    return {
+      ...tab,
+      groups: [
+        {
+          id: '__lead',
+          label: lead.label,
+          icon: null,
+          collapsed: false,
+          items: leadItems,
+        },
+        ...groups,
+      ],
+    }
+  })
+}
+
+/** Editors compact enough to share a tray row; every other one takes a row. */
+const COMPACT_EDITORS = new Set([
+  'Neos.Neos/Inspector/Editors/TextFieldEditor',
+  'Neos.Neos/Inspector/Editors/UriPathSegmentEditor',
+  'Neos.Neos/Inspector/Editors/BooleanEditor',
+  'Neos.Neos/Inspector/Editors/SelectBoxEditor',
+  'Neos.Neos/Inspector/Editors/DateTimeEditor',
+  'Neos.Neos/Inspector/Editors/RangeEditor',
+  'Neos.Neos/Inspector/Editors/LinkEditor',
+  'Neos.Neos/Inspector/Editors/NodeTypeEditor',
+])
+
+function wideInTray(item: InspectorItem): boolean {
+  return (
+    item.kind !== 'property' || !COMPACT_EDITORS.has(item.property.editor ?? '')
+  )
+}
+
+/**
+ * A group of the alpha inspector: label and chevron, open unless configured
+ * collapsed. In the tray its fields share rows in fixed columns, aligned
+ * across groups.
+ */
+function PropertySection({
+  layout,
+  last,
+  ...props
+}: PropertyGroupProps & { layout: 'panel' | 'tray'; last: boolean }) {
+  const { group } = props
+  const [open, setOpen] = useState(!group.collapsed)
+  const chevron = (
+    <svg
+      width="8"
+      height="5"
+      viewBox="0 0 8 5"
+      fill="none"
+      stroke="var(--color-shell-muted)"
+      strokeWidth={1.4}
+      aria-hidden
+      className={cn('shrink-0 transition-transform', !open && '-rotate-90')}
+    >
+      <path d="M1 1l3 3 3-3" />
+    </svg>
+  )
+  return (
+    <section
+      className={cn(
+        (layout === 'panel' || !last) && 'border-b border-shell-border-strong',
+      )}
+    >
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
         className={cn(
-          'flex w-full cursor-pointer items-center justify-between px-4 text-left outline-none focus-visible:bg-white/4',
-          open ? 'pt-3.5 pb-3.5' : 'h-11',
+          'flex w-full cursor-pointer items-center text-left outline-none focus-visible:bg-white/4',
+          layout === 'panel'
+            ? 'justify-between px-4 pt-3.5'
+            : 'gap-2 px-3.5 pt-3',
+          open ? (layout === 'panel' ? 'pb-3.5' : 'pb-2.5') : 'pb-3.5',
         )}
       >
         <span className="text-[0.75rem] leading-4 font-semibold text-shell-text">
           {group.label}
         </span>
         {open ? (
-          <svg
-            width="8"
-            height="5"
-            viewBox="0 0 8 5"
-            fill="none"
-            stroke="var(--color-shell-muted)"
-            strokeWidth={1.4}
-            aria-hidden
-          >
-            <path d="M1 1l3 3 3-3" />
-          </svg>
+          chevron
         ) : (
           <span className="flex items-center gap-2.5">
             <span className="text-[0.75rem] leading-4 text-shell-subtle">
               {group.items.length}
             </span>
-            <svg
-              width="5"
-              height="8"
-              viewBox="0 0 5 8"
-              fill="none"
-              stroke="var(--color-shell-muted)"
-              strokeWidth={1.4}
-              aria-hidden
-            >
-              <path d="M1 1l3 3-3 3" />
-            </svg>
+            {chevron}
           </span>
         )}
       </button>
       {/* Hidden, not unmounted: a closed section keeps its unsaved drafts. */}
       <div
-        className={cn('flex flex-col gap-3.5 px-4 pb-4.5', !open && 'hidden')}
+        className={cn(
+          layout === 'panel'
+            ? 'flex flex-col gap-3.5 px-4 pb-4.5'
+            : 'grid grid-cols-[11rem_11rem_minmax(0,1fr)] items-end gap-x-4 gap-y-3.5 px-3.5 pb-4',
+          !open && 'hidden',
+        )}
       >
-        <PropertyItems {...props} />
+        <PropertyItems
+          {...props}
+          itemClassName={
+            layout === 'tray'
+              ? (item) => (wideInTray(item) ? 'col-span-full' : undefined)
+              : undefined
+          }
+        />
       </div>
     </section>
   )
@@ -817,11 +966,14 @@ function PropertyItems({
   validationErrors,
   onSave,
   onLiveChange,
-}: PropertyGroupProps) {
+  itemClassName,
+}: PropertyGroupProps & {
+  itemClassName?: (item: InspectorItem) => string | undefined
+}) {
   return group.items.map((item) => {
     if (item.kind !== 'property') {
       return (
-        <div key={item.view.name}>
+        <div key={item.view.name} className={itemClassName?.(item)}>
           <InspectorViewRenderer view={item.view} node={node} />
         </div>
       )
@@ -831,7 +983,7 @@ function PropertyItems({
     const inheritedHidden =
       item.property.name === HIDDEN_PROPERTY && hiddenByAncestor(node)
     return (
-      <div key={item.property.name}>
+      <div key={item.property.name} className={itemClassName?.(item)}>
         <PropertyEditor
           // Reset drafts when the inspected node changes, keep them
           // across the refetch after a save.

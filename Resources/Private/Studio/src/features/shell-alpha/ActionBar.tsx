@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Select as SelectPrimitive } from '@base-ui/react/select'
 import { useActiveContentRepositoryId } from '@/api/neos/activeContentRepository'
 import {
   DOCUMENT_NODE_TYPE,
@@ -8,11 +7,7 @@ import {
   fetchNode,
   useNodeAncestors,
 } from '@/api/neos/endpoints/nodes'
-import {
-  isOfType,
-  useNodeType,
-  useNodeTypes,
-} from '@/api/neos/endpoints/nodeTypes'
+import { isOfType, useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
 import { neosKeys } from '@/api/neos/keys'
 import { type Node, nodeAddressOf, type NodeAddress } from '@/api/neos/schema'
 import { useStudio } from '@/app/StudioContext'
@@ -33,7 +28,6 @@ import {
 import { redo, undo, useHistory } from '@/features/history/historyStore'
 import type { HistoryLocation } from '@/features/history/location'
 import { InspectorPanel } from '@/features/inspector/Inspector'
-import { buildInspectorSchema } from '@/features/inspector/inspectorSchema'
 import { PanelBody } from '@/features/panels/PanelSystem'
 import { panelRegistry } from '@/features/panels/registry'
 import {
@@ -49,12 +43,10 @@ import { useRegistry } from '@/lib/registry'
 import { cn } from '@/lib/utils'
 import {
   BackIcon,
-  CheckIcon,
   ChevronDownIcon,
   KeepOpenIcon,
   CloseIcon,
   CopyIcon,
-  DoubleChevronIcon,
   MoreIcon,
   PageIcon,
   PlusIcon,
@@ -74,9 +66,6 @@ import {
 import { anchorProps, NativePopover, type Placement } from './NativePopover'
 import { PathMenu } from './PathMenu'
 import { useTrayOnSelection } from './preferences'
-import { containedPortal } from '@/lib/portalContainer'
-
-const SelectPortalContained = containedPortal(SelectPrimitive.Portal)
 
 type Open = 'settings' | 'add' | 'search' | null
 
@@ -105,14 +94,12 @@ const SEARCH_PLACEMENT: Placement = { side: 'top', align: 'start', offset: 8 }
  * surfaces attached above the bar.
  */
 export function ActionBar({
-  onOpenPanel,
   onOpenMode,
   onHistoryApplied,
   onReveal,
   propertiesDocked,
   onKeepOpen,
 }: {
-  onOpenPanel: (panel: string) => void
   /** The Properties panel is docked: selecting no longer opens the tray. */
   propertiesDocked: boolean
   /** "Keep open": dock the tray's fields as the Properties panel. */
@@ -203,13 +190,8 @@ export function ActionBar({
       <div className="pointer-events-auto flex max-w-full flex-col items-center gap-2 *:max-w-full">
         {open === 'settings' && node && (
           <SettingsTray
-            key={node.nodeAggregateId}
             node={node}
             onClose={() => setOpen(null)}
-            onOpenInspector={() => {
-              setOpen(null)
-              onOpenPanel('inspector')
-            }}
             onKeepOpen={() => {
               setOpen(null)
               onKeepOpen()
@@ -515,147 +497,51 @@ function NodePill({
   )
 }
 
-const FULL_INSPECTOR = '__full-inspector'
-
-/** Attached above the bar: one inspector group's fields in a row. */
+/**
+ * Attached above the bar: the node's inspector tabs, each group's fields in
+ * a row. The node pill names the node, so the header holds only the tabs.
+ */
 function SettingsTray({
   node,
   onClose,
-  onOpenInspector,
   onKeepOpen,
 }: {
   node: Node
   onClose: () => void
-  onOpenInspector: () => void
   onKeepOpen: () => void
 }) {
-  const { data: nodeTypes } = useNodeTypes()
-  const { data: nodeType } = useNodeType(node.nodeType)
   const { nodeEdited } = useStudio()
-  const groups = React.useMemo(
-    () =>
-      nodeType
-        ? buildInspectorSchema(nodeType).flatMap((tab) => tab.groups)
-        : [],
-    [nodeType],
-  )
-  const [groupId, setGroupId] = React.useState<string | null>(null)
-  const group = groups.find((entry) => entry.id === groupId) ?? groups[0]
-  const typeLabel = nodeTypes?.get(node.nodeType)?.label ?? node.nodeType
-
   return (
-    <Surface className="flex w-[32.6875rem] flex-col">
-      <div className="flex h-12 shrink-0 items-center justify-between pr-2 pl-3.5">
-        <div className="flex min-w-0 items-center gap-2">
-          <NodeTypeIcon
-            nodeTypes={nodeTypes}
-            nodeTypeName={node.nodeType}
-            className="type-icon-s text-shell-text"
-          />
-          <span className="truncate type-shell-control font-semibold">
-            {typeLabel}
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          {group && (
-            <SelectPrimitive.Root
-              value={group.id}
-              onValueChange={(value) => {
-                if (value === FULL_INSPECTOR) onOpenInspector()
-                else setGroupId(value as string)
-              }}
+    <Surface className="flex w-150 flex-col overflow-hidden">
+      <InspectorPanel
+        node={node}
+        onNodeEdited={nodeEdited}
+        layout="tray"
+        tabsEnd={
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={onKeepOpen}
+              title={t(
+                'shellAlpha.keepOpenHint',
+                'Keep the properties open in a panel on the left',
+              )}
+              className="flex h-7 cursor-pointer items-center gap-1.5 rounded-full pr-2.5 pl-2 type-shell-secondary text-shell-muted outline-none hover:bg-shell-hover hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60"
             >
-              <SelectPrimitive.Trigger className="flex h-7 cursor-pointer items-center gap-1.5 rounded-shell-control bg-shell-ground pr-2 pl-2.5 type-shell-secondary text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60">
-                {group.label}
-                <ChevronDownIcon className="text-shell-muted" />
-              </SelectPrimitive.Trigger>
-              <SelectPortalContained>
-                <SelectPrimitive.Positioner
-                  side="top"
-                  align="end"
-                  sideOffset={6}
-                  alignItemWithTrigger={false}
-                  className="z-200 outline-none"
-                >
-                  <SelectPrimitive.Popup className="w-50 origin-(--transform-origin) rounded-shell-surface border border-white/8 bg-shell-ground p-1 shadow-shell-surface outline-none">
-                    {groups.map((entry) => (
-                      <SelectPrimitive.Item
-                        key={entry.id}
-                        value={entry.id}
-                        className="flex h-8 cursor-default items-center justify-between gap-2 rounded-shell-control px-2.5 type-shell-secondary text-shell-text outline-none select-none data-highlighted:bg-shell-hover data-selected:bg-shell-hover"
-                      >
-                        <span className="truncate">{entry.label}</span>
-                        {entry.id === group.id ? (
-                          <span className="text-shell-accent-light">
-                            <CheckIcon />
-                          </span>
-                        ) : (
-                          <span className="text-[0.6875rem] leading-3.5 text-shell-disabled">
-                            {entry.items.length}
-                          </span>
-                        )}
-                      </SelectPrimitive.Item>
-                    ))}
-                    <div className="mx-1.5 my-1 h-px bg-white/8" />
-                    <SelectPrimitive.Item
-                      value={FULL_INSPECTOR}
-                      className="flex h-8 cursor-default items-center gap-2 rounded-shell-control px-2.5 type-shell-secondary text-shell-accent-light outline-none select-none data-highlighted:bg-shell-hover"
-                    >
-                      <DoubleChevronIcon />
-                      {t('shellAlpha.openFullInspector', 'Open full inspector')}
-                    </SelectPrimitive.Item>
-                  </SelectPrimitive.Popup>
-                </SelectPrimitive.Positioner>
-              </SelectPortalContained>
-            </SelectPrimitive.Root>
-          )}
-          <button
-            type="button"
-            onClick={onKeepOpen}
-            title={t(
-              'shellAlpha.keepOpenHint',
-              'Keep the properties open in a panel on the left',
-            )}
-            className="flex h-7 cursor-pointer items-center gap-1.5 rounded-full pr-2.5 pl-2 type-shell-secondary text-shell-muted outline-none hover:bg-shell-hover hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60"
-          >
-            <KeepOpenIcon />
-            {t('shellAlpha.keepOpen', 'Keep open')}
-          </button>
-          <IconButton
-            size="sm"
-            className="size-7 text-shell-muted"
-            onClick={onClose}
-            aria-label={t('common.close', 'Close')}
-          >
-            <CloseIcon />
-          </IconButton>
-        </div>
-      </div>
-      <div className="max-h-[50svh] overflow-y-auto px-3.5 pt-1 pb-3.5">
-        <InspectorPanel
-          node={node}
-          onNodeEdited={nodeEdited}
-          trayGroup={group?.id ?? null}
-        />
-      </div>
-      <button
-        type="button"
-        onClick={onOpenInspector}
-        className="flex h-10 shrink-0 cursor-pointer items-center justify-between border-t border-shell-border-strong px-3.5 type-shell-secondary text-shell-accent-light outline-none hover:bg-shell-hover-inset focus-visible:bg-shell-hover-inset"
-      >
-        {t('shellAlpha.allProperties', 'All properties')}
-        <svg
-          width="10"
-          height="9"
-          viewBox="0 0 10 9"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          aria-hidden
-        >
-          <path d="M0 4.5h8.5M5 1l3.5 3.5L5 8" />
-        </svg>
-      </button>
+              <KeepOpenIcon />
+              {t('shellAlpha.keepOpen', 'Keep open')}
+            </button>
+            <IconButton
+              size="sm"
+              className="size-7 text-shell-muted"
+              onClick={onClose}
+              aria-label={t('common.close', 'Close')}
+            >
+              <CloseIcon />
+            </IconButton>
+          </div>
+        }
+      />
     </Surface>
   )
 }

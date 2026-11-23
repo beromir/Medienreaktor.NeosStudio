@@ -203,7 +203,6 @@ export function AlphaShell({
               ))}
             {mode === EDITOR && (
               <ActionBar
-                onOpenPanel={setDocked}
                 onOpenMode={activate}
                 propertiesDocked={dockedDefinition?.id === PROPERTIES}
                 onKeepOpen={() => setDocked(PROPERTIES)}
