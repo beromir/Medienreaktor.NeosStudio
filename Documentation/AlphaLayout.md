@@ -7,7 +7,7 @@ floating action bar. Users switch in the user menu ("Try the new layout
 user preference (`classic` | `alpha`), served in the boot config as
 `layout`.
 
-The design is work in progress (Paper file "Neos Studio", frames R3-R24).
+The design is work in progress (Paper file "Neos Studio", frames R3-R27).
 
 ## Where it lives
 
@@ -25,9 +25,9 @@ panels are the rail's modes, the others its panel buttons, docked between
 rail and preview (see Editing for the pin). The Documents panel is the
 page tree dropdown; the settings tray and the Properties panel show the
 Inspector's own fields (`InspectorPanel layout`). Header actions sit in the top
-bar, node actions in the node pill's "more" menu.
+bar, node actions in the node pill's element menu.
 
-## Editing (the "Candidate" frames, R19-R23)
+## Editing (the "Candidate" frames, R19-R27)
 
 Selecting an element with text to type in the preview (an inline-editable
 property the element renders, as the guest reports it with
@@ -40,18 +40,23 @@ node. Whether selection may open the tray at all is the
 `studio.alpha.trayOnSelection` user preference (on unless false), switched
 in the account menu.
 
-The tray and the Properties panel show the node type's inspector tabs
-(`ui.inspector.tabs`) as muted pills: the active tab with icon and label,
-the others icon only, their label as tooltip. Every group of the active tab
-starts open and collapses with its chevron; only groups configured
-`collapsed: true` start closed. In the 600px tray each group's fields share
-rows in fixed columns (176 / 176 / rest, aligned across groups); wide
-editors (image, asset, references, text areas, code, rich text, views and
-plugin editors) take a full row, the image editor as a compact row
-(thumbnail, file name, size, Crop, Replace). The tray's header holds only
-the tabs, "Keep open" and close - the node pill names the node.
-`InspectorPanel layout="panel" | "tray"` renders both; the classic
-inspector is the same component without `layout`.
+The tray and the Properties panel show a content element's content
+settings in the node type's inspector tabs (`ui.inspector.tabs`, icons
+from the tab config, pencil / cog / sliders when none is set). The tabs
+never move (R27): the tray puts them - icon and label, the active one
+filled - in one 48px row at its bottom together with "Keep open" and
+close; the tray grows upward with the content, so that row stays right
+above the action bar. A single tab leaves the row with only its buttons.
+The panel keeps them at the top as 32x28 icons at fixed positions, the
+label as tooltip, and drops the row for a single tab. Every group of the
+active tab starts open and collapses with its chevron; only groups
+configured `collapsed: true` start closed. In the 600px tray each group's
+fields share rows in fixed columns (176 / 176 / rest, aligned across
+groups); wide editors (image, asset, references, text areas, code, rich
+text, views and plugin editors) take a full row, the image editor as a
+compact row (thumbnail, file name, size, Crop, Replace). The node pill
+names the node. `InspectorPanel layout="panel" | "tray"` renders both; the
+classic inspector is the same component without `layout`.
 
 Docked panels sit between rail and preview, one at a time. Each header has
 a pin: a pinned panel stays, the next one opens beside it (between it and
@@ -68,6 +73,30 @@ The rail's mode switcher, open, always lists Editor, Media, Workspaces,
 Tasks (plugin modes after them), the current one highlighted in its own
 slot and the chevron last (R21). The open-tasks dot sits on Tasks while
 open, on the current mode's button while closed.
+
+## The element menu (R25)
+
+What is about the element rather than its content leaves the tray and the
+panel: Neos' type group (`_nodeType`), visibility (`_hidden` and the timed
+`enableAfterDateTime` / `disableAfterDateTime`) and the node info view are
+not rendered for content elements; other groups an integrator puts in the
+meta tab stay, a page keeps all of them (it has no element menu). They
+live in the node pill's "more" menu (`ElementMenu`), opened above the pill
+and aligned with its right edge: an info block (type, "Changed by … ·
+time" from the workspace's pending events, else the last modification;
+the node id to copy; Copy for MCP), then Change type…, Hide / Show,
+Schedule… (only with timed visibility), Duplicate, Copy to clipboard,
+Delete (confirmed in a dialog) and the node actions of plugins.
+
+Change type… shows the types the node type editor would offer at the
+node's position, without the current one, as the Add menu's tiles; picking
+one asks in the popover's footer what carries over (properties of the same
+name with a value) and what is removed. Schedule… edits the timed
+visibility as "Show from" / "Hide after" in a popover of the same style.
+
+A hidden element is faded to 45% in the preview, with a dashed selection
+outline (the minimal chrome's styles for the server-rendered
+`data-__neos-studio-hidden`), and the node pill shows a "Hidden" tag.
 
 ## Publishing (R24)
 
@@ -125,7 +154,7 @@ Figma variables:
 | shell-accent / -light / -pale | #00ADEE / #5CC9F5 / #7FD6F7 |
 | shell-accent-tint / -tint-strong / -check | #00ADEE33 / #00ADEE4D / #00ADEE40 |
 | shell-conflict | #FF8700 |
-| shell-danger | #D9434A |
+| shell-danger / -text | #D9434A / #F08A8A |
 | shell-scrim | #00000099 |
 | radius surface / site / control / segment | 16 / 10 / 8 / 5 px (chrome: full) |
 | shadow bar / surface / dialog | 0 10px 30px #00000066 / 0 16px 40px #00000066 / 0 24px 60px #00000080 |
