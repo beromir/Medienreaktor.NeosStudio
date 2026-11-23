@@ -436,7 +436,15 @@ export function InspectorPanel({
         >
           <AlphaTabs
             layout={layout}
-            tabs={visibleTabs ? withLead(visibleTabs, lead) : []}
+            tabs={
+              visibleTabs
+                ? withoutElementMeta(
+                    withLead(visibleTabs, lead),
+                    nodeTypes !== undefined &&
+                      !isOfType(nodeTypes, node.nodeType, DOCUMENT_NODE_TYPE),
+                  )
+                : []
+            }
             activeTab={activeTab}
             onTabChange={setSelectedTab}
             validationErrors={validationErrors}
@@ -728,10 +736,11 @@ function AlphaTabs({
   end?: React.ReactNode
   children: (tab: InspectorTab) => React.ReactNode
 }) {
-  const current = tabs.find((tab) => tab.id === activeTab)
+  // A tab left out (element meta) falls back to the first.
+  const current = tabs.find((tab) => tab.id === activeTab) ?? tabs[0]
   return (
     <TabsPrimitive.Root
-      value={activeTab}
+      value={current?.id ?? null}
       onValueChange={(value) => onTabChange(value as string)}
       className="flex min-h-0 flex-1 flex-col"
     >
@@ -752,7 +761,7 @@ function AlphaTabs({
                   item.kind === 'property' &&
                   validationErrors[item.property.name] !== undefined,
               ).length
-            const active = tab.id === activeTab
+            const active = tab.id === current?.id
             const labelled = active || !tab.icon
             return (
               <TabsPrimitive.Tab
@@ -800,7 +809,7 @@ function AlphaTabs({
         {current ? (
           // Visited tabs stay mounted, so a draft survives a tab switch.
           tabs
-            .filter((tab) => visited.has(tab.id))
+            .filter((tab) => visited.has(tab.id) || tab === current)
             .map((tab) => (
               <TabsPrimitive.Panel
                 key={tab.id}
@@ -863,6 +872,41 @@ function withLead(
       ],
     }
   })
+}
+
+/**
+ * What the alpha layout's element menu covers - type, visibility, the timed
+ * visibility and the node info - left out of a content element's tray and
+ * panel. Pages keep them: they have no element menu.
+ */
+const ELEMENT_META_PROPERTIES = new Set([
+  NODE_TYPE_PROPERTY,
+  HIDDEN_PROPERTY,
+  'enableAfterDateTime',
+  'disableAfterDateTime',
+])
+const NODE_INFO_VIEW = 'Neos.Neos/Inspector/Views/NodeInfoView'
+
+function withoutElementMeta(
+  tabs: InspectorTab[],
+  isContent: boolean,
+): InspectorTab[] {
+  if (!isContent) return tabs
+  return tabs
+    .map((tab) => ({
+      ...tab,
+      groups: tab.groups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) =>
+            item.kind === 'property'
+              ? !ELEMENT_META_PROPERTIES.has(item.property.name)
+              : item.view.view !== NODE_INFO_VIEW,
+          ),
+        }))
+        .filter((group) => group.items.length > 0),
+    }))
+    .filter((tab) => tab.groups.length > 0)
 }
 
 /** Editors compact enough to share a tray row; every other one takes a row. */

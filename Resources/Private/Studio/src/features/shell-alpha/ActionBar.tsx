@@ -12,7 +12,6 @@ import { neosKeys } from '@/api/neos/keys'
 import { type Node, nodeAddressOf, type NodeAddress } from '@/api/neos/schema'
 import { useStudio } from '@/app/StudioContext'
 import { toast } from '@/components/ui/toast'
-import { permittedActionsOn } from '@/features/access/permittedActions'
 import { CreateNodeFlow } from '@/features/creation/NodeCreationDialog'
 import {
   InsertNodeDialog,
@@ -21,10 +20,6 @@ import {
   useInsertion,
 } from '@/features/creation/InsertNodeDialog'
 import type { CreatableNodeTypeGroup } from '@/features/creation/creatableNodeTypes'
-import {
-  NodeContextMenu,
-  type NodeMenuTarget,
-} from '@/features/editing/NodeContextMenu'
 import { redo, undo, useHistory } from '@/features/history/historyStore'
 import type { HistoryLocation } from '@/features/history/location'
 import { InspectorPanel } from '@/features/inspector/Inspector'
@@ -47,8 +42,7 @@ import {
   ChevronDownIcon,
   PinIcon,
   CloseIcon,
-  CopyIcon,
-  MoreIcon,
+  EyeOffIcon,
   PageIcon,
   PlusIcon,
   RedoIcon,
@@ -66,6 +60,7 @@ import {
 } from './primitives'
 import { anchorProps, NativePopover, type Placement } from './NativePopover'
 import { PathMenu } from './PathMenu'
+import { ElementMenu } from './ElementMenu'
 import { useTrayOnSelection } from './preferences'
 
 type Open = 'settings' | 'add' | 'search' | null
@@ -79,6 +74,7 @@ const SEARCH_ID = 'shell-alpha-search'
 const POPOVER_IDS = [ADD_ID, SEARCH_ID]
 const BARS_ANCHOR = '--shell-alpha-bars'
 const GLOBAL_ANCHOR = '--shell-alpha-global-pill'
+const NODE_PILL_ANCHOR = '--shell-alpha-node-pill'
 /** As drawn: 8px above the bars, its left edge 235px left of their centre. */
 const ADD_PLACEMENT: Placement = {
   side: 'top',
@@ -396,9 +392,9 @@ function NodePill({
   onToggleSettings: () => void
 }) {
   const { data: nodeTypes } = useNodeTypes()
-  const { inspectNode, nodeEdited, nodesEdited } = useStudio()
+  const { inspectNode } = useStudio()
   const typeLabel = nodeTypes?.get(node.nodeType)?.label ?? node.nodeType
-  const [menu, setMenu] = React.useState<NodeMenuTarget | null>(null)
+  const pillRef = React.useRef<HTMLDivElement>(null)
   const { data: ancestors } = useNodeAncestors(nodeAddressOf(node))
   const parent = ancestors?.[0] ?? null
 
@@ -414,28 +410,8 @@ function NodePill({
     },
   })
 
-  const copyForAssistant = () => {
-    const text = [
-      `Neos node "${node.label || node.nodeAggregateId}" (${node.nodeType})`,
-      `nodeAggregateId: ${node.nodeAggregateId}`,
-      `workspaceName: ${node.workspaceName}`,
-      `dimensionSpacePoint: ${node.dimensionSpacePoint}`,
-      `contentRepositoryId: ${node.contentRepositoryId}`,
-    ].join('\n')
-    navigator.clipboard
-      .writeText(text)
-      .then(() =>
-        toast.success(
-          t('shellAlpha.copiedForMcp', 'Copied “{0}” for your assistant', [
-            typeLabel,
-          ]),
-        ),
-      )
-      .catch((error: unknown) => toast.error(error))
-  }
-
   return (
-    <BarPill>
+    <BarPill ref={pillRef} {...anchorProps(NODE_PILL_ANCHOR)}>
       <PathMenu
         node={node}
         side="top"
@@ -456,6 +432,12 @@ function NodePill({
           </button>
         }
       />
+      {node.isHidden && (
+        <span className="flex h-5.5 shrink-0 items-center gap-1.25 rounded-full bg-shell-hover-inset pr-2 pl-1.75 text-[0.6875rem] leading-3.5 font-medium text-shell-quiet">
+          <EyeOffIcon width={12} height={10} strokeWidth={1.4} />
+          {t('shellAlpha.element.hidden', 'Hidden')}
+        </span>
+      )}
       <LabelButton
         open={settingsShown}
         aria-expanded={settingsOpen}
@@ -465,58 +447,11 @@ function NodePill({
         <SettingsIcon />
         {t('shellAlpha.settings', 'Settings')}
       </LabelButton>
-      <IconButton
-        onClick={copyForAssistant}
-        title={t('shellAlpha.copyForMcp', 'Copy for MCP')}
-        aria-label={t('shellAlpha.copyForMcp', 'Copy for MCP')}
-      >
-        <CopyIcon />
-      </IconButton>
-      <IconButton
-        open={menu !== null}
-        title={t('actions.more', 'More actions')}
-        aria-label={t('actions.more', 'More actions')}
-        onClick={(event) => {
-          if (menu) return setMenu(null)
-          const rect = event.currentTarget.getBoundingClientRect()
-          setMenu({
-            address: nodeAddressOf(node),
-            node,
-            parentAddress: parent ? nodeAddressOf(parent) : null,
-            hidden: node.isHidden,
-            tethered: node.classification === 'tethered',
-            permitted: permittedActionsOn(node),
-            anchor: {
-              x: rect.left,
-              y: rect.top,
-              width: rect.width,
-              height: rect.height,
-            },
-          })
-        }}
-      >
-        <MoreIcon />
-      </IconButton>
-      <NodeContextMenu
-        target={menu}
-        surface="preview"
-        entityLabel={t('editing.entity.element', 'element')}
-        clipboardKind="content"
-        onClose={() => setMenu(null)}
-        onPasted={(affected) => nodesEdited(affected)}
-        onDone={(action, targets) => {
-          const target = targets[0]
-          if (!target) return
-          if (action === 'delete') {
-            nodesEdited(target.parentAddress ? [target.parentAddress] : [])
-            if (target.parentAddress)
-              fetchNode(target.parentAddress)
-                .then(inspectNode)
-                .catch(() => {})
-          } else {
-            nodeEdited(target.address, { reload: 'element' })
-          }
-        }}
+      <ElementMenu
+        node={node}
+        parent={parent}
+        pill={pillRef}
+        pillAnchor={NODE_PILL_ANCHOR}
       />
     </BarPill>
   )

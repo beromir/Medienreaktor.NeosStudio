@@ -23,6 +23,7 @@ export function chromeStyles(selectors: {
   wrapper: string
   hoverClass: string
   selectedClass: string
+  hidden: string
 }): string {
   const minimal = `html[${CHROME_ATTRIBUTE}='minimal']`
   return `
@@ -34,6 +35,12 @@ export function chromeStyles(selectors: {
     }
     ${minimal} [${selectors.wrapper}].${selectors.hoverClass}:not(.${selectors.selectedClass}) {
       outline-width: 1px;
+    }
+    ${minimal} [${selectors.wrapper}][${selectors.hidden}] {
+      opacity: 0.45;
+    }
+    ${minimal} [${selectors.wrapper}][${selectors.hidden}].${selectors.selectedClass} {
+      outline: 1.5px dashed rgba(0, 173, 238, 0.7);
     }
     #${INSERT_LINE_ID} {
       position: fixed;

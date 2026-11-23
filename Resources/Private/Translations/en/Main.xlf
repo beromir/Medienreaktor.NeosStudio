@@ -1973,6 +1973,33 @@
       <trans-unit id="shellAlpha.back" xml:space="preserve">
         <source>Back</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.changeType.apply" xml:space="preserve">
+        <source>Change type</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.failed" xml:space="preserve">
+        <source>Changing the type failed</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.keepsMany" xml:space="preserve">
+        <source>{0} carry over.</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.keepsOne" xml:space="preserve">
+        <source>{0} carries over.</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.none" xml:space="preserve">
+        <source>No other type is allowed here.</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.question" xml:space="preserve">
+        <source>Change to {0}?</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.removesMany" xml:space="preserve">
+        <source>{0} are removed.</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.removesOne" xml:space="preserve">
+        <source>{0} is removed.</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.title" xml:space="preserve">
+        <source>Change {0} to…</source>
+      </trans-unit>
       <trans-unit id="shellAlpha.closeTray" xml:space="preserve">
         <source>Close the tray or menu</source>
       </trans-unit>
@@ -1999,6 +2026,48 @@
       </trans-unit>
       <trans-unit id="shellAlpha.device.tablet" xml:space="preserve">
         <source>Tablet</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.changeType" xml:space="preserve">
+        <source>Change type…</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.changed" xml:space="preserve">
+        <source>Changed {0}</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.changedBy" xml:space="preserve">
+        <source>Changed by {0} · {1}</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.copied" xml:space="preserve">
+        <source>Copied to the clipboard</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.copyId" xml:space="preserve">
+        <source>Copy the node ID</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.copyToClipboard" xml:space="preserve">
+        <source>Copy to clipboard</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.deleteBody" xml:space="preserve">
+        <source>The element and everything inside it are removed. Discarding the change in the workspace brings them back.</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.duplicate" xml:space="preserve">
+        <source>Duplicate</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.duplicateFailed" xml:space="preserve">
+        <source>Duplicating failed</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.hidden" xml:space="preserve">
+        <source>Hidden</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.idCopied" xml:space="preserve">
+        <source>Copied the node ID</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.schedule" xml:space="preserve">
+        <source>Schedule…</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.scheduleHint" xml:space="preserve">
+        <source>show / hide by date</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.show" xml:space="preserve">
+        <source>Show</source>
       </trans-unit>
       <trans-unit id="shellAlpha.keepOpen" xml:space="preserve">
         <source>Keep open</source>
@@ -2092,6 +2161,18 @@
       </trans-unit>
       <trans-unit id="shellAlpha.relativeTo" xml:space="preserve">
         <source>relative to “{0}”</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.schedule.hideAfter" xml:space="preserve">
+        <source>Hide after</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.schedule.hint" xml:space="preserve">
+        <source>The element shows and hides itself at these times, also in Live once published.</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.schedule.showFrom" xml:space="preserve">
+        <source>Show from</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.schedule.title" xml:space="preserve">
+        <source>Schedule</source>
       </trans-unit>
       <trans-unit id="shellAlpha.search" xml:space="preserve">
         <source>Search</source>
