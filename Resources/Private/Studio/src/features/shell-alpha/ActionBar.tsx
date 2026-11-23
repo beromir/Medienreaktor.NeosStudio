@@ -497,7 +497,11 @@ function SettingsTray({
                   : 'text-shell-muted hover:bg-shell-hover hover:text-shell-text',
               )}
             >
-              <PinIcon filled={pinned} width={12} height={12} />
+              <PinIcon
+                filled={pinned}
+                width={pinned ? 12 : 13}
+                height={pinned ? 12 : 13}
+              />
               {t('shellAlpha.keepOpen', 'Keep open')}
             </button>
             <IconButton

@@ -713,9 +713,21 @@ function PropertyGroup(props: PropertyGroupProps) {
   )
 }
 
+/** A tab configured without an icon: the classic tab icons, else a sliders glyph. */
+function tabIcon(tab: InspectorTab): string {
+  if (tab.icon) return tab.icon
+  if (tab.id === 'default') return 'pencil'
+  if (tab.id === 'meta') return 'cog'
+  return 'sliders'
+}
+
 /**
- * The alpha layout's tab row: the active tab a muted pill with icon and
- * label, the others icon only (their label as tooltip and accessible name).
+ * The alpha layout's tabs, which never move (R27). The tray puts them, with
+ * its own buttons, in one row at its bottom - the tray grows upward with
+ * the content, so the row stays right above the action bar. The panel keeps
+ * them at the top as icons at fixed positions, the label as tooltip. One
+ * tab needs no tabs: the tray keeps the row for its buttons, the panel
+ * drops it.
  */
 function AlphaTabs({
   layout,
@@ -738,97 +750,122 @@ function AlphaTabs({
 }) {
   // A tab left out (element meta) falls back to the first.
   const current = tabs.find((tab) => tab.id === activeTab) ?? tabs[0]
+  const showTabs = tabs.length > 1
+  const errors = (tab: InspectorTab) =>
+    tab.groups
+      .flatMap((group) => group.items)
+      .filter(
+        (item) =>
+          item.kind === 'property' &&
+          validationErrors[item.property.name] !== undefined,
+      ).length
+
+  const list = showTabs && (
+    <TabsPrimitive.List className="flex min-w-0 items-center gap-0.5 overflow-x-auto">
+      {tabs.map((tab) => {
+        const active = tab.id === current?.id
+        const errorCount = errors(tab)
+        return layout === 'tray' ? (
+          <TabsPrimitive.Tab
+            key={tab.id}
+            value={tab.id}
+            className={cn(
+              'flex h-7.5 shrink-0 cursor-pointer items-center gap-1.5 rounded-shell-control pr-3 pl-2 outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
+              active
+                ? 'bg-shell-ground text-shell-text'
+                : 'text-shell-muted hover:bg-shell-hover-inset hover:text-shell-text',
+            )}
+          >
+            <Icon
+              name={tabIcon(tab)}
+              className="text-[0.8125rem] leading-none"
+            />
+            <span className="text-[0.75rem] leading-4 font-medium whitespace-nowrap">
+              {tab.label}
+            </span>
+            {errorCount > 0 && (
+              <span className="inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-1 type-count text-destructive-foreground">
+                {errorCount}
+              </span>
+            )}
+          </TabsPrimitive.Tab>
+        ) : (
+          <TabsPrimitive.Tab
+            key={tab.id}
+            value={tab.id}
+            title={tab.label}
+            aria-label={tab.label}
+            className={cn(
+              'relative flex h-7 w-8 shrink-0 cursor-pointer items-center justify-center rounded-shell-control outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
+              active
+                ? 'bg-shell-ground text-shell-text'
+                : 'text-shell-muted hover:bg-shell-hover-inset hover:text-shell-text',
+            )}
+          >
+            <Icon
+              name={tabIcon(tab)}
+              className="text-[0.8125rem] leading-none"
+            />
+            {errorCount > 0 && (
+              <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive" />
+            )}
+          </TabsPrimitive.Tab>
+        )
+      })}
+    </TabsPrimitive.List>
+  )
+
+  const content = (
+    <div className="min-h-0 flex-1 overflow-y-auto">
+      {current ? (
+        // Visited tabs stay mounted, so a draft survives a tab switch.
+        tabs
+          .filter((tab) => visited.has(tab.id) || tab === current)
+          .map((tab) => (
+            <TabsPrimitive.Panel
+              key={tab.id}
+              value={tab.id}
+              keepMounted
+              className="outline-none data-hidden:hidden"
+            >
+              {children(tab)}
+            </TabsPrimitive.Panel>
+          ))
+      ) : (
+        <p className="px-4 py-3.5 type-shell-secondary text-shell-muted">
+          {t(
+            'inspector.noProperties',
+            'This node type has no inspector properties.',
+          )}
+        </p>
+      )}
+    </div>
+  )
+
   return (
     <TabsPrimitive.Root
       value={current?.id ?? null}
       onValueChange={(value) => onTabChange(value as string)}
       className="flex min-h-0 flex-1 flex-col"
     >
-      <div
-        className={cn(
-          'flex shrink-0 items-center justify-between gap-2 px-2',
-          layout === 'panel'
-            ? 'h-11 border-b border-shell-border-strong pb-2'
-            : 'h-11',
-        )}
-      >
-        <TabsPrimitive.List className="flex min-w-0 flex-wrap items-center gap-0.5">
-          {tabs.map((tab) => {
-            const errorCount = tab.groups
-              .flatMap((group) => group.items)
-              .filter(
-                (item) =>
-                  item.kind === 'property' &&
-                  validationErrors[item.property.name] !== undefined,
-              ).length
-            const active = tab.id === current?.id
-            const labelled = active || !tab.icon
-            return (
-              <TabsPrimitive.Tab
-                key={tab.id}
-                value={tab.id}
-                title={labelled ? undefined : tab.label}
-                className={cn(
-                  'flex h-7 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-shell-control outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
-                  active
-                    ? cn(
-                        'bg-shell-ground pr-3 text-shell-text',
-                        layout === 'tray' ? 'pl-1.5' : 'pl-2',
-                      )
-                    : labelled
-                      ? 'px-2.5 text-shell-muted hover:bg-shell-hover-inset hover:text-shell-text'
-                      : 'min-w-7.5 px-2 text-shell-muted hover:bg-shell-hover-inset hover:text-shell-text',
-                )}
-              >
-                {tab.icon && (
-                  <Icon
-                    name={tab.icon}
-                    className="text-[0.8125rem] leading-none"
-                  />
-                )}
-                <span
-                  className={cn(
-                    'text-[0.75rem] leading-4 font-medium',
-                    !labelled && 'sr-only',
-                  )}
-                >
-                  {tab.label}
-                </span>
-                {errorCount > 0 && (
-                  <span className="inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-1 type-count text-destructive-foreground">
-                    {errorCount}
-                  </span>
-                )}
-              </TabsPrimitive.Tab>
-            )
-          })}
-        </TabsPrimitive.List>
-        {end}
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {current ? (
-          // Visited tabs stay mounted, so a draft survives a tab switch.
-          tabs
-            .filter((tab) => visited.has(tab.id) || tab === current)
-            .map((tab) => (
-              <TabsPrimitive.Panel
-                key={tab.id}
-                value={tab.id}
-                keepMounted
-                className="outline-none data-hidden:hidden"
-              >
-                {children(tab)}
-              </TabsPrimitive.Panel>
-            ))
-        ) : (
-          <p className="px-4 py-3.5 type-shell-secondary text-shell-muted">
-            {t(
-              'inspector.noProperties',
-              'This node type has no inspector properties.',
-            )}
-          </p>
-        )}
-      </div>
+      {layout === 'panel' ? (
+        <>
+          {list && (
+            <div className="flex h-11 shrink-0 items-center border-b border-shell-border-strong px-2 pb-2">
+              {list}
+            </div>
+          )}
+          {content}
+        </>
+      ) : (
+        <>
+          {content}
+          <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-t border-shell-border-strong px-2">
+            {list || <span />}
+            {end}
+          </div>
+        </>
+      )}
     </TabsPrimitive.Root>
   )
 }
