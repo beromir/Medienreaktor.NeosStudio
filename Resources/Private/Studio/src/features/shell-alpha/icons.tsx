@@ -357,9 +357,17 @@ export const LayoutIcon = (props: IconProps) => (
   </Svg>
 )
 
-export const KeepOpenIcon = (props: IconProps) => (
-  <Svg width={12} height={12} viewBox="0 0 12 12" strokeWidth={1.3} {...props}>
-    <rect x="1" y="1.5" width="10" height="9" rx="1.5" />
-    <path d="M4.5 1.5v9" />
+export const PinIcon = ({
+  filled = false,
+  ...props
+}: IconProps & { filled?: boolean }) => (
+  <Svg width={14} height={14} viewBox="0 0 14 14" {...props}>
+    <path
+      d="M8.6 1.4l4 4-1.6.8-2.3 2.3.3 2.6-1 1L2 6.1l1-1 2.6.3 2.3-2.3z"
+      fill={filled ? 'currentColor' : 'none'}
+      strokeWidth={1.2}
+      strokeLinejoin="round"
+    />
+    <path d="M4.6 9.4L1.4 12.6" strokeWidth={1.4} strokeLinecap="round" />
   </Svg>
 )

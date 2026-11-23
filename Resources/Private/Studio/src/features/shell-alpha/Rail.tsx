@@ -107,7 +107,7 @@ export function Rail({
   onModeChange: (panel: string) => void
   /** The panels of the current mode, in rail order; null entries divide. */
   panels: (PanelDefinition | null)[]
-  docked: string | null
+  docked: string[]
   onToggleDocked: (panel: string) => void
 }) {
   const [modesOpen, setModesOpen] = React.useState(false)
@@ -203,7 +203,7 @@ export function Rail({
               <PanelButton
                 key={definition.id}
                 definition={definition}
-                active={docked === definition.id}
+                active={docked.includes(definition.id)}
                 onClick={() => onToggleDocked(definition.id)}
               />
             ),

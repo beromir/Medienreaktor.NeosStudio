@@ -1,3 +1,4 @@
+import type * as React from 'react'
 import { useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
 import { useStudio } from '@/app/StudioContext'
 import { InspectorPanel } from '@/features/inspector/Inspector'
@@ -16,7 +17,13 @@ const PAGE_LEAD = ['title', 'uriPathSegment', 'hiddenInMenu', '_hiddenInMenu']
  * names the node and opens the path menu over the panel; header and fields
  * stay where they are when the selection changes.
  */
-export function PropertiesPanel({ onClose }: { onClose: () => void }) {
+export function PropertiesPanel({
+  pin,
+  onClose,
+}: {
+  pin: React.ReactNode
+  onClose: () => void
+}) {
   const { inspectedNode, selectedDocument, nodeEdited } = useStudio()
   const node = inspectedNode ?? selectedDocument
   const isPage =
@@ -31,14 +38,17 @@ export function PropertiesPanel({ onClose }: { onClose: () => void }) {
     >
       <div className="flex h-13 shrink-0 items-center justify-between px-2">
         {node ? <Header key="header" /> : <span />}
-        <IconButton
-          size="sm"
-          className="text-shell-muted"
-          onClick={onClose}
-          aria-label={t('common.close', 'Close')}
-        >
-          <CloseIcon />
-        </IconButton>
+        <div className="flex shrink-0 items-center gap-0.5">
+          {pin}
+          <IconButton
+            size="sm"
+            className="text-shell-muted"
+            onClick={onClose}
+            aria-label={t('common.close', 'Close')}
+          >
+            <CloseIcon />
+          </IconButton>
+        </div>
       </div>
       {node && (
         <InspectorPanel

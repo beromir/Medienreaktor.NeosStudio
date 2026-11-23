@@ -2578,6 +2578,14 @@
         <source>Studio stopped working</source>
         <target xml:lang="de">Studio funktioniert nicht mehr</target>
       </trans-unit>
+      <trans-unit id="shellAlpha.pin" xml:space="preserve">
+        <source>Pin</source>
+        <target xml:lang="de">Anheften</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.unpin" xml:space="preserve">
+        <source>Unpin</source>
+        <target xml:lang="de">Lösen</target>
+      </trans-unit>
       <trans-unit id="shortcuts.category.general" xml:space="preserve">
         <source>General</source>
         <target xml:lang="de">Allgemein</target>

@@ -2,6 +2,8 @@ import * as React from 'react'
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { cn } from '@/lib/utils'
 import { containedPortal } from '@/lib/portalContainer'
+import { translate as t } from '@/lib/i18n'
+import { PinIcon } from './icons'
 
 const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
 
@@ -185,4 +187,41 @@ export function ShellMenuSeparator() {
 /** The 1px rule between groups of an action bar pill. */
 export function BarDivider() {
   return <div className="h-5 w-px shrink-0 bg-shell-divider" aria-hidden />
+}
+
+/**
+ * Pins a docked panel: a pinned panel stays when another opens, which
+ * opens beside it.
+ */
+export function PinButton({
+  pinned,
+  onClick,
+}: {
+  pinned: boolean
+  onClick: () => void
+}) {
+  const label = pinned
+    ? t('shellAlpha.unpin', 'Unpin')
+    : t('shellAlpha.pin', 'Pin')
+  return (
+    <button
+      type="button"
+      aria-pressed={pinned}
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className={cn(
+        'inline-flex size-7 shrink-0 cursor-pointer items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
+        pinned
+          ? 'rounded-full bg-shell-ground text-shell-text'
+          : 'rounded-shell-control text-shell-muted hover:bg-shell-hover hover:text-shell-text',
+      )}
+    >
+      <PinIcon
+        filled={pinned}
+        width={pinned ? 12 : 14}
+        height={pinned ? 12 : 14}
+      />
+    </button>
+  )
 }

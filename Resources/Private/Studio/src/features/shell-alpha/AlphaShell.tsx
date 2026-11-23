@@ -19,13 +19,23 @@ import { useRegistry } from '@/lib/registry'
 import { cn } from '@/lib/utils'
 import { ActionBar } from './ActionBar'
 import { CloseIcon } from './icons'
-import { IconButton } from './primitives'
+import { IconButton, PinButton } from './primitives'
+import {
+  closeDocked,
+  type Dock,
+  EMPTY_DOCK,
+  keepOpen,
+  openDocked,
+  restoreDock,
+  toggleDocked,
+  togglePin,
+} from './dock'
 import { PropertiesPanel } from './PropertiesPanel'
 import { Rail } from './Rail'
 import { DEVICE_WIDTHS, type Device, TopBar } from './TopBar'
 
 const EDITOR = 'visual-editor'
-const DOCKED_KEY = 'neos-studio.alpha.docked'
+const DOCK_KEY = 'neos-studio.alpha.dock'
 const DEVICE_KEY = 'neos-studio.alpha.device'
 /** Panels with a place of their own in this layout, not in the rail. */
 const PLACED_ELSEWHERE = new Set(['documents', 'inspector'])
@@ -105,13 +115,32 @@ export function AlphaShell({
     ]
   }, [definitions])
 
-  const [docked, setDocked] = usePersistedState<string | null>(DOCKED_KEY, null)
-  const dockedDefinition =
+  const exists = React.useCallback(
+    (panel: string) =>
+      panel === PROPERTIES ||
+      panelRegistry.getAll().some((definition) => definition.id === panel),
+    [],
+  )
+  const [storedDock, setDock] = usePersistedState<Dock>(DOCK_KEY, EMPTY_DOCK)
+  const dock = restoreDock(storedDock, exists)
+  const dockedDefinitions =
     mode !== EDITOR
-      ? undefined
-      : docked === PROPERTIES
-        ? PROPERTIES_DEFINITION
-        : definitions.find((definition) => definition.id === docked)
+      ? []
+      : dock.open.flatMap(
+          (panel) =>
+            (panel === PROPERTIES
+              ? PROPERTIES_DEFINITION
+              : definitions.find((definition) => definition.id === panel)) ??
+            [],
+        )
+  const propertiesDocked = dockedDefinitions.some(
+    (definition) => definition.id === PROPERTIES,
+  )
+  const updateDock = React.useCallback(
+    (change: (dock: Dock) => Dock) =>
+      setDock((current) => change(restoreDock(current, exists))),
+    [setDock, exists],
+  )
 
   // Reveal requests for panels that are not modes open them docked (the
   // panel system handles the modes itself).
@@ -129,9 +158,9 @@ export function AlphaShell({
         )
           return
         activate(EDITOR)
-        setDocked(panel)
+        updateDock((current) => openDocked(current, panel))
       }),
-    [activate, setDocked],
+    [activate, updateDock],
   )
 
   const [device, setDevice] = usePersistedState<Device>(DEVICE_KEY, 'desktop')
@@ -166,21 +195,33 @@ export function AlphaShell({
           mode={mode}
           onModeChange={activate}
           panels={mode === EDITOR ? railPanels : []}
-          docked={dockedDefinition?.id ?? null}
+          docked={dockedDefinitions.map((definition) => definition.id)}
           onToggleDocked={(panel) =>
-            setDocked((current) => (current === panel ? null : panel))
+            updateDock((current) => toggleDocked(current, panel))
           }
         />
-        {dockedDefinition?.id === PROPERTIES ? (
-          <PropertiesPanel onClose={() => setDocked(null)} />
-        ) : (
-          dockedDefinition && (
-            <DockedPanel
-              definition={dockedDefinition}
-              onClose={() => setDocked(null)}
+        {dockedDefinitions.map((definition) => {
+          const pin = (
+            <PinButton
+              pinned={dock.pinned === definition.id}
+              onClick={() =>
+                updateDock((current) => togglePin(current, definition.id))
+              }
             />
           )
-        )}
+          const close = () =>
+            updateDock((current) => closeDocked(current, definition.id))
+          return definition.id === PROPERTIES ? (
+            <PropertiesPanel key={definition.id} pin={pin} onClose={close} />
+          ) : (
+            <DockedPanel
+              key={definition.id}
+              definition={definition}
+              pin={pin}
+              onClose={close}
+            />
+          )
+        })}
         <main className="flex min-w-0 flex-1 flex-col rounded-shell-surface border border-shell-border bg-shell-surface p-1.5">
           <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-shell-site">
             {modes
@@ -204,8 +245,11 @@ export function AlphaShell({
             {mode === EDITOR && (
               <ActionBar
                 onOpenMode={activate}
-                propertiesDocked={dockedDefinition?.id === PROPERTIES}
-                onKeepOpen={() => setDocked(PROPERTIES)}
+                propertiesDocked={propertiesDocked}
+                propertiesPinned={dock.pinned === PROPERTIES}
+                onKeepOpen={() =>
+                  updateDock((current) => keepOpen(current, PROPERTIES))
+                }
                 onHistoryApplied={onReload}
                 onReveal={onReveal}
               />
@@ -219,9 +263,11 @@ export function AlphaShell({
 
 function DockedPanel({
   definition,
+  pin,
   onClose,
 }: {
   definition: PanelDefinition
+  pin: React.ReactNode
   onClose: () => void
 }) {
   const { selectedDocument } = useStudio()
@@ -241,14 +287,17 @@ function DockedPanel({
             </span>
           )}
         </div>
-        <IconButton
-          size="sm"
-          className="size-7 rounded-shell-control text-shell-muted"
-          onClick={onClose}
-          aria-label={t('common.close', 'Close')}
-        >
-          <CloseIcon />
-        </IconButton>
+        <div className="flex shrink-0 items-center gap-0.5">
+          {pin}
+          <IconButton
+            size="sm"
+            className="size-7 rounded-shell-control text-shell-muted"
+            onClick={onClose}
+            aria-label={t('common.close', 'Close')}
+          >
+            <CloseIcon />
+          </IconButton>
+        </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <PanelBody

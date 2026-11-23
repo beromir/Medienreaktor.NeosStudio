@@ -45,7 +45,7 @@ import { cn } from '@/lib/utils'
 import {
   BackIcon,
   ChevronDownIcon,
-  KeepOpenIcon,
+  PinIcon,
   CloseIcon,
   CopyIcon,
   MoreIcon,
@@ -99,10 +99,12 @@ export function ActionBar({
   onHistoryApplied,
   onReveal,
   propertiesDocked,
+  propertiesPinned,
   onKeepOpen,
 }: {
   /** The Properties panel is docked: selecting no longer opens the tray. */
   propertiesDocked: boolean
+  propertiesPinned: boolean
   /** "Keep open": dock the tray's fields as the Properties panel. */
   onKeepOpen: () => void
   onOpenMode: (panel: string) => void
@@ -199,6 +201,7 @@ export function ActionBar({
         {open === 'settings' && node && (
           <SettingsTray
             node={node}
+            pinned={propertiesPinned}
             onClose={() => setOpen(null)}
             onKeepOpen={() => {
               setOpen(null)
@@ -525,10 +528,13 @@ function NodePill({
  */
 function SettingsTray({
   node,
+  pinned,
   onClose,
   onKeepOpen,
 }: {
   node: Node
+  /** The Properties panel is docked pinned already. */
+  pinned: boolean
   onClose: () => void
   onKeepOpen: () => void
 }) {
@@ -544,13 +550,19 @@ function SettingsTray({
             <button
               type="button"
               onClick={onKeepOpen}
+              aria-pressed={pinned}
               title={t(
                 'shellAlpha.keepOpenHint',
                 'Keep the properties open in a panel on the left',
               )}
-              className="flex h-7 cursor-pointer items-center gap-1.5 rounded-full pr-2.5 pl-2 type-shell-secondary text-shell-muted outline-none hover:bg-shell-hover hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60"
+              className={cn(
+                'flex h-7 cursor-pointer items-center gap-1.5 rounded-full pr-2.5 pl-2 type-shell-secondary outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
+                pinned
+                  ? 'bg-shell-ground text-shell-text'
+                  : 'text-shell-muted hover:bg-shell-hover hover:text-shell-text',
+              )}
             >
-              <KeepOpenIcon />
+              <PinIcon filled={pinned} width={12} height={12} />
               {t('shellAlpha.keepOpen', 'Keep open')}
             </button>
             <IconButton
