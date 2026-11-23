@@ -2,6 +2,9 @@ import * as React from 'react'
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 
 import { cn } from '@/lib/utils'
+import { containedPortal } from '@/lib/portalContainer'
+
+const PopoverPortalContained = containedPortal(PopoverPrimitive.Portal)
 
 function Popover({
   ...props
@@ -27,7 +30,7 @@ function PopoverContent({
   sideOffset?: number
 }) {
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPortalContained>
       <PopoverPrimitive.Positioner
         side={side}
         align={align}
@@ -43,7 +46,7 @@ function PopoverContent({
           {...props}
         />
       </PopoverPrimitive.Positioner>
-    </PopoverPrimitive.Portal>
+    </PopoverPortalContained>
   )
 }
 

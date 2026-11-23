@@ -3,6 +3,9 @@ import { Dialog as SheetPrimitive } from '@base-ui/react/dialog'
 
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { containedPortal } from '@/lib/portalContainer'
+
+const SheetPortalContained = containedPortal(SheetPrimitive.Portal)
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -11,7 +14,7 @@ function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
 function SheetPortal({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
-  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
+  return <SheetPortalContained data-slot="sheet-portal" {...props} />
 }
 
 function SheetOverlay({

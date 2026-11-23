@@ -29,7 +29,8 @@ import {
   TabletIcon,
 } from './icons'
 import { LocationSeparator } from './LocationSeparator'
-import { ShellMenu, ShellMenuItem, ShellPopover } from './primitives'
+import { anchorProps, NativePopover, type Placement } from './NativePopover'
+import { ShellMenu, ShellMenuItem, Surface } from './primitives'
 
 export type Device = 'desktop' | 'tablet' | 'phone'
 
@@ -154,51 +155,66 @@ export function TopBar({
  * The page segment: opens the page tree - Studio's Documents panel (tree,
  * filter, new page, drag to reorder) in a dropdown.
  */
+const PAGE_TREE_ID = 'shell-alpha-page-tree'
+const PAGE_ANCHOR = '--shell-alpha-page'
+const PAGE_TREE_PLACEMENT: Placement = {
+  side: 'bottom',
+  align: 'start',
+  offset: 8,
+}
+
 function PageSegment({ document }: { document: Node | null }) {
   const [open, setOpen] = React.useState(false)
   const panels = useRegistry(panelRegistry)
   const documents = panels.find((definition) => definition.id === 'documents')
   return (
-    <ShellPopover
-      open={open}
-      onOpenChange={setOpen}
-      sideOffset={8}
-      className="flex h-[min(36rem,calc(100svh-5rem))] w-95 flex-col overflow-hidden"
-      trigger={
-        <button
-          type="button"
-          className="flex h-6.5 min-w-0 cursor-pointer items-center gap-1.75 rounded-full pr-2.25 pl-2.5 type-shell-control font-semibold text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover"
-          aria-label={t('shellAlpha.pageTree', 'Pages')}
-        >
-          <PageIcon />
-          <span className="truncate">
-            {document ? document.label || document.nodeAggregateId : '…'}
-          </span>
-          <ChevronDownIcon className="text-shell-muted" />
-        </button>
-      }
-    >
-      {documents && (
-        <div
-          className="min-h-0 flex-1 overflow-y-auto"
-          // Picking a page is "go there": close the dropdown.
-          onClickCapture={(event) => {
-            const row = (event.target as HTMLElement).closest(
-              '[role="treeitem"]',
-            )
-            if (row && !(event.target as HTMLElement).closest('button')) {
-              window.setTimeout(() => setOpen(false), 0)
-            }
-          }}
-        >
-          <PanelBody
-            panel={documents.id}
-            component={documents.component}
-            visible={open}
-          />
-        </div>
-      )}
-    </ShellPopover>
+    <>
+      <button
+        type="button"
+        popoverTarget={PAGE_TREE_ID}
+        aria-expanded={open}
+        data-popup-open={open || undefined}
+        className="flex h-6.5 min-w-0 cursor-pointer items-center gap-1.75 rounded-full pr-2.25 pl-2.5 type-shell-control font-semibold text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover"
+        aria-label={t('shellAlpha.pageTree', 'Pages')}
+        {...anchorProps(PAGE_ANCHOR)}
+      >
+        <PageIcon />
+        <span className="truncate">
+          {document ? document.label || document.nodeAggregateId : '…'}
+        </span>
+        <ChevronDownIcon className="text-shell-muted" />
+      </button>
+      <NativePopover
+        id={PAGE_TREE_ID}
+        anchor={PAGE_ANCHOR}
+        placement={PAGE_TREE_PLACEMENT}
+        open={open}
+        onOpenChange={setOpen}
+      >
+        {documents && (
+          <Surface className="flex h-[min(36rem,calc(100svh-5rem))] w-95 flex-col overflow-hidden">
+            <div
+              className="min-h-0 flex-1 overflow-y-auto"
+              // Picking a page is "go there": close the dropdown.
+              onClickCapture={(event) => {
+                const row = (event.target as HTMLElement).closest(
+                  '[role="treeitem"]',
+                )
+                if (row && !(event.target as HTMLElement).closest('button')) {
+                  window.setTimeout(() => setOpen(false), 0)
+                }
+              }}
+            >
+              <PanelBody
+                panel={documents.id}
+                component={documents.component}
+                visible={open}
+              />
+            </div>
+          </Surface>
+        )}
+      </NativePopover>
+    </>
   )
 }
 

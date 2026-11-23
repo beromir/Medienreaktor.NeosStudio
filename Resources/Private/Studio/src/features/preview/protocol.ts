@@ -194,6 +194,11 @@ export type GuestToHostMessage =
    * Coalesced to one message per animation frame.
    */
   | { type: 'neos-studio/scrolled' }
+  /**
+   * A pointer went down in the page - a click outside the shell's open
+   * popovers, which their light dismiss cannot see across the frame.
+   */
+  | { type: 'neos-studio/pointer-down' }
   /** Escape was pressed in the page (the alpha layout closes its tray). */
   | { type: 'neos-studio/escape' }
   /** The pointer came near the frame's bottom edge, or left it again. */
@@ -423,6 +428,7 @@ const GUEST_MESSAGE_FIELDS: {
   'neos-studio/flushed': { requestId: isNumber },
   'neos-studio/scrolled': {},
   'neos-studio/escape': {},
+  'neos-studio/pointer-down': {},
   'neos-studio/pointer-near-bottom': {
     near: (value) => typeof value === 'boolean',
   },

@@ -3,6 +3,9 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { containedPortal } from '@/lib/portalContainer'
+
+const DialogPortalContained = containedPortal(DialogPrimitive.Portal)
 
 function Dialog({
   open,
@@ -28,7 +31,7 @@ function Dialog({
 function DialogPortal({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+  return <DialogPortalContained data-slot="dialog-portal" {...props} />
 }
 
 function DialogOverlay({

@@ -2,6 +2,9 @@ import * as React from 'react'
 import { ContextMenu as ContextMenuPrimitive } from '@base-ui/react/context-menu'
 
 import { cn } from '@/lib/utils'
+import { containedPortal } from '@/lib/portalContainer'
+
+const ContextMenuPortalContained = containedPortal(ContextMenuPrimitive.Portal)
 
 function ContextMenu({
   ...props
@@ -22,7 +25,7 @@ function ContextMenuContent({
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Popup>) {
   return (
-    <ContextMenuPrimitive.Portal>
+    <ContextMenuPortalContained>
       <ContextMenuPrimitive.Positioner className="z-200 outline-none select-none">
         <ContextMenuPrimitive.Popup
           data-slot="context-menu-content"
@@ -33,7 +36,7 @@ function ContextMenuContent({
           {...props}
         />
       </ContextMenuPrimitive.Positioner>
-    </ContextMenuPrimitive.Portal>
+    </ContextMenuPortalContained>
   )
 }
 

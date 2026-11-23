@@ -1,7 +1,9 @@
 import * as React from 'react'
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
-import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 import { cn } from '@/lib/utils'
+import { containedPortal } from '@/lib/portalContainer'
+
+const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
 
 /*
  * The alpha layout's building blocks. The one fill rule: only Add is
@@ -108,45 +110,6 @@ export function Surface({ className, ...props }: React.ComponentProps<'div'>) {
 export const surfacePopup =
   'origin-(--transform-origin) rounded-shell-surface border border-shell-border-strong bg-shell-surface text-shell-text shadow-shell-surface outline-none transition-[opacity,scale] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0'
 
-/** A popover in the shell's surface style. */
-export function ShellPopover({
-  trigger,
-  children,
-  open,
-  onOpenChange,
-  side = 'bottom',
-  align = 'start',
-  sideOffset = 6,
-  className,
-}: {
-  trigger: React.ReactElement<Record<string, unknown>>
-  children: React.ReactNode
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-  side?: 'top' | 'bottom' | 'left' | 'right'
-  align?: 'start' | 'center' | 'end'
-  sideOffset?: number
-  className?: string
-}) {
-  return (
-    <PopoverPrimitive.Root open={open} onOpenChange={onOpenChange}>
-      <PopoverPrimitive.Trigger render={trigger} />
-      <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Positioner
-          side={side}
-          align={align}
-          sideOffset={sideOffset}
-          className="z-200 outline-none"
-        >
-          <PopoverPrimitive.Popup className={cn(surfacePopup, className)}>
-            {children}
-          </PopoverPrimitive.Popup>
-        </PopoverPrimitive.Positioner>
-      </PopoverPrimitive.Portal>
-    </PopoverPrimitive.Root>
-  )
-}
-
 /** A menu in the shell's surface style. */
 export function ShellMenu({
   trigger,
@@ -166,7 +129,7 @@ export function ShellMenu({
   return (
     <MenuPrimitive.Root>
       <MenuPrimitive.Trigger render={trigger} />
-      <MenuPrimitive.Portal>
+      <MenuPortalContained>
         <MenuPrimitive.Positioner
           side={side}
           align={align}
@@ -177,7 +140,7 @@ export function ShellMenu({
             {children}
           </MenuPrimitive.Popup>
         </MenuPrimitive.Positioner>
-      </MenuPrimitive.Portal>
+      </MenuPortalContained>
     </MenuPrimitive.Root>
   )
 }

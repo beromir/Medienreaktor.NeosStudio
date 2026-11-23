@@ -2,6 +2,9 @@ import * as React from 'react'
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 
 import { cn } from '@/lib/utils'
+import { containedPortal } from '@/lib/portalContainer'
+
+const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
 
 function DropdownMenu({
   ...props
@@ -27,7 +30,7 @@ function DropdownMenuContent({
   sideOffset?: number
 }) {
   return (
-    <MenuPrimitive.Portal>
+    <MenuPortalContained>
       <MenuPrimitive.Positioner
         side={side}
         align={align}
@@ -43,7 +46,7 @@ function DropdownMenuContent({
           {...props}
         />
       </MenuPrimitive.Positioner>
-    </MenuPrimitive.Portal>
+    </MenuPortalContained>
   )
 }
 
@@ -147,7 +150,7 @@ function DropdownMenuSubContent({
   ...props
 }: React.ComponentProps<typeof MenuPrimitive.Popup>) {
   return (
-    <MenuPrimitive.Portal>
+    <MenuPortalContained>
       <MenuPrimitive.Positioner
         className="z-200 outline-none select-none"
         sideOffset={4}
@@ -162,7 +165,7 @@ function DropdownMenuSubContent({
           {...props}
         />
       </MenuPrimitive.Positioner>
-    </MenuPrimitive.Portal>
+    </MenuPortalContained>
   )
 }
 

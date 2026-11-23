@@ -101,3 +101,17 @@ export function onPreviewEscape(listener: () => void): () => void {
 export function reportPreviewEscape(): void {
   escapeListeners.forEach((listener) => listener())
 }
+
+const pointerDownListeners = new Set<() => void>()
+
+/** A pointer went down inside the preview (guest-reported). */
+export function onPreviewPointerDown(listener: () => void): () => void {
+  pointerDownListeners.add(listener)
+  return () => {
+    pointerDownListeners.delete(listener)
+  }
+}
+
+export function reportPreviewPointerDown(): void {
+  pointerDownListeners.forEach((listener) => listener())
+}

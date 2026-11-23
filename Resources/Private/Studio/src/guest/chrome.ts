@@ -166,3 +166,7 @@ export function reportPointer(event: MouseEvent): void {
 export function reportEscape(event: KeyboardEvent): void {
   if (event.key === 'Escape') post({ type: 'neos-studio/escape' })
 }
+
+export function reportPointerDown(): void {
+  post({ type: 'neos-studio/pointer-down' })
+}

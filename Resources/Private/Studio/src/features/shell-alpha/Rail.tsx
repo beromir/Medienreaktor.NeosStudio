@@ -43,6 +43,9 @@ import {
   surfacePopup,
 } from './primitives'
 import { useTrayOnSelection } from './preferences'
+import { containedPortal } from '@/lib/portalContainer'
+
+const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
 
 /** A mode of the rail: a main-region panel shown in place of the preview. */
 export interface RailMode {
@@ -282,7 +285,7 @@ function AccountMenu() {
       >
         <PersonIcon />
       </MenuPrimitive.Trigger>
-      <MenuPrimitive.Portal>
+      <MenuPortalContained>
         <MenuPrimitive.Positioner
           side="right"
           align="end"
@@ -364,7 +367,7 @@ function AccountMenu() {
             </ShellMenuItem>
           </MenuPrimitive.Popup>
         </MenuPrimitive.Positioner>
-      </MenuPrimitive.Portal>
+      </MenuPortalContained>
     </MenuPrimitive.Root>
   )
 }

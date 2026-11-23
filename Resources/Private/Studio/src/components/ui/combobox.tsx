@@ -3,6 +3,9 @@ import { Autocomplete as AutocompletePrimitive } from '@base-ui/react/autocomple
 import { Combobox as ComboboxPrimitive } from '@base-ui/react/combobox'
 
 import { cn } from '@/lib/utils'
+import { containedPortal } from '@/lib/portalContainer'
+
+const ComboboxPortalContained = containedPortal(ComboboxPrimitive.Portal)
 
 /**
  * Base UI's Combobox, styled like the select. Pass `items` (flat, or groups
@@ -81,7 +84,7 @@ function ComboboxContent({
   sideOffset?: number
 }) {
   return (
-    <ComboboxPrimitive.Portal>
+    <ComboboxPortalContained>
       <ComboboxPrimitive.Positioner
         side={side}
         align={align}
@@ -99,7 +102,7 @@ function ComboboxContent({
           {children}
         </ComboboxPrimitive.Popup>
       </ComboboxPrimitive.Positioner>
-    </ComboboxPrimitive.Portal>
+    </ComboboxPortalContained>
   )
 }
 

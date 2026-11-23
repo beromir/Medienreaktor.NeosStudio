@@ -14,6 +14,9 @@ import { NodeTypeIcon } from '@/features/tree/nodeTypeIcon'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { CheckIcon, FolderIcon, GlobeIcon } from './icons'
+import { containedPortal } from '@/lib/portalContainer'
+
+const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
 
 /** How a node is named in the shell: a page by its title, content by its type. */
 export function useNodeName(node: Node): string {
@@ -132,7 +135,7 @@ export function PathMenu({
   return (
     <MenuPrimitive.Root>
       <MenuPrimitive.Trigger render={trigger} />
-      <MenuPrimitive.Portal>
+      <MenuPortalContained>
         <MenuPrimitive.Positioner
           side={side}
           align={align}
@@ -147,7 +150,7 @@ export function PathMenu({
             )}
           </MenuPrimitive.Popup>
         </MenuPrimitive.Positioner>
-      </MenuPrimitive.Portal>
+      </MenuPortalContained>
     </MenuPrimitive.Root>
   )
 }

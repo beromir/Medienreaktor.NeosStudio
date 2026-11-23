@@ -2,6 +2,9 @@ import * as React from 'react'
 import { Select as SelectPrimitive } from '@base-ui/react/select'
 
 import { cn } from '@/lib/utils'
+import { containedPortal } from '@/lib/portalContainer'
+
+const SelectPortalContained = containedPortal(SelectPrimitive.Portal)
 
 /**
  * Pass `items` (array of { value, label }) to the root when item labels
@@ -75,7 +78,7 @@ function SelectContent({
   sideOffset?: number
 }) {
   return (
-    <SelectPrimitive.Portal>
+    <SelectPortalContained>
       <SelectPrimitive.Positioner
         side={side}
         align={align}
@@ -99,7 +102,7 @@ function SelectContent({
           <i className="fas fa-chevron-down type-icon-xl" aria-hidden />
         </SelectPrimitive.ScrollDownArrow>
       </SelectPrimitive.Positioner>
-    </SelectPrimitive.Portal>
+    </SelectPortalContained>
   )
 }
 

@@ -54,6 +54,7 @@ import {
   positionInsertLine,
   reportEscape,
   reportPointer,
+  reportPointerDown,
   reportScroll,
   setInsertPreview,
 } from './chrome'
@@ -1992,6 +1993,7 @@ function init(): void {
   window.addEventListener('scroll', reportScroll, true)
   document.addEventListener('mousemove', reportPointer, { passive: true })
   document.addEventListener('keydown', reportEscape)
+  document.addEventListener('pointerdown', reportPointerDown, true)
   window.addEventListener('scroll', positionInsertLine, true)
   window.addEventListener('resize', positionInsertLine)
   window.addEventListener('message', onHostMessage)

@@ -71,8 +71,12 @@ import {
   LabelButton,
   Surface,
 } from './primitives'
+import { anchorProps, NativePopover, type Placement } from './NativePopover'
 import { PathMenu } from './PathMenu'
 import { useTrayOnSelection } from './preferences'
+import { containedPortal } from '@/lib/portalContainer'
+
+const SelectPortalContained = containedPortal(SelectPrimitive.Portal)
 
 type Open = 'settings' | 'add' | 'search' | null
 
@@ -80,6 +84,19 @@ type Open = 'settings' | 'add' | 'search' | null
 const BAR_SPACE = 64
 /** How long the bar stays faded after the page stopped scrolling. */
 const FADE_SETTLE_MS = 450
+const ADD_ID = 'shell-alpha-add-menu'
+const SEARCH_ID = 'shell-alpha-search'
+const POPOVER_IDS = [ADD_ID, SEARCH_ID]
+const BARS_ANCHOR = '--shell-alpha-bars'
+const GLOBAL_ANCHOR = '--shell-alpha-global-pill'
+/** As drawn: 8px above the bars, its left edge 235px left of their centre. */
+const ADD_PLACEMENT: Placement = {
+  side: 'top',
+  align: 'center',
+  offset: 8,
+  shift: -235,
+}
+const SEARCH_PLACEMENT: Placement = { side: 'top', align: 'start', offset: 8 }
 
 /**
  * The floating action bar (R9 variant D): a global pill - Add, Search,
@@ -139,23 +156,41 @@ export function ActionBar({
 
   // What the bar and its open surface cover, for the page's scroll space
   // and for keeping the selection in view above them.
+  // The Add menu and Search are native popovers in the top layer, outside
+  // the stack - measured by their position, not the stack's height.
   const stackRef = React.useRef<HTMLDivElement>(null)
   React.useLayoutEffect(() => {
     const stack = stackRef.current
-    if (!stack) return
-    const update = () =>
-      setPreviewChrome({ bottomInset: stack.offsetHeight + 16 })
+    const card = stack?.parentElement
+    if (!stack || !card) return
+    const popovers = POPOVER_IDS.flatMap(
+      (id) => document.getElementById(id) ?? [],
+    )
+    const update = () => {
+      let top = stack.getBoundingClientRect().top
+      for (const popover of popovers) {
+        if (popover.matches(':popover-open'))
+          top = Math.min(top, popover.getBoundingClientRect().top)
+      }
+      setPreviewChrome({
+        bottomInset: Math.max(0, card.getBoundingClientRect().bottom - top),
+      })
+    }
     update()
     const observer = new ResizeObserver(update)
     observer.observe(stack)
+    popovers.forEach((popover) => observer.observe(popover))
     return () => observer.disconnect()
-  }, [])
+  }, [open])
   React.useEffect(() => {
     setPreviewChrome({ minimal: true, scrollSpace: BAR_SPACE })
   }, [])
 
   const toggle = (which: Exclude<Open, null>) =>
     setOpen((current) => (current === which ? null : which))
+  // The browser opened or light-dismissed one of the popovers.
+  const popoverChanged = (which: 'add' | 'search', value: boolean) =>
+    setOpen((current) => (value ? which : current === which ? null : current))
 
   return (
     <div
@@ -181,33 +216,21 @@ export function ActionBar({
             }}
           />
         )}
-        {open === 'add' && selectedDocument && (
-          <AddMenu
-            document={selectedDocument}
-            node={node}
-            onClose={() => setOpen(null)}
-            onUpload={() => {
-              setOpen(null)
-              onOpenMode('media-library')
-            }}
-          />
-        )}
-        {open === 'search' && <SearchSurface onClose={() => setOpen(null)} />}
-        <div className="flex items-center gap-2">
-          <BarPill>
+        <div className="flex items-center gap-2" {...anchorProps(BARS_ANCHOR)}>
+          <BarPill {...anchorProps(GLOBAL_ANCHOR)}>
             <AddButton
               aria-label={t('shellAlpha.add', 'Add')}
               title={t('shellAlpha.add', 'Add')}
               aria-expanded={open === 'add'}
               data-popup-open={open === 'add' || undefined}
-              onClick={() => toggle('add')}
+              popoverTarget={ADD_ID}
             >
               <PlusIcon />
             </AddButton>
             <LabelButton
               open={open === 'search'}
               aria-expanded={open === 'search'}
-              onClick={() => toggle('search')}
+              popoverTarget={SEARCH_ID}
             >
               <SearchIcon />
               {t('shellAlpha.search', 'Search')}
@@ -223,6 +246,34 @@ export function ActionBar({
           )}
         </div>
       </div>
+      <NativePopover
+        id={ADD_ID}
+        anchor={BARS_ANCHOR}
+        placement={ADD_PLACEMENT}
+        open={open === 'add' && selectedDocument !== null}
+        onOpenChange={(value) => popoverChanged('add', value)}
+      >
+        {selectedDocument && (
+          <AddMenu
+            document={selectedDocument}
+            node={node}
+            onClose={() => setOpen(null)}
+            onUpload={() => {
+              setOpen(null)
+              onOpenMode('media-library')
+            }}
+          />
+        )}
+      </NativePopover>
+      <NativePopover
+        id={SEARCH_ID}
+        anchor={GLOBAL_ANCHOR}
+        placement={SEARCH_PLACEMENT}
+        open={open === 'search'}
+        onOpenChange={(value) => popoverChanged('search', value)}
+      >
+        <SearchSurface />
+      </NativePopover>
     </div>
   )
 }
@@ -518,7 +569,7 @@ function SettingsTray({
                 {group.label}
                 <ChevronDownIcon className="text-shell-muted" />
               </SelectPrimitive.Trigger>
-              <SelectPrimitive.Portal>
+              <SelectPortalContained>
                 <SelectPrimitive.Positioner
                   side="top"
                   align="end"
@@ -555,7 +606,7 @@ function SettingsTray({
                     </SelectPrimitive.Item>
                   </SelectPrimitive.Popup>
                 </SelectPrimitive.Positioner>
-              </SelectPrimitive.Portal>
+              </SelectPortalContained>
             </SelectPrimitive.Root>
           )}
           <button
@@ -663,7 +714,7 @@ function AddMenu({
   const { selectDocument, nodesEdited } = useStudio()
   return (
     <>
-      <Surface className="flex max-h-[min(36rem,calc(100svh-12rem))] w-100 -translate-x-8.75 flex-col self-center overflow-hidden">
+      <Surface className="flex max-h-[min(36rem,calc(100svh-12rem))] w-100 flex-col overflow-hidden">
         {target ? (
           <AddMenuBody
             key={JSON.stringify(target.request.referenceAddress)}
@@ -999,21 +1050,16 @@ function TypeRow({
  * Search: Studio has no global search yet - the closest is the Documents
  * panel's page search, shown here above the bar.
  */
-function SearchSurface({ onClose }: { onClose: () => void }) {
+function SearchSurface() {
   const panels = useRegistry(panelRegistry)
   const documents = panels.find((definition) => definition.id === 'documents')
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
     ref.current?.querySelector<HTMLInputElement>('input')?.focus()
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [])
   if (!documents) return null
   return (
-    <Surface className="flex h-[min(30rem,calc(100svh-12rem))] w-95 flex-col self-start overflow-hidden">
+    <Surface className="flex h-[min(30rem,calc(100svh-12rem))] w-95 flex-col overflow-hidden">
       <div ref={ref} className="min-h-0 flex-1 overflow-y-auto">
         <PanelBody
           panel={documents.id}

@@ -2,6 +2,9 @@ import * as React from 'react'
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip'
 
 import { cn } from '@/lib/utils'
+import { containedPortal } from '@/lib/portalContainer'
+
+const TooltipPortalContained = containedPortal(TooltipPrimitive.Portal)
 
 function TooltipProvider({
   delay = 0,
@@ -45,7 +48,7 @@ function TooltipContent({
 }) {
   if (hidden) return null
   return (
-    <TooltipPrimitive.Portal>
+    <TooltipPortalContained>
       <TooltipPrimitive.Positioner
         side={side}
         align={align}
@@ -63,7 +66,7 @@ function TooltipContent({
           {children}
         </TooltipPrimitive.Popup>
       </TooltipPrimitive.Positioner>
-    </TooltipPrimitive.Portal>
+    </TooltipPortalContained>
   )
 }
 
