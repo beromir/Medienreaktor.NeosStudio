@@ -15,6 +15,12 @@ import type { PropertyEditorProps } from './registry'
 import { parseCropConfig } from './cropOptions'
 import { ImageCropDialog } from './ImageCropDialog'
 import { translate as t } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
+import { formatBytes } from '@/features/media/format'
+import { useInspectorLayout } from '../layoutContext'
+
+const rowButton =
+  'flex h-7.5 shrink-0 cursor-pointer items-center rounded-shell-control bg-shell-ground px-3 type-shell-secondary text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60'
 
 /**
  * The shared body of the Asset and Image editors: shows the currently
@@ -44,6 +50,7 @@ export function AssetFieldEditor({
   const [identifier, setIdentifier] = useState(() => referenceIdentifier(value))
   const [picked, setPicked] = useState<Asset | null>(null)
   const [cropOpen, setCropOpen] = useState(false)
+  const layout = useInspectorLayout()
 
   // Adopt external value changes: when the refetched node carries a different
   // identifier than the one this editor last saw AND holds, someone else set
@@ -134,6 +141,81 @@ export function AssetFieldEditor({
   const loading = !asset && query.isLoading
   // Resolved to nothing - a dangling reference (asset deleted, or not visible).
   const missing = !asset && !query.isLoading
+
+  if (kind === 'image' && layout === 'tray') {
+    return (
+      <div className="flex h-14 items-center gap-3 rounded-shell-control border border-shell-border-strong bg-shell-input p-1.75">
+        <div className="flex h-10 w-18 shrink-0 items-center justify-center overflow-hidden rounded-shell-segment bg-shell-tile">
+          {asset ? (
+            <AssetThumb asset={asset} className="size-full object-cover" />
+          ) : (
+            <i
+              className={cn(
+                'fas type-icon-s text-shell-muted',
+                loading ? 'fa-spinner fa-spin' : 'fa-image',
+              )}
+              aria-hidden
+            />
+          )}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span
+            className="truncate type-shell-control text-shell-text"
+            title={asset?.filename}
+          >
+            {asset
+              ? asset.filename
+              : missing
+                ? t('editor.assetNotFound', 'Asset not found')
+                : t('editor.loading', 'Loading…')}
+          </span>
+          {asset && (
+            <span className="truncate type-shell-secondary text-shell-subtle">
+              {[
+                asset.width && asset.height
+                  ? `${asset.width} × ${asset.height}`
+                  : null,
+                formatBytes(asset.fileSize),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+          )}
+        </div>
+        {canCrop && (
+          <button
+            type="button"
+            onClick={() => setCropOpen(true)}
+            className={rowButton}
+          >
+            {t('editor.crop', 'Crop')}
+          </button>
+        )}
+        <button id={id} type="button" onClick={select} className={rowButton}>
+          {t('editor.replace', 'Replace')}
+        </button>
+        <button
+          type="button"
+          onClick={clear}
+          title={t('editor.remove', 'Remove')}
+          aria-label={t('editor.remove', 'Remove')}
+          className="flex size-7.5 shrink-0 cursor-pointer items-center justify-center rounded-shell-control text-shell-muted outline-none hover:bg-shell-hover hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60"
+        >
+          <i className="fas fa-xmark" aria-hidden />
+        </button>
+        {canCrop && (
+          <ImageCropDialog
+            open={cropOpen}
+            onOpenChange={setCropOpen}
+            original={originalAsset}
+            initialCrop={asset?.crop ?? null}
+            config={cropConfig}
+            onApply={applyCrop}
+          />
+        )}
+      </div>
+    )
+  }
 
   if (kind === 'image') {
     return (

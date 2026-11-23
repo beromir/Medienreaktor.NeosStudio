@@ -492,8 +492,44 @@ function select(
   else keepVisible(element)
   if (options.notifyHost) {
     const nodeAddress = element.getAttribute(WRAPPER_ATTRIBUTE)
-    if (nodeAddress) post({ type: 'neos-studio/node-selected', nodeAddress })
+    if (nodeAddress) {
+      reportSelectionText(aggregateIdOf(element), element)
+      post({ type: 'neos-studio/node-selected', nodeAddress })
+    }
   }
+}
+
+function aggregateIdOf(element: HTMLElement): string | null {
+  try {
+    const address = JSON.parse(
+      element.getAttribute(WRAPPER_ATTRIBUTE) ?? '',
+    ) as { aggregateId?: unknown }
+    return typeof address.aggregateId === 'string' ? address.aggregateId : null
+  } catch {
+    return null
+  }
+}
+
+/** Whether the element renders an inline-editable property of its own. */
+function reportSelectionText(
+  aggregateId: string | null,
+  element: HTMLElement | null,
+): void {
+  // Wrappers nest - also of the same node - so ownership goes by identity.
+  const editable =
+    element !== null &&
+    aggregateId !== null &&
+    Array.from(element.querySelectorAll(`[${PROPERTY_ATTRIBUTE}]`)).some(
+      (property) => {
+        const wrapper = property.closest<HTMLElement>(`[${WRAPPER_ATTRIBUTE}]`)
+        return wrapper !== null && aggregateIdOf(wrapper) === aggregateId
+      },
+    )
+  post({
+    type: 'neos-studio/selection-text',
+    aggregateId: element ? aggregateId : null,
+    editable,
+  })
 }
 
 /** The element currently pulsing, and the timer that ends it. */
@@ -1880,6 +1916,7 @@ function onHostMessage(event: MessageEvent): void {
     // An element replaced out-of-band can leave stale index entries behind.
     const element = indexed?.isConnected ? indexed : null
     select(element, { notifyHost: false, reveal: message.reveal !== false })
+    reportSelectionText(message.aggregateId, element)
   }
   if (message?.type === 'neos-studio/handle-actions-changed') {
     handleActionsAvailable = message.available

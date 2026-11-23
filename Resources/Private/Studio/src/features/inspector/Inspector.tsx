@@ -54,6 +54,7 @@ import {
   type InspectorItem,
   type InspectorTab,
 } from './inspectorSchema'
+import { InspectorLayoutContext } from './layoutContext'
 import { PropertyHints } from './hints/registry'
 import { PropertyEditor } from './PropertyEditor'
 import { validateValue } from './validators'
@@ -426,39 +427,41 @@ export function InspectorPanel({
 
   if (layout !== undefined) {
     return (
-      <div
-        className={cn(
-          'flex min-h-0 flex-1 flex-col type-body',
-          layout === 'tray' && 'max-h-[50svh]',
-        )}
-      >
-        <AlphaTabs
-          layout={layout}
-          tabs={visibleTabs ? withLead(visibleTabs, lead) : []}
-          activeTab={activeTab}
-          onTabChange={setSelectedTab}
-          validationErrors={validationErrors}
-          visited={visitedTabs}
-          end={tabsEnd}
-        >
-          {(tab) => (
-            <div inert={!editable} className={cn(!editable && 'opacity-60')}>
-              {tab.groups.map((group, index) => (
-                <PropertySection
-                  key={`${node.nodeType}:${group.id}`}
-                  layout={layout}
-                  last={index === tab.groups.length - 1}
-                  group={group}
-                  node={node}
-                  validationErrors={validationErrors}
-                  onSave={save}
-                  onLiveChange={reportLiveChange}
-                />
-              ))}
-            </div>
+      <InspectorLayoutContext value={layout}>
+        <div
+          className={cn(
+            'flex min-h-0 flex-1 flex-col type-body',
+            layout === 'tray' && 'max-h-[50svh]',
           )}
-        </AlphaTabs>
-      </div>
+        >
+          <AlphaTabs
+            layout={layout}
+            tabs={visibleTabs ? withLead(visibleTabs, lead) : []}
+            activeTab={activeTab}
+            onTabChange={setSelectedTab}
+            validationErrors={validationErrors}
+            visited={visitedTabs}
+            end={tabsEnd}
+          >
+            {(tab) => (
+              <div inert={!editable} className={cn(!editable && 'opacity-60')}>
+                {tab.groups.map((group, index) => (
+                  <PropertySection
+                    key={`${node.nodeType}:${group.id}`}
+                    layout={layout}
+                    last={index === tab.groups.length - 1}
+                    group={group}
+                    node={node}
+                    validationErrors={validationErrors}
+                    onSave={save}
+                    onLiveChange={reportLiveChange}
+                  />
+                ))}
+              </div>
+            )}
+          </AlphaTabs>
+        </div>
+      </InspectorLayoutContext>
     )
   }
 

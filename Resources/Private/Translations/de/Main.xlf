@@ -1162,6 +1162,10 @@
         <source>Remove</source>
         <target xml:lang="de">Entfernen</target>
       </trans-unit>
+      <trans-unit id="editor.replace" xml:space="preserve">
+        <source>Replace</source>
+        <target xml:lang="de">Ersetzen</target>
+      </trans-unit>
       <trans-unit id="editor.rte.blockFormat" xml:space="preserve">
         <source>Block format</source>
         <target xml:lang="de">Blockformat</target>

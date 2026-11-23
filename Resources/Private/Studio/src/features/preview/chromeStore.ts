@@ -18,6 +18,8 @@ export interface PreviewChrome {
   } | null
   /** Preview width in px for a device preset; null = the full width. */
   deviceWidth: number | null
+  /** Whether the selected element renders text to type in (guest-reported). */
+  selectionText: { aggregateId: string | null; editable: boolean } | null
 }
 
 const CLASSIC: PreviewChrome = {
@@ -26,6 +28,7 @@ const CLASSIC: PreviewChrome = {
   bottomInset: 0,
   insertPreview: null,
   deviceWidth: null,
+  selectionText: null,
 }
 
 let chrome = CLASSIC

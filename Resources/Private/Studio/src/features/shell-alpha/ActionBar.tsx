@@ -35,6 +35,7 @@ import {
   onPreviewPointerNearBottom,
   onPreviewScroll,
   setPreviewChrome,
+  usePreviewChrome,
 } from '@/features/preview/chromeStore'
 import { useKeyboardShortcut } from '@/features/shortcuts/useKeyboardShortcut'
 import { NodeTypeIcon } from '@/features/tree/nodeTypeIcon'
@@ -116,15 +117,22 @@ export function ActionBar({
     nodeTypes !== undefined &&
     !isOfType(nodeTypes, inspectedNode.nodeType, DOCUMENT_NODE_TYPE)
   const node = isContent ? inspectedNode : null
-  // A tray about a node closes with its selection.
   const nodeKey = node?.nodeAggregateId ?? null
   const [trayOnSelection] = useTrayOnSelection()
+  const hasText = useHasInlineText(node)
+  // The tray follows the selection while open and closes with it. Closed,
+  // it opens for a node with nothing to type - decided once its type is
+  // known.
   const [trayNode, setTrayNode] = React.useState(nodeKey)
+  const [undecided, setUndecided] = React.useState<string | null>(null)
   if (trayNode !== nodeKey) {
     setTrayNode(nodeKey)
-    if (nodeKey !== null && trayOnSelection && !propertiesDocked)
-      setOpen('settings')
-    else if (open === 'settings') setOpen(null)
+    setUndecided(nodeKey !== null && open !== 'settings' ? nodeKey : null)
+    if (nodeKey === null && open === 'settings') setOpen(null)
+  }
+  if (undecided !== null && undecided === nodeKey && hasText !== null) {
+    setUndecided(null)
+    if (!hasText && trayOnSelection && !propertiesDocked) setOpen('settings')
   }
 
   React.useEffect(() => onPreviewEscape(() => setOpen(null)), [])
@@ -223,6 +231,7 @@ export function ActionBar({
             <NodePill
               node={node}
               settingsOpen={open === 'settings'}
+              settingsShown={open === 'settings' || propertiesDocked}
               onToggleSettings={() => toggle('settings')}
             />
           )}
@@ -258,6 +267,16 @@ export function ActionBar({
       </NativePopover>
     </div>
   )
+}
+
+/**
+ * Whether the node renders text to type in the preview (an inline-editable
+ * property of its own, as the page reports it); null until reported.
+ */
+function useHasInlineText(node: Node | null): boolean | null {
+  const { selectionText } = usePreviewChrome()
+  if (!node || selectionText?.aggregateId !== node.nodeAggregateId) return null
+  return selectionText.editable
 }
 
 /**
@@ -364,10 +383,13 @@ function HistoryControls({
 function NodePill({
   node,
   settingsOpen,
+  settingsShown,
   onToggleSettings,
 }: {
   node: Node
   settingsOpen: boolean
+  /** The tray or the Properties panel shows this node. */
+  settingsShown: boolean
   onToggleSettings: () => void
 }) {
   const { data: nodeTypes } = useNodeTypes()
@@ -431,15 +453,15 @@ function NodePill({
           </button>
         }
       />
-      <IconButton
-        open={settingsOpen}
+      <LabelButton
+        open={settingsShown}
         aria-expanded={settingsOpen}
         onClick={onToggleSettings}
-        title={t('shellAlpha.settings', 'Settings')}
-        aria-label={t('shellAlpha.settings', 'Settings')}
+        className="gap-1.75 pr-3.25 pl-2.75"
       >
         <SettingsIcon />
-      </IconButton>
+        {t('shellAlpha.settings', 'Settings')}
+      </LabelButton>
       <IconButton
         onClick={copyForAssistant}
         title={t('shellAlpha.copyForMcp', 'Copy for MCP')}

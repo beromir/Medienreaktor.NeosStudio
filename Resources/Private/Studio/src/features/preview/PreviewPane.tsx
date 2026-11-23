@@ -63,6 +63,7 @@ import {
   reportPreviewPointerDown,
   reportPreviewPointerNearBottom,
   reportPreviewScroll,
+  setPreviewChrome,
   usePreviewChrome,
 } from './chromeStore'
 
@@ -283,6 +284,14 @@ export function PreviewPane({
         break
       case 'neos-studio/pointer-near-bottom':
         reportPreviewPointerNearBottom(message.near)
+        break
+      case 'neos-studio/selection-text':
+        setPreviewChrome({
+          selectionText: {
+            aggregateId: message.aggregateId,
+            editable: message.editable,
+          },
+        })
         break
       case 'neos-studio/node-selected': {
         const address = addressOf(message.nodeAddress)

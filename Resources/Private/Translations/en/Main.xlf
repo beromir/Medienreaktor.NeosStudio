@@ -877,6 +877,9 @@
       <trans-unit id="editor.remove" xml:space="preserve">
         <source>Remove</source>
       </trans-unit>
+      <trans-unit id="editor.replace" xml:space="preserve">
+        <source>Replace</source>
+      </trans-unit>
       <trans-unit id="editor.rte.blockFormat" xml:space="preserve">
         <source>Block format</source>
       </trans-unit>

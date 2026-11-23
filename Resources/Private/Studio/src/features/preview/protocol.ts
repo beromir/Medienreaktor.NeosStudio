@@ -203,6 +203,17 @@ export type GuestToHostMessage =
   | { type: 'neos-studio/escape' }
   /** The pointer came near the frame's bottom edge, or left it again. */
   | { type: 'neos-studio/pointer-near-bottom'; near: boolean }
+  /**
+   * The selection changed: whether the selected element renders text of its
+   * own to type in (an inline-editable property) - the alpha layout opens
+   * its settings tray for elements without. aggregateId null: nothing
+   * selected, or the node has no element on this page.
+   */
+  | {
+      type: 'neos-studio/selection-text'
+      aggregateId: string | null
+      editable: boolean
+    }
 
 /**
  * A collaborator's live position on the rendered page: the element of the
@@ -431,6 +442,10 @@ const GUEST_MESSAGE_FIELDS: {
   'neos-studio/pointer-down': {},
   'neos-studio/pointer-near-bottom': {
     near: (value) => typeof value === 'boolean',
+  },
+  'neos-studio/selection-text': {
+    aggregateId: isStringOrNull,
+    editable: (value) => typeof value === 'boolean',
   },
 }
 
