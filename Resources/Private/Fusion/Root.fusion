@@ -9,6 +9,9 @@ prototype(Neos.Neos:ContentElementWrapping) {
     # collection's allowed-types list when an existing element is dragged to
     # a new position.
     data-__neos-studio-node-type = ${node.nodeTypeName.value}
+    # The alpha layout's drag chip names the dragged element, its drop label
+    # the collection it lands in.
+    data-__neos-studio-label = ${Neos.Node.label(node)}
     # Marks plain content elements (not collections) - only they get the
     # "..." element handle with the hide/delete menu and move-drag.
     data-__neos-studio-content = 'true'
