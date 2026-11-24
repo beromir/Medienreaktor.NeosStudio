@@ -43,6 +43,7 @@ import {
   surfacePopup,
 } from './primitives'
 import { useTrayOnSelection } from './preferences'
+import { Tooltip } from './Tooltip'
 import { containedPortal } from '@/lib/portalContainer'
 
 const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
@@ -133,20 +134,21 @@ export function Rail({
       <RailPill>
         {!modesOpen ? (
           <div className="flex w-9 flex-col items-center gap-px">
-            <button
-              type="button"
-              data-active
-              className={railButton}
-              onClick={() => setModesOpen(true)}
-              title={current ? modeLabel(current) : undefined}
-              aria-label={t('shellAlpha.switchMode', 'Switch mode')}
-              aria-expanded={false}
-            >
-              {modeIcon(mode)}
-              {openTasks > 0 && (
-                <span className="absolute top-1 right-1 size-1.75 rounded-full border-[1.5px] border-shell-active bg-shell-accent" />
-              )}
-            </button>
+            <Tooltip side="right" label={current && modeLabel(current)}>
+              <button
+                type="button"
+                data-active
+                className={railButton}
+                onClick={() => setModesOpen(true)}
+                aria-label={t('shellAlpha.switchMode', 'Switch mode')}
+                aria-expanded={false}
+              >
+                {modeIcon(mode)}
+                {openTasks > 0 && (
+                  <span className="absolute top-1 right-1 size-1.75 rounded-full border-[1.5px] border-shell-active bg-shell-accent" />
+                )}
+              </button>
+            </Tooltip>
             <button
               type="button"
               className="flex h-3 w-9 cursor-pointer items-center justify-center text-shell-subtle hover:text-shell-text"
@@ -162,24 +164,28 @@ export function Rail({
             {orderedModes(modes).map((definition) => {
               const active = definition.id === mode
               return (
-                <button
+                <Tooltip
                   key={definition.id}
-                  type="button"
-                  data-active={active}
-                  className={railButton}
-                  title={modeLabel(definition)}
-                  aria-label={modeLabel(definition)}
-                  aria-pressed={active}
-                  onClick={() => {
-                    onModeChange(definition.id)
-                    setModesOpen(false)
-                  }}
+                  side="right"
+                  label={modeLabel(definition)}
                 >
-                  {modeIcon(definition.id)}
-                  {definition.id === 'tasks' && openTasks > 0 && (
-                    <span className="absolute top-2 right-2 size-1.75 rounded-full border-[1.5px] border-(--knob) bg-shell-accent" />
-                  )}
-                </button>
+                  <button
+                    type="button"
+                    data-active={active}
+                    className={railButton}
+                    aria-label={modeLabel(definition)}
+                    aria-pressed={active}
+                    onClick={() => {
+                      onModeChange(definition.id)
+                      setModesOpen(false)
+                    }}
+                  >
+                    {modeIcon(definition.id)}
+                    {definition.id === 'tasks' && openTasks > 0 && (
+                      <span className="absolute top-2 right-2 size-1.75 rounded-full border-[1.5px] border-(--knob) bg-shell-accent" />
+                    )}
+                  </button>
+                </Tooltip>
               )
             })}
             <button
@@ -237,29 +243,33 @@ function PanelButton({
   const badge = usePanelBadge(definition)
   const title = panelTitle(definition)
   return (
-    <button
-      type="button"
-      data-active={active}
-      className={railButton}
-      title={badge?.label ? `${title} · ${badge.label}` : title}
-      aria-label={title}
-      aria-pressed={active}
-      onClick={onClick}
+    <Tooltip
+      side="right"
+      label={badge?.label ? `${title} · ${badge.label}` : title}
     >
-      {PANEL_ICONS[definition.id] ?? <PluginGlyph />}
-      {badge && (
-        <span
-          className={cn(
-            'absolute top-2 right-2 size-1.75 rounded-full',
-            badge.tone === 'neutral'
-              ? 'bg-shell-muted'
-              : badge.tone === 'warning'
-                ? 'bg-shell-conflict'
-                : 'bg-destructive',
-          )}
-        />
-      )}
-    </button>
+      <button
+        type="button"
+        data-active={active}
+        className={railButton}
+        aria-label={title}
+        aria-pressed={active}
+        onClick={onClick}
+      >
+        {PANEL_ICONS[definition.id] ?? <PluginGlyph />}
+        {badge && (
+          <span
+            className={cn(
+              'absolute top-2 right-2 size-1.75 rounded-full',
+              badge.tone === 'neutral'
+                ? 'bg-shell-muted'
+                : badge.tone === 'warning'
+                  ? 'bg-shell-conflict'
+                  : 'bg-destructive',
+            )}
+          />
+        )}
+      </button>
+    </Tooltip>
   )
 }
 
@@ -283,13 +293,14 @@ function AccountMenu() {
 
   return (
     <MenuPrimitive.Root>
-      <MenuPrimitive.Trigger
-        className={railButton + ' text-shell-text'}
-        aria-label={t('userMenu.label', 'User menu')}
-        title={name}
-      >
-        <PersonIcon />
-      </MenuPrimitive.Trigger>
+      <Tooltip side="right" label={name}>
+        <MenuPrimitive.Trigger
+          className={railButton + ' text-shell-text'}
+          aria-label={t('userMenu.label', 'User menu')}
+        >
+          <PersonIcon />
+        </MenuPrimitive.Trigger>
+      </Tooltip>
       <MenuPortalContained>
         <MenuPrimitive.Positioner
           side="right"

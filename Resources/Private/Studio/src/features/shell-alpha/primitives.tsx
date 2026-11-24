@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { containedPortal } from '@/lib/portalContainer'
 import { translate as t } from '@/lib/i18n'
 import { PinIcon } from './icons'
+import { Tooltip } from './Tooltip'
 
 const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
 
@@ -204,24 +205,25 @@ export function PinButton({
     ? t('shellAlpha.unpin', 'Unpin')
     : t('shellAlpha.pin', 'Pin')
   return (
-    <button
-      type="button"
-      aria-pressed={pinned}
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className={cn(
-        'inline-flex size-7 shrink-0 cursor-pointer items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
-        pinned
-          ? 'rounded-full bg-shell-ground text-shell-text'
-          : 'rounded-shell-control text-shell-muted hover:bg-shell-hover hover:text-shell-text',
-      )}
-    >
-      <PinIcon
-        filled={pinned}
-        width={pinned ? 12 : 14}
-        height={pinned ? 12 : 14}
-      />
-    </button>
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-pressed={pinned}
+        aria-label={label}
+        onClick={onClick}
+        className={cn(
+          'inline-flex size-7 shrink-0 cursor-pointer items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
+          pinned
+            ? 'rounded-full bg-shell-ground text-shell-text'
+            : 'rounded-shell-control text-shell-muted hover:bg-shell-hover hover:text-shell-text',
+        )}
+      >
+        <PinIcon
+          filled={pinned}
+          width={pinned ? 12 : 14}
+          height={pinned ? 12 : 14}
+        />
+      </button>
+    </Tooltip>
   )
 }

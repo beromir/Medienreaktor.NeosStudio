@@ -20,6 +20,7 @@ import { celebrateAround } from '@/lib/confetti'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { NativePopover, type Placement } from './NativePopover'
+import { Tooltip } from './Tooltip'
 import { Surface } from './primitives'
 
 const PUBLISH_ID = 'shell-alpha-publish'
@@ -422,10 +423,8 @@ function PublishPopover({
         </div>
       ) : (
         <div className="flex items-center justify-between border-t border-shell-border-strong py-2.5 pr-2.5 pl-3">
-          <button
-            type="button"
-            disabled={busy || !canDiscard || selected.length === 0}
-            title={
+          <Tooltip
+            label={
               canDiscard
                 ? undefined
                 : t(
@@ -434,16 +433,18 @@ function PublishPopover({
                     [sourceLabel],
                   )
             }
-            onClick={() => setConfirming(true)}
-            className="flex h-8 cursor-pointer items-center rounded-shell-control px-2.5 type-shell-control text-shell-quiet outline-none hover:bg-shell-hover-inset hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60 disabled:cursor-default disabled:text-shell-disabled disabled:hover:bg-transparent"
           >
-            {t('workspace.discard.button', 'Discard')}
-          </button>
-          <button
-            ref={publishRef}
-            type="button"
-            disabled={busy || !canPublish || selected.length === 0}
-            title={
+            <button
+              type="button"
+              disabled={busy || !canDiscard || selected.length === 0}
+              onClick={() => setConfirming(true)}
+              className="flex h-8 cursor-pointer items-center rounded-shell-control px-2.5 type-shell-control text-shell-quiet outline-none hover:bg-shell-hover-inset hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60 disabled:cursor-default disabled:text-shell-disabled disabled:hover:bg-transparent"
+            >
+              {t('workspace.discard.button', 'Discard')}
+            </button>
+          </Tooltip>
+          <Tooltip
+            label={
               canPublish
                 ? undefined
                 : t(
@@ -452,13 +453,19 @@ function PublishPopover({
                     [targetLabel],
                   )
             }
-            onClick={() => run('publish')}
-            className="flex h-8 cursor-pointer items-center rounded-shell-control bg-shell-accent px-3.5 type-shell-control font-semibold text-white outline-none transition-[filter] hover:brightness-110 focus-visible:ring-2 focus-visible:ring-white/60 disabled:cursor-default disabled:opacity-50 disabled:hover:brightness-100"
           >
-            {t('shellAlpha.publish.publishChanges', 'Publish {0}', [
-              changesText(selectedChanges),
-            ])}
-          </button>
+            <button
+              ref={publishRef}
+              type="button"
+              disabled={busy || !canPublish || selected.length === 0}
+              onClick={() => run('publish')}
+              className="flex h-8 cursor-pointer items-center rounded-shell-control bg-shell-accent px-3.5 type-shell-control font-semibold text-white outline-none transition-[filter] hover:brightness-110 focus-visible:ring-2 focus-visible:ring-white/60 disabled:cursor-default disabled:opacity-50 disabled:hover:brightness-100"
+            >
+              {t('shellAlpha.publish.publishChanges', 'Publish {0}', [
+                changesText(selectedChanges),
+              ])}
+            </button>
+          </Tooltip>
         </div>
       )}
     </Surface>

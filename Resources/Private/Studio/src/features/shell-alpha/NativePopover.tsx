@@ -5,28 +5,9 @@ import {
 } from '@/features/preview/chromeStore'
 import { PortalContainerContext } from '@/lib/portalContainer'
 import { cn } from '@/lib/utils'
+import { useAnchoredStyle, type Placement } from './anchoring'
 
-/** Where the popover sits relative to its anchor. */
-export interface Placement {
-  side: 'top' | 'bottom'
-  /** The anchor edge (or centre) the popover's left edge starts from; end: the right edges line up. */
-  align: 'start' | 'center' | 'end'
-  /** Gap to the anchor, px. */
-  offset: number
-  /** Horizontal shift from the aligned edge, px. */
-  shift?: number
-}
-
-const anchorPositioning =
-  typeof CSS !== 'undefined' && CSS.supports('position-anchor: --a')
-
-/** Props that make an element the anchor of a NativePopover. */
-export function anchorProps(name: string) {
-  return {
-    'data-anchor': name,
-    style: { anchorName: name } as React.CSSProperties,
-  }
-}
+export { anchorProps, type Placement } from './anchoring'
 
 /**
  * A native popover (popover="auto"): the top layer, and the browser's own
@@ -88,57 +69,7 @@ export function NativePopover({
     }
   }, [open])
 
-  const [fallback, setFallback] = React.useState<React.CSSProperties>({})
-  React.useLayoutEffect(() => {
-    if (anchorPositioning || !open) return
-    const measure = () => {
-      const target = document.querySelector(`[data-anchor="${anchor}"]`)
-      if (!target) return
-      const rect = target.getBoundingClientRect()
-      const horizontal =
-        placement.align === 'end'
-          ? {
-              right:
-                document.documentElement.clientWidth -
-                rect.right -
-                (placement.shift ?? 0),
-            }
-          : {
-              left:
-                (placement.align === 'center'
-                  ? rect.left + rect.width / 2
-                  : rect.left) + (placement.shift ?? 0),
-            }
-      setFallback(
-        placement.side === 'top'
-          ? {
-              ...horizontal,
-              bottom: window.innerHeight - rect.top + placement.offset,
-            }
-          : { ...horizontal, top: rect.bottom + placement.offset },
-      )
-    }
-    measure()
-    window.addEventListener('resize', measure)
-    window.addEventListener('scroll', measure, true)
-    return () => {
-      window.removeEventListener('resize', measure)
-      window.removeEventListener('scroll', measure, true)
-    }
-  }, [open, anchor, placement])
-
-  const edge = placement.align === 'center' ? 'center' : 'left'
-  const anchored: React.CSSProperties = anchorPositioning
-    ? ({
-        positionAnchor: anchor,
-        ...(placement.align === 'end'
-          ? { right: `calc(anchor(right) - ${placement.shift ?? 0}px)` }
-          : { left: `calc(anchor(${edge}) + ${placement.shift ?? 0}px)` }),
-        ...(placement.side === 'top'
-          ? { bottom: `calc(anchor(top) + ${placement.offset}px)` }
-          : { top: `calc(anchor(bottom) + ${placement.offset}px)` }),
-      } as React.CSSProperties)
-    : fallback
+  const anchored = useAnchoredStyle(anchor, placement, open)
 
   return (
     <div

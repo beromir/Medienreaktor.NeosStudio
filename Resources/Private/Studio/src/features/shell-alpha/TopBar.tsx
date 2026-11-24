@@ -30,6 +30,7 @@ import {
 import { LocationSeparator } from './LocationSeparator'
 import { PublishSegment } from './PublishPopover'
 import { anchorProps, NativePopover, type Placement } from './NativePopover'
+import { Tooltip, useTooltip } from './Tooltip'
 import { ShellMenu, ShellMenuItem, Surface } from './primitives'
 
 export type Device = 'desktop' | 'tablet' | 'phone'
@@ -246,6 +247,7 @@ function ViewPill({
     'share.buttonHint',
     'Share a preview link to this page with people without a login',
   )
+  const deviceTooltip = useTooltip(labels[device])
   const plain =
     'flex h-6.5 shrink-0 cursor-pointer items-center rounded-full text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover'
   return (
@@ -257,7 +259,7 @@ function ViewPill({
         trigger={
           <button
             type="button"
-            title={labels[device]}
+            {...deviceTooltip.props}
             aria-label={t('shellAlpha.device.label', 'Device preview')}
             className={cn(plain, 'gap-1.5 pr-2.5 pl-2.75')}
           >
@@ -283,30 +285,33 @@ function ViewPill({
           </ShellMenuItem>
         ))}
       </ShellMenu>
+      {deviceTooltip.tooltip}
       {document && (
         <>
           <div className="h-4 w-px shrink-0 bg-shell-divider" aria-hidden />
-          <button
-            type="button"
-            onClick={() => setSharing(true)}
-            title={shareLabel}
-            aria-label={shareLabel}
-            className={cn(plain, 'w-6.5 justify-center')}
-          >
-            <LinkIcon />
-          </button>
-          <a
-            href={previewHref(document)}
-            target={PREVIEW_WINDOW}
-            title={t('preview.openInNewTab', 'Open page in a new tab')}
-            className={cn(
-              plain,
-              'gap-1.75 pr-3 pl-3.5 type-shell-control font-medium',
-            )}
-          >
-            {t('shellAlpha.preview', 'Preview')}
-            <ExternalIcon />
-          </a>
+          <Tooltip label={shareLabel}>
+            <button
+              type="button"
+              onClick={() => setSharing(true)}
+              aria-label={shareLabel}
+              className={cn(plain, 'w-6.5 justify-center')}
+            >
+              <LinkIcon />
+            </button>
+          </Tooltip>
+          <Tooltip label={t('preview.openInNewTab', 'Open page in a new tab')}>
+            <a
+              href={previewHref(document)}
+              target={PREVIEW_WINDOW}
+              className={cn(
+                plain,
+                'gap-1.75 pr-3 pl-3.5 type-shell-control font-medium',
+              )}
+            >
+              {t('shellAlpha.preview', 'Preview')}
+              <ExternalIcon />
+            </a>
+          </Tooltip>
           {sharing && (
             <ShareLinkDialog
               key={document.nodeAggregateId}

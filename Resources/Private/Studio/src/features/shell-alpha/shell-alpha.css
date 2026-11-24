@@ -33,6 +33,7 @@
   --color-shell-conflict: #ff8700;
   --color-shell-danger: #d9434a;
   --color-shell-scrim: #00000099;
+  --color-shell-tooltip-border: #ffffff14;
 
   --radius-shell-surface: 1rem;
   --radius-shell-site: 0.625rem;
@@ -42,6 +43,7 @@
   --shadow-shell-bar: 0 0.625rem 1.875rem #00000066;
   --shadow-shell-surface: 0 1rem 2.5rem #00000066;
   --shadow-shell-dialog: 0 1.5rem 3.75rem #00000080;
+  --shadow-shell-tooltip: 0 0.25rem 0.625rem #00000066;
 }
 
 /* 13px controls, 12px secondary text, 11px counts. */
