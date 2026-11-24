@@ -7,14 +7,12 @@ import { PresenceAvatars } from '@/features/collaboration/PresenceAvatars'
 import { HeaderActions } from '@/features/actions/HeaderActions'
 import { CreateVariantDialog } from '@/features/dimensions/CreateVariantDialog'
 import { DimensionSwitcher } from '@/features/dimensions/DimensionSwitcher'
-import { PanelBody } from '@/features/panels/PanelSystem'
-import { panelRegistry } from '@/features/panels/registry'
 import { PREVIEW_WINDOW, previewHref } from '@/features/preview/PreviewButton'
 import { ShareLinkDialog } from '@/features/sharing/ShareLinkDialog'
 import { SiteSwitcher } from '@/features/sites/SiteSwitcher'
 import { SyncWorkspaceButton } from '@/features/workspaces/SyncWorkspaceButton'
 import { WorkspaceSwitcher } from '@/features/workspaces/WorkspaceSwitcher'
-import { useRegistry } from '@/lib/registry'
+import { PagesBody } from './PagesPanel'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import {
@@ -153,8 +151,8 @@ export function TopBar({
 }
 
 /**
- * The page segment: opens the page tree - Studio's Documents panel (tree,
- * filter, new page, drag to reorder) in a dropdown.
+ * The page segment: opens the page tree - the Pages panel's (filter, tree,
+ * new page, drag to reorder) in a dropdown, for quick jumps.
  */
 const PAGE_TREE_ID = 'shell-alpha-page-tree'
 const PAGE_ANCHOR = '--shell-alpha-page'
@@ -166,8 +164,6 @@ const PAGE_TREE_PLACEMENT: Placement = {
 
 function PageSegment({ document }: { document: Node | null }) {
   const [open, setOpen] = React.useState(false)
-  const panels = useRegistry(panelRegistry)
-  const documents = panels.find((definition) => definition.id === 'documents')
   return (
     <>
       <button
@@ -192,28 +188,9 @@ function PageSegment({ document }: { document: Node | null }) {
         open={open}
         onOpenChange={setOpen}
       >
-        {documents && (
-          <Surface className="flex h-[min(36rem,calc(100svh-5rem))] w-95 flex-col overflow-hidden">
-            <div
-              className="min-h-0 flex-1 overflow-y-auto"
-              // Picking a page is "go there": close the dropdown.
-              onClickCapture={(event) => {
-                const row = (event.target as HTMLElement).closest(
-                  '[role="treeitem"]',
-                )
-                if (row && !(event.target as HTMLElement).closest('button')) {
-                  window.setTimeout(() => setOpen(false), 0)
-                }
-              }}
-            >
-              <PanelBody
-                panel={documents.id}
-                component={documents.component}
-                visible={open}
-              />
-            </div>
-          </Surface>
-        )}
+        <Surface className="flex h-[min(36rem,calc(100svh-5rem))] w-95 flex-col overflow-hidden pt-2">
+          {open && <PagesBody onOpened={() => setOpen(false)} />}
+        </Surface>
       </NativePopover>
     </>
   )

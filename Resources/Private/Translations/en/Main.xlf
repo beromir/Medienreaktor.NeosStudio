@@ -2090,11 +2090,17 @@
       <trans-unit id="shellAlpha.escape" xml:space="preserve">
         <source>Close the menu, deselect, close panels</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.filterPages" xml:space="preserve">
+        <source>Filter pages</source>
+      </trans-unit>
       <trans-unit id="shellAlpha.mode.editor" xml:space="preserve">
         <source>Editor</source>
       </trans-unit>
       <trans-unit id="shellAlpha.mode.media" xml:space="preserve">
         <source>Media</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.newPage" xml:space="preserve">
+        <source>New page</source>
       </trans-unit>
       <trans-unit id="shellAlpha.page" xml:space="preserve">
         <source>page</source>
@@ -2103,6 +2109,9 @@
         <source>Page</source>
       </trans-unit>
       <trans-unit id="shellAlpha.pageTree" xml:space="preserve">
+        <source>Pages</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.pages" xml:space="preserve">
         <source>Pages</source>
       </trans-unit>
       <trans-unit id="shellAlpha.pin" xml:space="preserve">

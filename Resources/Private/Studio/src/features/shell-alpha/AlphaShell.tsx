@@ -15,6 +15,7 @@ import {
   setPreviewChrome,
 } from '@/features/preview/chromeStore'
 import { TreeStyleContext } from '@/features/tree/treeStyle'
+import { translate as t } from '@/lib/i18n'
 import { useRegistry } from '@/lib/registry'
 import { cn } from '@/lib/utils'
 import { ActionBar } from './ActionBar'
@@ -30,6 +31,7 @@ import {
   toggleLeft,
   togglePinned,
 } from './dock'
+import { PAGES, PagesPanel } from './PagesPanel'
 import { usePinnedPanels } from './preferences'
 import { PanelHeader, PinButton } from './primitives'
 import { PropertiesPanel } from './PropertiesPanel'
@@ -42,6 +44,14 @@ const DEVICE_KEY = 'neos-studio.alpha.device'
 /** Panels with a place of their own in this layout, not in the rail. */
 const PLACED_ELSEWHERE = new Set(['documents', 'inspector'])
 const EDITOR_TOOLS = ['outline', 'clipboard', 'trash']
+/** Pages: the shell's own document tree panel, first in the rail. */
+const PAGES_DEFINITION: PanelDefinition = {
+  id: PAGES,
+  title: () => t('shellAlpha.pages', 'Pages'),
+  component: () => null,
+  defaultPlacement: { kind: 'dock', region: 'sidebar' },
+}
+
 /*
  * Floating panels lie over the preview card, 14px inside its edges. The
  * action bar centres between them: its stack sits in the card's content
@@ -110,14 +120,16 @@ export function AlphaShell({
     const history = others.find((definition) => definition.id === 'history')
     const second = [...rest, ...(history ? [history] : [])]
     return [
+      PAGES_DEFINITION,
       ...tools,
-      ...(tools.length && second.length ? [null] : []),
+      ...(second.length ? [null] : []),
       ...second,
     ]
   }, [definitions])
 
   const exists = React.useCallback(
     (panel: string) =>
+      panel === PAGES ||
       panelRegistry.getAll().some((definition) => definition.id === panel),
     [],
   )
@@ -144,8 +156,10 @@ export function AlphaShell({
   const leftDefinition =
     !editor || panels.left === null
       ? null
-      : (definitions.find((definition) => definition.id === panels.left) ??
-        null)
+      : panels.left === PAGES
+        ? PAGES_DEFINITION
+        : (definitions.find((definition) => definition.id === panels.left) ??
+          null)
   const leftPinned = leftDefinition !== null && isPinned(leftDefinition.id)
   const propertiesOpen = editor && panels.properties
   const propertiesPinned = propertiesOpen && isPinned(PROPERTIES)
@@ -229,15 +243,22 @@ export function AlphaShell({
               updatePanels((current) => toggleLeft(current, panel))
             }
           />
-          {leftDefinition && (
-            <LeftPanel
-              key={leftDefinition.id}
-              className={panelFrame('left', leftPinned)}
-              definition={leftDefinition}
-              pin={pinButton(leftDefinition.id)}
-              onClose={() => closeLeftPanel(leftDefinition.id)}
-            />
-          )}
+          {leftDefinition &&
+            (leftDefinition.id === PAGES ? (
+              <PagesPanel
+                className={panelFrame('left', leftPinned)}
+                pin={pinButton(PAGES)}
+                onClose={() => closeLeftPanel(PAGES)}
+              />
+            ) : (
+              <LeftPanel
+                key={leftDefinition.id}
+                className={panelFrame('left', leftPinned)}
+                definition={leftDefinition}
+                pin={pinButton(leftDefinition.id)}
+                onClose={() => closeLeftPanel(leftDefinition.id)}
+              />
+            ))}
           <main className="flex min-w-0 flex-1 flex-col rounded-shell-surface border border-shell-border bg-shell-surface p-1.5">
             <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-shell-site">
               {modes

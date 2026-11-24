@@ -414,6 +414,20 @@ export const CalendarIcon = (props: IconProps) => (
   </Svg>
 )
 
+export const PagesIcon = (props: IconProps) => (
+  <Svg
+    width={14}
+    height={14}
+    viewBox="0 0 14 14"
+    strokeWidth={1.4}
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M3 1.5h5l3 3v8H3z" />
+    <path d="M8 1.5v3h3" />
+  </Svg>
+)
+
 /** The tree rows' chevron: right when closed, down when open. */
 export const TreeChevronIcon = ({
   open = false,
