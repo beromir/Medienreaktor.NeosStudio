@@ -1566,6 +1566,26 @@
         <source>Changes to this property will affect all specialization variants.</source>
         <target xml:lang="de">Änderungen an dieser Eigenschaft wirken sich auf alle Spezialisierungsvarianten aus.</target>
       </trans-unit>
+      <trans-unit id="inspector.scope.allLanguages" xml:space="preserve">
+        <source>Shared across all languages</source>
+        <target xml:lang="de">In allen Sprachen gleich</target>
+      </trans-unit>
+      <trans-unit id="inspector.scope.allVariants" xml:space="preserve">
+        <source>Shared across all variants</source>
+        <target xml:lang="de">In allen Varianten gleich</target>
+      </trans-unit>
+      <trans-unit id="inspector.scope.derivedLanguages" xml:space="preserve">
+        <source>Also changes the languages based on this one</source>
+        <target xml:lang="de">Ändert auch die davon abgeleiteten Sprachen</target>
+      </trans-unit>
+      <trans-unit id="inspector.scope.derivedVariants" xml:space="preserve">
+        <source>Also changes the variants based on this one</source>
+        <target xml:lang="de">Ändert auch die davon abgeleiteten Varianten</target>
+      </trans-unit>
+      <trans-unit id="inspector.scope.appliesTo" xml:space="preserve">
+        <source>Applies to {0}</source>
+        <target xml:lang="de">Gilt für {0}</target>
+      </trans-unit>
       <trans-unit id="inspector.savingFailed" xml:space="preserve">
         <source>Saving failed</source>
         <target xml:lang="de">Speichern fehlgeschlagen</target>

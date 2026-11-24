@@ -1180,6 +1180,21 @@
       <trans-unit id="inspector.propertyScope.specializations" xml:space="preserve">
         <source>Changes to this property will affect all specialization variants.</source>
       </trans-unit>
+      <trans-unit id="inspector.scope.allLanguages" xml:space="preserve">
+        <source>Shared across all languages</source>
+      </trans-unit>
+      <trans-unit id="inspector.scope.allVariants" xml:space="preserve">
+        <source>Shared across all variants</source>
+      </trans-unit>
+      <trans-unit id="inspector.scope.derivedLanguages" xml:space="preserve">
+        <source>Also changes the languages based on this one</source>
+      </trans-unit>
+      <trans-unit id="inspector.scope.derivedVariants" xml:space="preserve">
+        <source>Also changes the variants based on this one</source>
+      </trans-unit>
+      <trans-unit id="inspector.scope.appliesTo" xml:space="preserve">
+        <source>Applies to {0}</source>
+      </trans-unit>
       <trans-unit id="inspector.savingFailed" xml:space="preserve">
         <source>Saving failed</source>
       </trans-unit>

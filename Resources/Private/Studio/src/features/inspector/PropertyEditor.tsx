@@ -10,7 +10,15 @@ import { FieldLabel } from '@/components/ui/field-label'
 import { usePropertyEditor } from '@/features/inspector/editors/registry'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import {
+  dimensionSpacePointLabel,
+  useContentRepository,
+} from '@/api/neos/endpoints/contentRepositories'
+import { useNodeVariants } from '@/api/neos/endpoints/nodes'
+import { config } from '@/config'
+import { Tooltip } from '@/features/shell-alpha/Tooltip'
 import { useInspectorLayout } from './layoutContext'
+import { scopeNoun, scopeReach, type SharedScope } from './propertyScope'
 import type {
   InspectorProperty,
   InspectorPropertyHelp,
@@ -122,13 +130,18 @@ export function PropertyEditor({
         >
           {editor}
           {property.help && <HelpHint help={property.help} />}
-          {property.scope !== 'node' && <ScopeHint scope={property.scope} />}
+          {property.scope !== 'node' &&
+            (alpha ? (
+              <ScopeIcon scope={property.scope} />
+            ) : (
+              <ScopeHint scope={property.scope} />
+            ))}
         </div>
         {inlineErrors}
       </>
     )
   }
-  return (
+  const labeled = (
     <Labeled
       label={property.label}
       htmlFor={controlId}
@@ -137,7 +150,16 @@ export function PropertyEditor({
     >
       {editor}
       {inlineErrors}
+      {alpha && property.scope !== 'node' && (
+        <ScopeReach scope={property.scope} nodeAddress={nodeAddress} />
+      )}
     </Labeled>
+  )
+  return alpha && property.scope !== 'node' ? (
+    // The reach line shows while the field has focus.
+    <div className="group/scope">{labeled}</div>
+  ) : (
+    labeled
   )
 }
 
@@ -186,7 +208,8 @@ export function Labeled({
           <span>{label}</span>
         )}
         {help && <HelpHint help={help} />}
-        {spansVariants && <ScopeHint scope={scope} />}
+        {spansVariants &&
+          (alpha ? <ScopeIcon scope={scope} /> : <ScopeHint scope={scope} />)}
       </div>
       {children}
     </>
@@ -279,6 +302,92 @@ function ScopeHint({ scope }: { scope: Exclude<PropertyScope, 'node'> }) {
     >
       {hint}
     </HintPopover>
+  )
+}
+
+/** The alpha layout's scope tooltips, by scope and what the content varies by. */
+const SCOPE_TOOLTIPS: Record<
+  SharedScope,
+  Record<'languages' | 'variants', [id: string, fallback: string]>
+> = {
+  nodeAggregate: {
+    languages: ['inspector.scope.allLanguages', 'Shared across all languages'],
+    variants: ['inspector.scope.allVariants', 'Shared across all variants'],
+  },
+  specializations: {
+    languages: [
+      'inspector.scope.derivedLanguages',
+      'Also changes the languages based on this one',
+    ],
+    variants: [
+      'inspector.scope.derivedVariants',
+      'Also changes the variants based on this one',
+    ],
+  },
+}
+
+/**
+ * The alpha layout's scope hint: a quiet link icon after the label, its
+ * explanation as tooltip - on hover and on keyboard focus.
+ */
+function ScopeIcon({ scope }: { scope: SharedScope }) {
+  const { data: repository } = useContentRepository()
+  const [id, fallback] =
+    SCOPE_TOOLTIPS[scope][scopeNoun(repository?.dimensions ?? [])]
+  const label = t(id, fallback)
+  return (
+    <Tooltip label={label}>
+      <span
+        role="img"
+        tabIndex={0}
+        aria-label={label}
+        className="inline-flex shrink-0 cursor-default rounded-sm text-shell-icon outline-none hover:text-shell-quiet focus-visible:text-shell-quiet focus-visible:ring-2 focus-visible:ring-shell-accent/60"
+      >
+        <svg
+          width="11"
+          height="11"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          aria-hidden
+        >
+          <path d="M5.8 8.2a2.6 2.6 0 003.7 0l2.2-2.2a2.6 2.6 0 00-3.7-3.7l-.9.9M8.2 5.8a2.6 2.6 0 00-3.7 0L2.3 8a2.6 2.6 0 003.7 3.7l.9-.9" />
+        </svg>
+      </span>
+    </Tooltip>
+  )
+}
+
+/**
+ * While a shared field is edited, one line under it names the variants the
+ * edit changes - when there is more than the one being edited.
+ */
+function ScopeReach({
+  scope,
+  nodeAddress,
+}: {
+  scope: SharedScope
+  nodeAddress: NodeAddress
+}) {
+  const { data: repository } = useContentRepository()
+  const { data: variants } = useNodeVariants(nodeAddress)
+  const dimensions = repository?.dimensions ?? []
+  const reach = scopeReach(
+    scope,
+    nodeAddress.dimensionSpacePoint,
+    variants?.meta.coveredDimensionSpacePoints ?? [],
+    dimensions,
+  )
+  if (reach.length < 2) return null
+  const names = new Intl.ListFormat(config.interfaceLanguage, {
+    type: 'conjunction',
+  }).format(reach.map((point) => dimensionSpacePointLabel(point, dimensions)))
+  return (
+    <p className="mt-1.5 hidden text-[0.75rem] leading-4 text-shell-subtle group-focus-within/scope:block">
+      {t('inspector.scope.appliesTo', 'Applies to {0}', [names])}
+    </p>
   )
 }
 
