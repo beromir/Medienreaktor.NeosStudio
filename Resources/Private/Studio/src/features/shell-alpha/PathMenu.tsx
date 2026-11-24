@@ -27,8 +27,8 @@ export function useNodeName(node: Node): string {
 }
 
 /**
- * The selection path as a menu: the parents up to the page (the direct one
- * with ⌥↑), the node itself with a check, and its children. Picking an entry
+ * The selection path as a menu: the parents up to the page, the node
+ * itself with a check, and its children. Picking an entry
  * selects it.
  */
 export function PathMenu({
@@ -56,7 +56,6 @@ export function PathMenu({
     queryKey: [...neosKeys.nodes.node(address), 'alpha-path-children'],
     queryFn: () => fetchChildren(address),
   })
-  const parent = nodeIsDocument ? null : (ancestors?.[0] ?? null)
 
   // Up to and including the page, outermost first.
   const path: Node[] = []
@@ -120,11 +119,6 @@ export function PathMenu({
         {page && kind !== 'self' && (
           <span className="text-[0.6875rem] leading-3.5 text-[#5a5a5a]">
             {t('shellAlpha.page', 'page')}
-          </span>
-        )}
-        {parent?.nodeAggregateId === entry.nodeAggregateId && (
-          <span className="text-[0.6875rem] leading-3.5 text-shell-subtle">
-            ⌥↑
           </span>
         )}
         {kind === 'self' && <CheckIcon />}
