@@ -259,8 +259,8 @@ export interface HandleAction {
 export type HostToGuestMessage =
   /**
    * How much shell chrome the page draws. minimal (the alpha layout): no
-   * element handle, no "+" buttons, a thin selection outline - the action
-   * bar outside the page takes their place. scrollSpace (px) is added at
+   * "..." handle and no "+" buttons - the action bar outside the page takes
+   * their place - and a selection outline with a tab to drag the element by. scrollSpace (px) is added at
    * the page's end, so its footer can scroll above the bar; bottomInset (px)
    * is what the bar and whatever it opened cover right now - the selection
    * is kept visible above it.
@@ -280,6 +280,15 @@ export type HostToGuestMessage =
    * that allow it become drop targets; null ends the drag.
    */
   | { type: 'neos-studio/type-drag'; nodeTypeName: string | null }
+  /**
+   * The content node types by name, labelled in the interface language,
+   * with their icon as an image URL (null without one): the alpha layout's
+   * selection tab, drag chip and drop label name elements by type.
+   */
+  | {
+      type: 'neos-studio/node-types'
+      types: Record<string, { label: string; icon: string | null }>
+    }
   | {
       type: 'neos-studio/insert-preview'
       aggregateId: string | null

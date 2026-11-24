@@ -1006,6 +1006,18 @@
       <trans-unit id="guest.collection.add" xml:space="preserve">
         <source>Add content</source>
       </trans-unit>
+      <trans-unit id="guest.drop.after" xml:space="preserve">
+        <source>After</source>
+      </trans-unit>
+      <trans-unit id="guest.drop.before" xml:space="preserve">
+        <source>Before</source>
+      </trans-unit>
+      <trans-unit id="guest.drop.in" xml:space="preserve">
+        <source>in {place}</source>
+      </trans-unit>
+      <trans-unit id="guest.drop.into" xml:space="preserve">
+        <source>Into</source>
+      </trans-unit>
       <trans-unit id="guest.element.create" xml:space="preserve">
         <source>Create new element</source>
       </trans-unit>
