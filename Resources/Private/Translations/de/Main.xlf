@@ -1334,6 +1334,22 @@
         <source>Add content</source>
         <target xml:lang="de">Inhalt hinzufügen</target>
       </trans-unit>
+      <trans-unit id="guest.drop.after" xml:space="preserve">
+        <source>After</source>
+        <target xml:lang="de">Nach</target>
+      </trans-unit>
+      <trans-unit id="guest.drop.before" xml:space="preserve">
+        <source>Before</source>
+        <target xml:lang="de">Vor</target>
+      </trans-unit>
+      <trans-unit id="guest.drop.in" xml:space="preserve">
+        <source>in {place}</source>
+        <target xml:lang="de">in {place}</target>
+      </trans-unit>
+      <trans-unit id="guest.drop.into" xml:space="preserve">
+        <source>Into</source>
+        <target xml:lang="de">In</target>
+      </trans-unit>
       <trans-unit id="guest.element.create" xml:space="preserve">
         <source>Create new element</source>
         <target xml:lang="de">Neues Element erstellen</target>

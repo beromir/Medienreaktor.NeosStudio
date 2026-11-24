@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useState } from 'react'
 import { queryString } from '@/api/http/request'
 import { renderNodeElement } from '@/api/neos/endpoints/nodes'
+import { useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
 import {
   isRemoved,
   nodeAddressFromContextPath,
@@ -55,6 +56,7 @@ import type {
   LinkAttributes,
   PresenceHighlight,
 } from './protocol'
+import { guestNodeTypes } from './guestNodeTypes'
 import { handleActionsFor, runHandleAction } from './handleActions'
 import { useGuestBridge } from './useGuestBridge'
 import { usePreviewLayers } from './usePreviewLayers'
@@ -707,6 +709,19 @@ export function PreviewPane({
     if (!guestReady) return
     postToGuest({ type: 'neos-studio/type-drag', nodeTypeName: typeDrag })
   }, [guestReady, typeDrag, postToGuest])
+  // The minimal chrome names elements by type (its tab, drag chip and drop
+  // label); the page knows only the type names.
+  const { data: nodeTypes } = useNodeTypes('', minimal)
+  useEffect(() => {
+    if (!guestReady || !minimal || !nodeTypes) return
+    let current = true
+    void guestNodeTypes(nodeTypes).then((types) => {
+      if (current) postToGuest({ type: 'neos-studio/node-types', types })
+    })
+    return () => {
+      current = false
+    }
+  }, [guestReady, minimal, nodeTypes, postToGuest])
 
   // Forward collaborators' live-typing ticks into the guest, which paints
   // them into the locked inline text. The guest ignores ticks for elements

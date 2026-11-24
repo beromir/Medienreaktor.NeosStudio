@@ -7,8 +7,7 @@ floating action bar. Users switch in the user menu ("Try the new layout
 user preference (`classic` | `alpha`), served in the boot config as
 `layout`.
 
-The design is work in progress (Paper file "Neos Studio", frames R3-R29,
-and R35 for Search).
+The design is work in progress (Paper file "Neos Studio", frames R3-R36).
 
 ## Where it lives
 
@@ -16,10 +15,12 @@ and R35 for Search).
   `ActionBar`, primitives and icons, and `shell-alpha.css`.
 - `src/lib/layoutMode.ts`: the switch.
 - `src/features/preview/chromeStore.ts` and `src/guest/chrome.ts`: what the
-  shell asks of the preview - minimal in-page chrome (no element handle, no
-  "+" buttons, a thin selection outline), scroll space under the bar, the
-  insert line of the Add menu, the device width - and the guest's scroll and
-  pointer reports that fade the bar.
+  shell asks of the preview - minimal in-page chrome (no "..." handle, no "+"
+  buttons; the selection with its handle tab, see Selection and drag), scroll
+  space under the bar, the insert line of the Add menu, the device width -
+  and the guest's scroll and pointer reports that fade the bar.
+  `src/guest/selectionChrome.ts` draws the selection, its tab and the drag
+  chip.
 
 Panels come from the panel registry, plugin panels included: main-region
 panels are the rail's modes, the others its panel buttons, docked between
@@ -82,6 +83,47 @@ The rail's mode switcher, open, always lists Editor, Media, Workspaces,
 Tasks (plugin modes after them), the current one highlighted in its own
 slot and the chevron last (R21). The open-tasks dot sits on Tasks while
 open, on the current mode's button while closed.
+
+## Selection and drag (R36)
+
+The selected element gets a 2px blue outline, 4px from the element, with a
+tab on its top-left edge (22px, grip and the node type's label). The tab is
+the only Studio UI on the page and the only place a drag starts, so clicks
+and text selection inside the element stay untouched. It tucks inside the
+outline when there is no room above it (the element touches the top of the
+preview), and steps aside while the editor types until the mouse moves.
+Collections get the outline without a tab: they are moved with their
+element. Hovering outlines the innermost element under the pointer (1px,
+60%), never the selection. Outline and tab are boxes of their own over the
+page rather than CSS outlines, which cannot leave one corner square.
+
+Dragging the tab past a few pixels starts a move: the element stays in
+place at 35% with a dashed outline, a dark chip (grip, type icon, the
+element's label) follows the pointer instead of a copy, and the page scrolls
+while the pointer is near its top or above the action bar. The drag runs on
+pointer events rather than native drag and drop, so the chip, the scrolling
+and Esc stay the guest's.
+
+A drop position is the Add menu's insert line between two siblings of a
+collection, with a label: "After **Button** in Teaser area" ("Before …"
+for the first position, "Into …" for an empty collection). Only
+collections whose allowed types (the server-computed
+`data-__neos-studio-allowed-types`, which knows tethered-collection
+constraints) include the element's type are targets; elsewhere, inside the
+element itself and where the element already is there is no line, and
+releasing does nothing. The same line replaces the classic drop indicator
+for node types dragged in from the Add menu. Empty collections keep enough
+room to drop into although their add button is hidden.
+
+Releasing on a line moves the element (`move-node-request`, the same move
+as everywhere: one Undo entry, the preview reloads) and keeps it selected;
+Esc cancels the drag and nothing else - the selection stays. The page knows
+only type names: the shell sends the content types' labels and icons
+(`node-types`), and each wrapped node carries its label
+(`data-__neos-studio-label`) for the chip and the collection's name.
+
+Follow-up: an open Outline should mirror the insert line and accept the
+drop too (R36). It waits for the panel rework (R30-R34).
 
 ## The element menu (R25)
 

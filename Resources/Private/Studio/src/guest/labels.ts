@@ -18,6 +18,10 @@ export const GUEST_LABELS = {
   'image.select': 'Select image',
   'variant.create': 'Create variant',
   'presence.editing': '{name} is editing',
+  'drop.after': 'After',
+  'drop.before': 'Before',
+  'drop.into': 'Into',
+  'drop.in': 'in {place}',
 } as const
 
 export type GuestLabelKey = keyof typeof GUEST_LABELS

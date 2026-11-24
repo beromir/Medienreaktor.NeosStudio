@@ -51,15 +51,30 @@ import { relabelToolbars, TOOLBAR_CLASS } from './toolbar'
 import {
   applyChrome,
   chromeStyles,
+  coveredBottom,
+  isMinimalChrome,
   keepVisible,
+  MINIMAL_SELECTOR,
   positionInsertLine,
   reportEscape,
   reportPointer,
   reportPointerDown,
   reportScroll,
+  setDropLine,
   setInsertPreview,
   setSelectedInPage,
+  type DropLabel,
+  type DropLine,
 } from './chrome'
+import {
+  DRAG_SOURCE_CLASS,
+  drawSelectionChrome,
+  hideDragGhost,
+  selectionChromeStyles,
+  selectionTab,
+  showDragGhost,
+  TAB_ID,
+} from './selectionChrome'
 
 const WRAPPER_ATTRIBUTE = 'data-__neos-node-contextpath'
 const FUSION_PATH_ATTRIBUTE = 'data-__neos-fusion-path'
@@ -74,6 +89,7 @@ const PLACEHOLDER_ATTRIBUTE = 'data-__neos-studio-placeholder'
 const INLINE_ATTRIBUTE = 'data-__neos-studio-inline'
 const IMAGE_PROPERTY_ATTRIBUTE = 'data-__neos-studio-image-property'
 const SHINE_THROUGH_ATTRIBUTE = 'data-__neos-studio-shine-through'
+const LABEL_ATTRIBUTE = 'data-__neos-studio-label'
 
 const HOVER_CLASS = 'neos-studio-hover'
 const SELECTED_CLASS = 'neos-studio-selected'
@@ -128,7 +144,10 @@ function injectStyles(): void {
       hoverClass: HOVER_CLASS,
       selectedClass: SELECTED_CLASS,
       hidden: HIDDEN_ATTRIBUTE,
+      droppable: DROPPABLE_CLASS,
+      collectionAdd: COLLECTION_ADD_CLASS,
     }) +
+    selectionChromeStyles(MINIMAL_SELECTOR) +
     `
     [${WRAPPER_ATTRIBUTE}].${HOVER_CLASS}:not(.${SELECTED_CLASS}) {
       outline: 2px solid rgba(0, 173, 238, 0.3);
@@ -732,6 +751,7 @@ function scheduleHandleUpdate(): void {
 }
 
 function positionHandle(): void {
+  drawAlphaChrome()
   const handle = elementHandle()
   const addButton = elementAddButton()
   const hovered =
@@ -1059,7 +1079,7 @@ const richTextHooks: RichTextHooks = {
 function isStudioUi(target: HTMLElement): boolean {
   return (
     target.closest(
-      `${HANDLE_ROW_SELECTOR}, #${IMAGE_OVERLAY_ID}, #${SHINE_BUTTON_ID}, .${TOOLBAR_CLASS}, .${COLLECTION_ADD_CLASS}`,
+      `${HANDLE_ROW_SELECTOR}, #${TAB_ID}, #${IMAGE_OVERLAY_ID}, #${SHINE_BUTTON_ID}, .${TOOLBAR_CLASS}, .${COLLECTION_ADD_CLASS}`,
     ) !== null
   )
 }
@@ -1302,19 +1322,28 @@ function endDrag(): void {
 }
 
 /**
- * The collection's own child content elements (not those of nested
- * collections) - the elements the dragged node can be inserted between. A
- * moved element is not its own sibling, so it never counts.
+ * The collection's own child elements - the elements the dragged node can be
+ * inserted between: those whose nearest enclosing wrapper is the collection
+ * (or another stamp of it), not those inside them, such as the tethered
+ * columns of a columns element. A moved element is not its own sibling, so
+ * it never counts.
  */
 function childElementsOf(collection: HTMLElement): HTMLElement[] {
+  const collectionId = aggregateIdOf(collection)
   return Array.from(
     collection.querySelectorAll<HTMLElement>(`[${WRAPPER_ATTRIBUTE}]`),
-  ).filter(
-    (element) =>
-      element !== activeDrag?.movingElement &&
-      element.parentElement?.closest(`[${COLLECTION_ATTRIBUTE}]`) ===
-        collection,
-  )
+  ).filter((element) => {
+    if (element === activeDrag?.movingElement) return false
+    const parent = element.parentElement?.closest<HTMLElement>(
+      `[${WRAPPER_ATTRIBUTE}]`,
+    )
+    return (
+      parent === collection ||
+      (parent != null &&
+        collectionId !== null &&
+        aggregateIdOf(parent) === collectionId)
+    )
+  })
 }
 
 /**
@@ -1426,6 +1455,12 @@ function setDropTarget(
   }
   currentDrop = drop
   const indicator = dropIndicator()
+  if (isMinimalChrome()) {
+    indicator.style.display = 'none'
+    setDropLine(drop && dropLineFor(drop))
+    return
+  }
+  setDropLine(null)
   if (drop === null) {
     indicator.style.display = 'none'
     return
@@ -1493,6 +1528,16 @@ function onDragOver(event: DragEvent): void {
 function onDrop(event: DragEvent): void {
   if (activeDrag === null || currentDrop === null) return
   event.preventDefault()
+  const message = dropMessage()
+  // The handle's dragend clears too, but clear immediately so the indicator
+  // never outlives the drop.
+  endDrag()
+  if (message) post(message)
+}
+
+/** What dropping the active drag at the current drop position asks for. */
+function dropMessage(): GuestToHostMessage | null {
+  if (activeDrag === null || currentDrop === null) return null
   const drag = activeDrag
   const { collection, before } = currentDrop
   const parentNodeAddress = collection.getAttribute(WRAPPER_ATTRIBUTE)
@@ -1520,16 +1565,339 @@ function onDrop(event: DragEvent): void {
       }
     }
   }
-  // The handle's dragend clears too, but clear immediately so the indicator
-  // never outlives the drop.
-  endDrag()
-  if (message) post(message)
+  return message
 }
 
 function onDragLeaveDocument(event: DragEvent): void {
   // Leaving the iframe entirely: keep the droppable highlights (the drag is
   // still alive), but the insertion indicator has no valid position anymore.
   if (activeDrag !== null && event.relatedTarget === null) setDropTarget(null)
+}
+
+/**
+ * The alpha layout's selection: an outline with a tab naming the element,
+ * the only place an element is dragged from (selectionChrome.ts draws it).
+ * The drag runs on pointer events rather than native drag and drop, so the
+ * chip under the pointer, the auto-scroll and Esc stay the guest's.
+ */
+let nodeTypes: Record<string, { label: string; icon: string | null }> = {}
+/** The editor types in the page: the tab steps aside until the mouse moves. */
+let typing = false
+
+function nodeTypeLabel(nodeTypeName: string | null): string {
+  if (!nodeTypeName) return ''
+  return (
+    nodeTypes[nodeTypeName]?.label ??
+    nodeTypeName.slice(nodeTypeName.lastIndexOf(':') + 1)
+  )
+}
+
+/** The element the tab drags: a selected content element, nothing else. */
+function movableSelection(): HTMLElement | null {
+  return selectedElement?.isConnected === true &&
+    selectedElement.hasAttribute(CONTENT_ATTRIBUTE) &&
+    !selectedElement.classList.contains(LOCKED_CLASS)
+    ? selectedElement
+    : null
+}
+
+function drawAlphaChrome(): void {
+  const movable = movableSelection()
+  drawSelectionChrome(
+    {
+      selected: selectedElement,
+      hovered: hoveredElement,
+      hidden: selectedElement?.hasAttribute(HIDDEN_ATTRIBUTE) === true,
+      tabLabel: movable
+        ? nodeTypeLabel(movable.getAttribute(NODE_TYPE_ATTRIBUTE))
+        : null,
+      typing,
+      dragging: pointerDrag?.started === true,
+    },
+    selectionTab(onTabPointerDown),
+  )
+}
+
+function onTypingKeyDown(event: KeyboardEvent): void {
+  if (typing || event.key === 'Escape') return
+  if (event.metaKey || event.ctrlKey || event.altKey) return
+  const target = event.target as HTMLElement | null
+  if (!target?.isContentEditable) return
+  typing = true
+  scheduleHandleUpdate()
+}
+
+function onTypingMouseMove(): void {
+  if (!typing) return
+  typing = false
+  scheduleHandleUpdate()
+}
+
+/** "After **Button** in Teaser area" for an insertion point. */
+function dropLabelFor(drop: {
+  collection: HTMLElement
+  before: HTMLElement | null
+}): DropLabel {
+  const children = childElementsOf(drop.collection)
+  const index =
+    drop.before === null ? children.length : children.indexOf(drop.before)
+  const previous = index > 0 ? children[index - 1] : undefined
+  // Neos labels a tethered collection "Teaser area (teaser)": the name in
+  // brackets is for developers.
+  const place =
+    drop.collection
+      .getAttribute(LABEL_ATTRIBUTE)
+      ?.replace(/\s*\([^()]*\)$/, '') || null
+  const typeOf = (element: HTMLElement) =>
+    nodeTypeLabel(element.getAttribute(NODE_TYPE_ATTRIBUTE))
+  if (!previous && !drop.before)
+    return { relation: label('drop.into'), sibling: place, place: null }
+  return {
+    relation: label(previous ? 'drop.after' : 'drop.before'),
+    sibling: typeOf(previous ?? drop.before!),
+    place: place ? label('drop.in', undefined, { place }) : null,
+  }
+}
+
+/** The insert line between the siblings of an insertion point. */
+function dropLineFor(drop: {
+  collection: HTMLElement
+  before: HTMLElement | null
+}): DropLine {
+  const children = childElementsOf(drop.collection)
+  const area = drop.collection.getBoundingClientRect()
+  const labelText = dropLabelFor(drop)
+  if (children.length === 0)
+    return {
+      x: area.left,
+      y: area.top + Math.min(area.height / 2, 12),
+      length: area.width,
+      vertical: false,
+      label: labelText,
+    }
+  const rects = children.map((child) => child.getBoundingClientRect())
+  const centres = (axis: 'x' | 'y') =>
+    rects.map((r) =>
+      axis === 'x' ? r.left + r.width / 2 : r.top + r.height / 2,
+    )
+  const spread = (values: number[]) => Math.max(...values) - Math.min(...values)
+  const vertical = spread(centres('x')) > spread(centres('y'))
+  const index =
+    drop.before === null ? children.length : children.indexOf(drop.before)
+  const previous = index > 0 ? rects[index - 1] : undefined
+  const next = drop.before ? rects[index] : undefined
+  // Centred in the gap between the two siblings, or just outside the one.
+  const position = vertical
+    ? previous && next
+      ? (previous.right + next.left) / 2
+      : previous
+        ? previous.right + 4
+        : next!.left - 4
+    : previous && next
+      ? (previous.bottom + next.top) / 2
+      : previous
+        ? previous.bottom + 4
+        : next!.top - 4
+  return vertical
+    ? {
+        x: position,
+        y: Math.min(...rects.map((r) => r.top)),
+        length:
+          Math.max(...rects.map((r) => r.bottom)) -
+          Math.min(...rects.map((r) => r.top)),
+        vertical,
+        label: labelText,
+      }
+    : {
+        x: area.left,
+        y: position,
+        length: area.width,
+        vertical,
+        label: labelText,
+      }
+}
+
+/** Movement before a press on the tab becomes a drag. */
+const DRAG_THRESHOLD = 4
+/** The band along the frame's top and bottom that scrolls the page. */
+const SCROLL_EDGE = 48
+const MAX_SCROLL_STEP = 18
+
+let pointerDrag: {
+  pointerId: number
+  element: HTMLElement
+  startX: number
+  startY: number
+  x: number
+  y: number
+  started: boolean
+} | null = null
+let autoScrollFrame = 0
+
+function onTabPointerDown(event: PointerEvent): void {
+  const element = movableSelection()
+  if (event.button !== 0 || !element || pointerDrag !== null) return
+  event.preventDefault()
+  event.stopPropagation()
+  // Captured on the root: the tab itself steps aside once the drag starts,
+  // and the pointer may leave the frame.
+  document.documentElement.setPointerCapture(event.pointerId)
+  pointerDrag = {
+    pointerId: event.pointerId,
+    element,
+    startX: event.clientX,
+    startY: event.clientY,
+    x: event.clientX,
+    y: event.clientY,
+    started: false,
+  }
+  window.addEventListener('pointermove', onDragPointerMove, true)
+  window.addEventListener('pointerup', onDragPointerUp, true)
+  window.addEventListener('pointercancel', cancelPointerDrag, true)
+  document.documentElement.addEventListener(
+    'lostpointercapture',
+    cancelPointerDrag,
+  )
+}
+
+function onDragPointerMove(event: PointerEvent): void {
+  const drag = pointerDrag
+  if (drag === null || event.pointerId !== drag.pointerId) return
+  drag.x = event.clientX
+  drag.y = event.clientY
+  if (!drag.started) {
+    if (Math.hypot(drag.x - drag.startX, drag.y - drag.startY) < DRAG_THRESHOLD)
+      return
+    const nodeTypeName = drag.element.getAttribute(NODE_TYPE_ATTRIBUTE)
+    if (!nodeTypeName) {
+      cancelPointerDrag()
+      return
+    }
+    drag.started = true
+    startDrag(nodeTypeName, drag.element)
+    drag.element.classList.add(DRAG_SOURCE_CLASS)
+    document.documentElement.classList.add('neos-studio-dragging')
+  }
+  event.preventDefault()
+  updatePointerDrag()
+  if (autoScrollFrame === 0) autoScrollFrame = requestAnimationFrame(autoScroll)
+}
+
+function updatePointerDrag(): void {
+  const drag = pointerDrag
+  if (drag === null || !drag.started) return
+  showDragGhost(drag.x, drag.y, {
+    label:
+      drag.element.getAttribute(LABEL_ATTRIBUTE) ||
+      nodeTypeLabel(drag.element.getAttribute(NODE_TYPE_ATTRIBUTE)),
+    icon:
+      nodeTypes[drag.element.getAttribute(NODE_TYPE_ATTRIBUTE) ?? '']?.icon ??
+      null,
+  })
+  const inFrame =
+    drag.x >= 0 &&
+    drag.y >= 0 &&
+    drag.x < window.innerWidth &&
+    drag.y < window.innerHeight
+  const target = inFrame
+    ? (document.elementFromPoint(drag.x, drag.y) as HTMLElement | null)
+    : null
+  const collection = target?.closest<HTMLElement>(`.${DROPPABLE_CLASS}`)
+  const drop = collection
+    ? {
+        collection,
+        before: findInsertBefore(collection, drag.x, drag.y),
+      }
+    : null
+  // Where nothing changes, nothing lights up.
+  setDropTarget(
+    drop && !isNoOpMove(drag.element, drop.collection, drop.before)
+      ? drop
+      : null,
+  )
+}
+
+function autoScroll(): void {
+  autoScrollFrame = 0
+  const drag = pointerDrag
+  if (drag === null || !drag.started) return
+  const bottom = window.innerHeight - coveredBottom()
+  const step =
+    drag.y < SCROLL_EDGE
+      ? -Math.min(1, (SCROLL_EDGE - drag.y) / SCROLL_EDGE)
+      : drag.y > bottom - SCROLL_EDGE
+        ? Math.min(1, (drag.y - (bottom - SCROLL_EDGE)) / SCROLL_EDGE)
+        : 0
+  if (step === 0) return
+  // Instant: a site's smooth scrolling would restart on every step.
+  window.scrollBy({ top: step * MAX_SCROLL_STEP, behavior: 'instant' })
+  autoScrollFrame = requestAnimationFrame(autoScroll)
+}
+
+function onDragScroll(): void {
+  if (pointerDrag?.started) updatePointerDrag()
+}
+
+function onDragPointerUp(event: PointerEvent): void {
+  if (pointerDrag === null || event.pointerId !== pointerDrag.pointerId) return
+  const message = pointerDrag.started ? dropMessage() : null
+  endPointerDrag('released')
+  if (message) post(message)
+}
+
+function onDragKeyDown(event: KeyboardEvent): void {
+  if (event.key !== 'Escape' || pointerDrag === null) return
+  // Esc ends the drag, and only the drag: the shell does not deselect.
+  event.preventDefault()
+  event.stopImmediatePropagation()
+  endPointerDrag('held')
+}
+
+function cancelPointerDrag(): void {
+  endPointerDrag('released')
+}
+
+/**
+ * The click a released drag ends with lands on whatever is under the
+ * pointer - it is not a click in the page.
+ */
+function swallowNextClick(): void {
+  const swallow = (event: MouseEvent) => {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+  }
+  window.addEventListener('click', swallow, { capture: true, once: true })
+  setTimeout(() => window.removeEventListener('click', swallow, true), 0)
+}
+
+function endPointerDrag(button: 'released' | 'held'): void {
+  const drag = pointerDrag
+  if (drag === null) return
+  if (drag.started) {
+    if (button === 'released') swallowNextClick()
+    else
+      window.addEventListener('pointerup', swallowNextClick, {
+        capture: true,
+        once: true,
+      })
+  }
+  pointerDrag = null
+  window.removeEventListener('pointermove', onDragPointerMove, true)
+  window.removeEventListener('pointerup', onDragPointerUp, true)
+  window.removeEventListener('pointercancel', cancelPointerDrag, true)
+  document.documentElement.removeEventListener(
+    'lostpointercapture',
+    cancelPointerDrag,
+  )
+  if (document.documentElement.hasPointerCapture(drag.pointerId))
+    document.documentElement.releasePointerCapture(drag.pointerId)
+  cancelAnimationFrame(autoScrollFrame)
+  autoScrollFrame = 0
+  drag.element.classList.remove(DRAG_SOURCE_CLASS)
+  document.documentElement.classList.remove('neos-studio-dragging')
+  hideDragGhost()
+  if (drag.started) endDrag()
+  scheduleHandleUpdate()
 }
 
 /**
@@ -1955,6 +2323,11 @@ function onHostMessage(event: MessageEvent): void {
   }
   if (message?.type === 'neos-studio/chrome') {
     applyChrome(message, selectedElement)
+    scheduleHandleUpdate()
+  }
+  if (message?.type === 'neos-studio/node-types') {
+    nodeTypes = message.types
+    scheduleHandleUpdate()
   }
   if (message?.type === 'neos-studio/type-drag') {
     if (message.nodeTypeName === null) {
@@ -2057,7 +2430,11 @@ function init(): void {
   // insert line follows its element.
   window.addEventListener('scroll', reportScroll, true)
   document.addEventListener('mousemove', reportPointer, { passive: true })
+  window.addEventListener('keydown', onDragKeyDown, true)
   document.addEventListener('keydown', reportEscape)
+  document.addEventListener('keydown', onTypingKeyDown, true)
+  document.addEventListener('mousemove', onTypingMouseMove, { passive: true })
+  window.addEventListener('scroll', onDragScroll, true)
   document.addEventListener('pointerdown', reportPointerDown, true)
   window.addEventListener('scroll', positionInsertLine, true)
   window.addEventListener('resize', positionInsertLine)
