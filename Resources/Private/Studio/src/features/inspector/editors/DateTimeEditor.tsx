@@ -109,6 +109,7 @@ export const DateTimeEditor: PropertyEditorComponent = ({
           id={id}
           // The property label opens the picker (see FieldLabel).
           data-label-opens="click"
+          data-control="field"
           disabled={disabled}
           render={
             <Button

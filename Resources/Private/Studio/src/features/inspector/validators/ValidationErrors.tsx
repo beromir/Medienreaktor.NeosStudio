@@ -8,6 +8,7 @@ export function ValidationErrors({ errors }: { errors?: string[] }) {
   return (
     <div
       role="alert"
+      data-slot="validation-errors"
       className="mt-1 space-y-0.5 type-small text-destructive-text"
     >
       {errors.map((error, index) => (

@@ -140,6 +140,7 @@ interface ReferenceOptionGroup {
 export function ReferencePicker({
   id,
   triggerContent,
+  chip = false,
   disabled = false,
   options,
   loading,
@@ -154,6 +155,8 @@ export function ReferencePicker({
   /** The trigger's id - a field label points at it. */
   id?: string
   triggerContent: React.ReactNode
+  /** The trigger as a dashed "+ Add" chip after chips (the alpha layout). */
+  chip?: boolean
   disabled?: boolean
   options: ReferenceOption[]
   loading: boolean
@@ -211,7 +214,18 @@ export function ReferencePicker({
       }}
       disabled={disabled}
     >
-      <ComboboxTrigger id={id}>{triggerContent}</ComboboxTrigger>
+      <ComboboxTrigger
+        id={id}
+        hideIcon={chip}
+        data-chip={chip || undefined}
+        className={
+          chip
+            ? 'h-6.5 w-auto rounded-full border-dashed border-shell-active bg-transparent px-2.5 text-[0.75rem] leading-4 text-shell-muted shadow-none hover:bg-transparent hover:text-shell-text'
+            : undefined
+        }
+      >
+        {triggerContent}
+      </ComboboxTrigger>
       <ComboboxContent>
         <div className="relative">
           <i

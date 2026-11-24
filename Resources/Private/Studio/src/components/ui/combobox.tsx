@@ -28,9 +28,12 @@ const Autocomplete = AutocompletePrimitive.Root
 /** A select-like button opening the popup (the input then sits inside it). */
 function ComboboxTrigger({
   className,
+  hideIcon = false,
   children,
   ...props
-}: React.ComponentProps<typeof ComboboxPrimitive.Trigger>) {
+}: React.ComponentProps<typeof ComboboxPrimitive.Trigger> & {
+  hideIcon?: boolean
+}) {
   return (
     <ComboboxPrimitive.Trigger
       data-slot="combobox-trigger"
@@ -43,12 +46,14 @@ function ComboboxTrigger({
       {...props}
     >
       <span className="flex min-w-0 flex-1 items-center gap-2">{children}</span>
-      <ComboboxPrimitive.Icon>
-        <i
-          className="fas fa-chevron-down type-icon-xl text-placeholder"
-          aria-hidden
-        />
-      </ComboboxPrimitive.Icon>
+      {!hideIcon && (
+        <ComboboxPrimitive.Icon>
+          <i
+            className="fas fa-chevron-down type-icon-xl text-placeholder"
+            aria-hidden
+          />
+        </ComboboxPrimitive.Icon>
+      )}
     </ComboboxPrimitive.Trigger>
   )
 }

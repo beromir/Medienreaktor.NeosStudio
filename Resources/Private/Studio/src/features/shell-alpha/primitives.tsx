@@ -185,6 +185,31 @@ export function ShellMenuSeparator() {
   return <div role="separator" className="my-1 h-px bg-shell-border-strong" />
 }
 
+/**
+ * The alpha checkbox look on a span, for a row that is the checkbox itself
+ * (role="checkbox" on the row's button): the same data-slot and state
+ * attributes as the Base UI Checkbox, so shell-alpha.css draws both.
+ */
+export function CheckboxBox({
+  checked,
+  className,
+}: {
+  checked: boolean | 'mixed'
+  className?: string
+}) {
+  return (
+    <span
+      data-slot="checkbox"
+      data-checked={checked === true ? '' : undefined}
+      data-indeterminate={checked === 'mixed' ? '' : undefined}
+      aria-hidden
+      className={className}
+    >
+      {checked !== false && <span data-slot="checkbox-indicator" />}
+    </span>
+  )
+}
+
 /** The 1px rule between groups of an action bar pill. */
 export function BarDivider() {
   return <div className="h-5 w-px shrink-0 bg-shell-divider" aria-hidden />

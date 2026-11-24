@@ -10,6 +10,7 @@ import { FieldLabel } from '@/components/ui/field-label'
 import { usePropertyEditor } from '@/features/inspector/editors/registry'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { useInspectorLayout } from './layoutContext'
 import type {
   InspectorProperty,
   InspectorPropertyHelp,
@@ -46,6 +47,7 @@ export function PropertyEditor({
   onLiveChange?: (propertyName: string, value: unknown) => void
 }) {
   const definition = usePropertyEditor(property.editor)
+  const alpha = useInspectorLayout() !== 'full'
   // The editor's main control carries this id; the label points at it.
   const controlId = useId()
   if (!definition) {
@@ -112,8 +114,10 @@ export function PropertyEditor({
       <>
         <div
           className={cn(
-            'flex items-center gap-1.5',
-            property.scope !== 'node' && 'text-variant-text',
+            'flex items-center',
+            alpha
+              ? 'gap-2'
+              : cn('gap-1.5', property.scope !== 'node' && 'text-variant-text'),
           )}
         >
           {editor}
@@ -159,13 +163,19 @@ export function Labeled({
   children: React.ReactNode
 }) {
   const spansVariants = scope !== undefined && scope !== 'node'
+  const alpha = useInspectorLayout() !== 'full'
   return (
     <>
       <div
         className={cn(
-          'mb-1 flex items-center gap-1.5 type-small',
-          // Purple marks dimension-spanning edits, matching the dimension UI.
-          spansVariants ? 'text-variant-text' : 'text-foreground',
+          'flex items-center gap-1.5',
+          alpha
+            ? 'mb-1.5 text-[0.75rem] leading-4 text-shell-muted'
+            : cn(
+                'mb-1 type-small',
+                // Purple marks dimension-spanning edits, matching the dimension UI.
+                spansVariants ? 'text-variant-text' : 'text-foreground',
+              ),
         )}
       >
         {/* The hint icons sit OUTSIDE the label element, so a click on them

@@ -23,6 +23,10 @@ import { translate as t } from '@/lib/i18n'
 import { sortByPosition } from '@/lib/positional'
 import { moveItem } from '@/lib/arrays'
 import { cn } from '@/lib/utils'
+import { Radio } from '@base-ui/react/radio'
+import { RadioGroup } from '@base-ui/react/radio-group'
+import { Tooltip } from '@/features/shell-alpha/Tooltip'
+import { useInspectorLayout } from '../layoutContext'
 import type { PropertyEditorComponent, PropertyEditorProps } from './registry'
 
 export const SELECT_BOX_EDITOR = 'Neos.Neos/Inspector/Editors/SelectBoxEditor'
@@ -68,10 +72,12 @@ export const SelectBoxEditor: PropertyEditorComponent = (props) => {
 /** The classic editorOptions.values variant, options sorted by position. */
 function StaticSelectBox({
   id,
+  subject,
   value,
   onCommit,
   options,
 }: PropertyEditorProps) {
+  const alpha = useInspectorLayout() !== 'full'
   const valuesConfig = (options.values ?? {}) as Record<
     string,
     SelectBoxValueConfig | null
@@ -90,6 +96,22 @@ function StaticSelectBox({
     group: valuesConfig[key]?.group ?? undefined,
   }))
 
+  if (
+    alpha &&
+    options.multiple !== true &&
+    options.allowEmpty !== true &&
+    fitsSegments(items)
+  )
+    return (
+      <SegmentedSelect
+        id={id}
+        label={subject.label}
+        items={items}
+        value={value}
+        onCommit={onCommit}
+      />
+    )
+
   return (
     <SelectBoxControl
       id={id}
@@ -98,6 +120,89 @@ function StaticSelectBox({
       onCommit={onCommit}
       options={options}
     />
+  )
+}
+
+/** The width a segmented control may take: one 132px tray column. */
+const SEGMENTS_WIDTH = 126
+
+/**
+ * Whether a few short options fit side by side in one tray column - roughly
+ * measured: 7px a character (12px text), 16px padding a segment, an icon
+ * option shows its icon alone.
+ */
+function fitsSegments(items: SelectBoxItem[]): boolean {
+  if (items.length < 2 || items.length > 4) return false
+  if (items.some((item) => item.group !== undefined)) return false
+  const width = items.reduce(
+    (sum, item) => sum + (item.icon ? 28 : item.label.length * 7 + 16),
+    (items.length - 1) * 2,
+  )
+  return width <= SEGMENTS_WIDTH
+}
+
+/**
+ * The alpha layout's segmented choice for a few short static options: one
+ * of many, always one selected - so grey, never blue (R28). A radio group;
+ * an option with an icon shows the icon, its label as tooltip.
+ */
+function SegmentedSelect({
+  id,
+  label,
+  items,
+  value,
+  onCommit,
+}: {
+  id?: string
+  label: string
+  items: SelectBoxItem[]
+  value: unknown
+  onCommit: (value: unknown) => void
+}) {
+  const external = singleKey(value)
+  const [selected, setSelected] = useState<string | null>(external)
+  const [lastExternal, setLastExternal] = useState(external)
+  if (external !== lastExternal) {
+    setLastExternal(external)
+    setSelected(external)
+  }
+  return (
+    <RadioGroup
+      id={id}
+      aria-label={label}
+      value={selected}
+      onValueChange={(next) => {
+        const key = next as string
+        setSelected(key)
+        onCommit(items.find((item) => item.key === key)?.value ?? key)
+      }}
+      className="flex gap-0.5 rounded-shell-control bg-shell-input p-0.75"
+    >
+      {items.map((item) => {
+        const segment = (
+          <Radio.Root
+            key={item.key}
+            value={item.key}
+            disabled={item.disabled}
+            aria-label={item.icon ? item.label : undefined}
+            className="flex h-6.5 min-w-0 flex-1 cursor-pointer items-center justify-center rounded-shell-segment px-2 text-[0.75rem] leading-4 text-shell-muted outline-none hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-checked:bg-shell-raised data-checked:font-semibold data-checked:text-shell-text data-disabled:cursor-default data-disabled:text-shell-disabled"
+          >
+            {item.icon ? (
+              <Icon name={item.icon} />
+            ) : (
+              <span className="truncate">{item.label}</span>
+            )}
+          </Radio.Root>
+        )
+        return item.icon ? (
+          <Tooltip key={item.key} label={item.label}>
+            {segment}
+          </Tooltip>
+        ) : (
+          segment
+        )
+      })}
+    </RadioGroup>
   )
 }
 

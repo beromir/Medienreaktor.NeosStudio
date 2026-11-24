@@ -39,6 +39,8 @@ import {
   SelectedItemRow,
   type ReferenceOption,
 } from './ReferencePicker'
+import { Tooltip } from '@/features/shell-alpha/Tooltip'
+import { useInspectorLayout } from '../layoutContext'
 import type { PropertyEditorComponent, PropertyEditorProps } from './registry'
 
 export const REFERENCE_EDITOR = 'Neos.Neos/Inspector/Editors/ReferenceEditor'
@@ -246,6 +248,7 @@ function ReferenceEditorBase({
 }: PropertyEditorProps & { multiple: boolean }) {
   const { data: nodeTypes } = useNodeTypes()
   const { navigateToNode } = useStudioActions()
+  const alpha = useInspectorLayout() !== 'full'
   const { data: referencing } = useNodeReferences(nodeAddress ?? null)
   // Targets the account may not read come without their node - left out.
   const serverTargets = useMemo(
@@ -401,6 +404,83 @@ function ReferenceEditorBase({
   }
 
   const draggable = selected.length > 1
+
+  if (alpha)
+    return (
+      <div className="flex flex-wrap items-center gap-1.5">
+        {selected.map((id, index) => {
+          const display = displayFor(id)
+          return (
+            <div
+              key={id}
+              draggable={draggable}
+              onDragStart={(event) => {
+                event.dataTransfer.effectAllowed = 'move'
+                event.dataTransfer.setData('text/plain', id)
+                setDragIndex(index)
+                setDragStartOrder(selected)
+              }}
+              onDragOver={(event) => {
+                event.preventDefault()
+                handleDragOver(index)
+              }}
+              onDragEnd={handleDragEnd}
+              className={cn(
+                'flex h-6.5 max-w-full min-w-0 items-center gap-1.5 rounded-full bg-shell-ground pr-1 pl-2.25 text-[0.75rem] leading-4 text-shell-text',
+                draggable && 'cursor-grab',
+                dragIndex === index && 'opacity-50',
+              )}
+            >
+              {display.iconClass && (
+                <i
+                  className={cn(
+                    display.iconClass,
+                    'text-[0.625rem] text-shell-muted',
+                  )}
+                  aria-hidden
+                />
+              )}
+              {display.documentAddress ? (
+                <Tooltip label={goToPageLabel}>
+                  <button
+                    type="button"
+                    onClick={() => navigateToNode(display.documentAddress!)}
+                    className="min-w-0 cursor-pointer truncate rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-shell-accent/60"
+                  >
+                    {display.label}
+                  </button>
+                </Tooltip>
+              ) : (
+                <span className="min-w-0 truncate">{display.label}</span>
+              )}
+              <button
+                type="button"
+                aria-label={translate('editor.remove', 'Remove')}
+                onClick={() => commit(selected.filter((other) => other !== id))}
+                className="flex size-4.5 shrink-0 cursor-pointer items-center justify-center rounded-full text-shell-muted outline-none hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60"
+              >
+                <svg
+                  width="8"
+                  height="8"
+                  viewBox="0 0 8 8"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.3}
+                  aria-hidden
+                >
+                  <path d="M1 1l6 6M7 1L1 7" />
+                </svg>
+              </button>
+            </div>
+          )
+        })}
+        <ReferencePicker
+          {...pickerProps}
+          chip
+          triggerContent={translate('editor.reference.add', '+ Add')}
+        />
+      </div>
+    )
 
   return (
     <div className="flex flex-col gap-1">

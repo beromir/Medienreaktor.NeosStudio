@@ -21,7 +21,7 @@ import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { NativePopover, type Placement } from './NativePopover'
 import { Tooltip } from './Tooltip'
-import { Surface } from './primitives'
+import { CheckboxBox, Surface } from './primitives'
 
 const PUBLISH_ID = 'shell-alpha-publish'
 const PLACEMENT: Placement = { side: 'bottom', align: 'end', offset: 8 }
@@ -334,32 +334,9 @@ function PublishPopover({
                     return next
                   })
                 }
-                className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 text-left outline-none focus-visible:[&>span:first-child]:ring-2 focus-visible:[&>span:first-child]:ring-shell-accent/60"
+                className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 text-left outline-none"
               >
-                <span
-                  className={cn(
-                    'flex size-4 shrink-0 items-center justify-center rounded-[0.25rem]',
-                    checked
-                      ? 'bg-shell-accent-check'
-                      : 'border-[1.5px] border-shell-faint',
-                  )}
-                >
-                  {checked && (
-                    <svg
-                      width="10"
-                      height="8"
-                      viewBox="0 0 10 8"
-                      fill="none"
-                      stroke="var(--color-shell-accent-pale)"
-                      strokeWidth={1.8}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden
-                    >
-                      <path d="M1 4l2.6 2.6L9 1" />
-                    </svg>
-                  )}
-                </span>
+                <CheckboxBox checked={checked} />
                 <span className="flex min-w-0 flex-1 flex-col gap-px">
                   <span className="truncate text-[0.8125rem] leading-4.25 text-shell-text">
                     {document.label}

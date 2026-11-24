@@ -874,6 +874,9 @@
       <trans-unit id="editor.reference.typeToSearch" xml:space="preserve">
         <source>Type to search</source>
       </trans-unit>
+      <trans-unit id="editor.reference.add" xml:space="preserve">
+        <source>+ Add</source>
+      </trans-unit>
       <trans-unit id="editor.remove" xml:space="preserve">
         <source>Remove</source>
       </trans-unit>

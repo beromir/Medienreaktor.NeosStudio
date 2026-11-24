@@ -1158,6 +1158,10 @@
         <source>Type to search</source>
         <target xml:lang="de">Zum Suchen tippen</target>
       </trans-unit>
+      <trans-unit id="editor.reference.add" xml:space="preserve">
+        <source>+ Add</source>
+        <target xml:lang="de">+ Hinzufügen</target>
+      </trans-unit>
       <trans-unit id="editor.remove" xml:space="preserve">
         <source>Remove</source>
         <target xml:lang="de">Entfernen</target>

@@ -6887,7 +6887,9 @@ declare namespace ComboboxItem$1 {
  */
 declare function Combobox<Value, Multiple extends boolean | undefined = false>(props: ComboboxRoot.Props<Value, Multiple>): React$1.JSX.Element;
 /** A select-like button opening the popup (the input then sits inside it). */
-declare function ComboboxTrigger({ className, children, ...props }: React$1.ComponentProps<typeof ComboboxTrigger$1>): React$1.JSX.Element;
+declare function ComboboxTrigger({ className, hideIcon, children, ...props }: React$1.ComponentProps<typeof ComboboxTrigger$1> & {
+  hideIcon?: boolean;
+}): React$1.JSX.Element;
 /** The search input - inside the popup (a searchable select) or standalone. */
 declare function ComboboxInput({ className, ...props }: React$1.ComponentProps<typeof ComboboxInput$1>): React$1.JSX.Element;
 /** The popup, portalled and positioned below its anchor (the trigger or input). */
