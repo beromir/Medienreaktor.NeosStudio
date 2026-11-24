@@ -2602,6 +2602,98 @@
         <source>Studio stopped working</source>
         <target xml:lang="de">Studio funktioniert nicht mehr</target>
       </trans-unit>
+      <trans-unit id="shellAlpha.changeType.apply" xml:space="preserve">
+        <source>Change type</source>
+        <target xml:lang="de">Typ ändern</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.failed" xml:space="preserve">
+        <source>Changing the type failed</source>
+        <target xml:lang="de">Typ ändern fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.keepsMany" xml:space="preserve">
+        <source>{0} carry over.</source>
+        <target xml:lang="de">{0} werden übernommen.</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.keepsOne" xml:space="preserve">
+        <source>{0} carries over.</source>
+        <target xml:lang="de">{0} wird übernommen.</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.none" xml:space="preserve">
+        <source>No other type is allowed here.</source>
+        <target xml:lang="de">Hier ist kein anderer Typ erlaubt.</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.question" xml:space="preserve">
+        <source>Change to {0}?</source>
+        <target xml:lang="de">In {0} ändern?</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.removesMany" xml:space="preserve">
+        <source>{0} are removed.</source>
+        <target xml:lang="de">{0} werden entfernt.</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.removesOne" xml:space="preserve">
+        <source>{0} is removed.</source>
+        <target xml:lang="de">{0} wird entfernt.</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.changeType.title" xml:space="preserve">
+        <source>Change {0} to…</source>
+        <target xml:lang="de">{0} ändern in…</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.changeType" xml:space="preserve">
+        <source>Change type…</source>
+        <target xml:lang="de">Typ ändern…</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.changed" xml:space="preserve">
+        <source>Changed {0}</source>
+        <target xml:lang="de">Geändert {0}</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.changedBy" xml:space="preserve">
+        <source>Changed by {0} · {1}</source>
+        <target xml:lang="de">Geändert von {0} · {1}</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.copied" xml:space="preserve">
+        <source>Copied to the clipboard</source>
+        <target xml:lang="de">In die Zwischenablage kopiert</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.copyId" xml:space="preserve">
+        <source>Copy the node ID</source>
+        <target xml:lang="de">Node-ID kopieren</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.copyToClipboard" xml:space="preserve">
+        <source>Copy to clipboard</source>
+        <target xml:lang="de">In die Zwischenablage</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.deleteBody" xml:space="preserve">
+        <source>The element and everything inside it are removed. Discarding the change in the workspace brings them back.</source>
+        <target xml:lang="de">Das Element und alles darin werden entfernt. Wenn du die Änderung im Workspace verwirfst, kommen sie zurück.</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.duplicate" xml:space="preserve">
+        <source>Duplicate</source>
+        <target xml:lang="de">Duplizieren</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.duplicateFailed" xml:space="preserve">
+        <source>Duplicating failed</source>
+        <target xml:lang="de">Duplizieren fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.hidden" xml:space="preserve">
+        <source>Hidden</source>
+        <target xml:lang="de">Versteckt</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.idCopied" xml:space="preserve">
+        <source>Copied the node ID</source>
+        <target xml:lang="de">Node-ID kopiert</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.schedule" xml:space="preserve">
+        <source>Schedule…</source>
+        <target xml:lang="de">Zeitplan…</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.scheduleHint" xml:space="preserve">
+        <source>show / hide by date</source>
+        <target xml:lang="de">nach Datum zeigen / verstecken</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.element.show" xml:space="preserve">
+        <source>Show</source>
+        <target xml:lang="de">Anzeigen</target>
+      </trans-unit>
       <trans-unit id="shellAlpha.pin" xml:space="preserve">
         <source>Pin</source>
         <target xml:lang="de">Anheften</target>
@@ -2681,6 +2773,22 @@
       <trans-unit id="shellAlpha.publish.title" xml:space="preserve">
         <source>Publish to {0}</source>
         <target xml:lang="de">Nach {0} veröffentlichen</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.schedule.hideAfter" xml:space="preserve">
+        <source>Hide after</source>
+        <target xml:lang="de">Verstecken ab</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.schedule.hint" xml:space="preserve">
+        <source>The element shows and hides itself at these times, also in Live once published.</source>
+        <target xml:lang="de">Das Element erscheint und verschwindet zu diesen Zeiten, nach dem Veröffentlichen auch in Live.</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.schedule.showFrom" xml:space="preserve">
+        <source>Show from</source>
+        <target xml:lang="de">Anzeigen ab</target>
+      </trans-unit>
+      <trans-unit id="shellAlpha.schedule.title" xml:space="preserve">
+        <source>Schedule</source>
+        <target xml:lang="de">Zeitplan</target>
       </trans-unit>
       <trans-unit id="shellAlpha.unpin" xml:space="preserve">
         <source>Unpin</source>

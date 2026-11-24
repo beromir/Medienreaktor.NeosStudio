@@ -126,6 +126,7 @@ function injectStyles(): void {
       wrapper: WRAPPER_ATTRIBUTE,
       hoverClass: HOVER_CLASS,
       selectedClass: SELECTED_CLASS,
+      hidden: HIDDEN_ATTRIBUTE,
     }) +
     `
     [${WRAPPER_ATTRIBUTE}].${HOVER_CLASS}:not(.${SELECTED_CLASS}) {

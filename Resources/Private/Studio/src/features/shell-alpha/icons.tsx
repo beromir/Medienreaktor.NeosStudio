@@ -371,3 +371,45 @@ export const PinIcon = ({
     <path d="M4.6 9.4L1.4 12.6" strokeWidth={1.4} strokeLinecap="round" />
   </Svg>
 )
+
+export const ChangeTypeIcon = (props: IconProps) => (
+  <Svg
+    width={14}
+    height={13}
+    viewBox="0 0 14 13"
+    strokeWidth={1.3}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M1 4h10.5M8.5 1l3 3-3 3M13 9H2.5M5.5 6l-3 3 3 3" />
+  </Svg>
+)
+
+export const EyeIcon = (props: IconProps) => (
+  <Svg width={15} height={12} viewBox="0 0 15 12" strokeWidth={1.3} {...props}>
+    <path
+      d="M1.2 6S3.6 1.8 7.5 1.8 13.8 6 13.8 6 11.4 10.2 7.5 10.2 1.2 6 1.2 6z"
+      strokeLinejoin="round"
+    />
+    <circle cx="7.5" cy="6" r="2" />
+  </Svg>
+)
+
+export const EyeOffIcon = (props: IconProps) => (
+  <Svg width={15} height={12} viewBox="0 0 15 12" strokeWidth={1.3} {...props}>
+    <path
+      d="M1.2 6S3.6 1.8 7.5 1.8 13.8 6 13.8 6 11.4 10.2 7.5 10.2 1.2 6 1.2 6z"
+      strokeLinejoin="round"
+    />
+    <circle cx="7.5" cy="6" r="2" />
+    <path d="M2 11L13 1" strokeLinecap="round" />
+  </Svg>
+)
+
+export const CalendarIcon = (props: IconProps) => (
+  <Svg width={13} height={13} viewBox="0 0 13 13" strokeWidth={1.3} {...props}>
+    <rect x=".8" y="2" width="11.4" height="10.2" rx="1.8" />
+    <path d="M.8 5.2h11.4M4 .6v2.6M9 .6v2.6" strokeLinecap="round" />
+  </Svg>
+)
