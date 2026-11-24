@@ -1988,6 +1988,12 @@
       <trans-unit id="shellAlpha.back" xml:space="preserve">
         <source>Back</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.branchMap" xml:space="preserve">
+        <source>Branch</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.branchMore" xml:space="preserve">
+        <source>+ {0} more</source>
+      </trans-unit>
       <trans-unit id="shellAlpha.changeType.apply" xml:space="preserve">
         <source>Change type</source>
       </trans-unit>

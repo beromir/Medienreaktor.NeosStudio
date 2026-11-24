@@ -5,6 +5,7 @@ import { useStudio } from '@/app/StudioContext'
 import { InspectorPanel } from '@/features/inspector/Inspector'
 import { NodeTypeIcon } from '@/features/tree/nodeTypeIcon'
 import { translate as t } from '@/lib/i18n'
+import { BranchMap } from './BranchMap'
 import { CloseIcon } from './icons'
 import { useNodeName } from './PathMenu'
 import { IconButton } from './primitives'
@@ -14,16 +15,21 @@ const PAGE_LEAD = ['title', 'uriPathSegment', 'hiddenInMenu', '_hiddenInMenu']
 
 /**
  * The right side: the selected element's settings, or the page's while the
- * page is selected. The fields scroll, the header stays where it is when
- * the selection changes.
+ * page is selected, with the branch map at the bottom. The fields scroll,
+ * header and map stay where they are when the selection changes.
  */
 export function PropertiesPanel({
   className,
   pin,
+  showBranchMap,
+  onShowOutline,
   onClose,
 }: {
   className: string
   pin: React.ReactNode
+  /** The Outline shows the whole tree already. */
+  showBranchMap: boolean
+  onShowOutline: () => void
   onClose: () => void
 }) {
   const { inspectedNode, selectedDocument, nodeEdited } = useStudio()
@@ -66,6 +72,9 @@ export function PropertiesPanel({
               : undefined
           }
         />
+      )}
+      {node && showBranchMap && (
+        <BranchMap node={node} onShowOutline={onShowOutline} />
       )}
     </aside>
   )

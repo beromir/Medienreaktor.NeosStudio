@@ -413,3 +413,35 @@ export const CalendarIcon = (props: IconProps) => (
     <path d="M.8 5.2h11.4M4 .6v2.6M9 .6v2.6" strokeLinecap="round" />
   </Svg>
 )
+
+/** The tree rows' chevron: right when closed, down when open. */
+export const TreeChevronIcon = ({
+  open = false,
+  ...props
+}: IconProps & { open?: boolean }) => (
+  <Svg
+    width={10}
+    height={10}
+    viewBox="0 0 10 10"
+    strokeWidth={1.4}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d={open ? 'M2 3.5l3 3 3-3' : 'M3.5 2l3 3-3 3'} />
+  </Svg>
+)
+
+export const UpArrowIcon = (props: IconProps) => (
+  <Svg
+    width={10}
+    height={10}
+    viewBox="0 0 10 10"
+    strokeWidth={1.4}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M5 9V1.5M1.5 5L5 1.5 8.5 5" />
+  </Svg>
+)
