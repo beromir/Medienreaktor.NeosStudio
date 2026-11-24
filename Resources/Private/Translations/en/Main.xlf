@@ -2195,6 +2195,133 @@
       <trans-unit id="shellAlpha.search" xml:space="preserve">
         <source>Search</source>
       </trans-unit>
+      <trans-unit id="shellAlpha.search.allTypes" xml:space="preserve">
+        <source>All types</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.assetType.audio" xml:space="preserve">
+        <source>Audio</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.assetType.document" xml:space="preserve">
+        <source>Document</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.assetType.image" xml:space="preserve">
+        <source>Image</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.assetType.video" xml:space="preserve">
+        <source>Video</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.changed" xml:space="preserve">
+        <source>Changed</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.content" xml:space="preserve">
+        <source>Content</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.footer" xml:space="preserve">
+        <source>Searching {0} · {1}, unpublished changes included</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.footerNoLanguage" xml:space="preserve">
+        <source>Searching {0}, unpublished changes included</source>
+      </trans-unit>
+      <group id="shellAlpha.search.foundIn" restype="x-gettext-plurals">
+        <trans-unit id="shellAlpha.search.foundIn[0]" xml:space="preserve">
+          <source>Found once in {1}.</source>
+        </trans-unit>
+        <trans-unit id="shellAlpha.search.foundIn[1]" xml:space="preserve">
+          <source>Found {0} times in {1}.</source>
+        </trans-unit>
+      </group>
+      <trans-unit id="shellAlpha.search.hidden" xml:space="preserve">
+        <source>hidden</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.media" xml:space="preserve">
+        <source>Media</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.mediaType" xml:space="preserve">
+        <source>{0} (media)</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.noMedia" xml:space="preserve">
+        <source>No media found</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.nothingOnPage" xml:space="preserve">
+        <source>No results on this page in {0}</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.nothingOnPageNoLanguage" xml:space="preserve">
+        <source>No results on this page</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.nothingOnSite" xml:space="preserve">
+        <source>No results on this site in {0}</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.nothingOnSiteNoLanguage" xml:space="preserve">
+        <source>No results on this site</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.pageYouEdited" xml:space="preserve">
+        <source>page you edited</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.pages" xml:space="preserve">
+        <source>Pages</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.placeholder" xml:space="preserve">
+        <source>Search pages, content and media</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.recent" xml:space="preserve">
+        <source>Recent</source>
+      </trans-unit>
+      <group id="shellAlpha.search.resultCount" restype="x-gettext-plurals">
+        <trans-unit id="shellAlpha.search.resultCount[0]" xml:space="preserve">
+          <source>{0} result</source>
+        </trans-unit>
+        <trans-unit id="shellAlpha.search.resultCount[1]" xml:space="preserve">
+          <source>{0} results</source>
+        </trans-unit>
+      </group>
+      <trans-unit id="shellAlpha.search.results" xml:space="preserve">
+        <source>Results</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.scope" xml:space="preserve">
+        <source>Search in</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.scopeMedia" xml:space="preserve">
+        <source>Media</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.scopePage" xml:space="preserve">
+        <source>This page</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.scopeSite" xml:space="preserve">
+        <source>Whole site</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.searchIn" xml:space="preserve">
+        <source>Search in {0}</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.search.searching" xml:space="preserve">
+        <source>Searching…</source>
+      </trans-unit>
+      <group id="shellAlpha.search.showAllContent" restype="x-gettext-plurals">
+        <trans-unit id="shellAlpha.search.showAllContent[0]" xml:space="preserve">
+          <source>Show {0} content result</source>
+        </trans-unit>
+        <trans-unit id="shellAlpha.search.showAllContent[1]" xml:space="preserve">
+          <source>Show all {0} content results</source>
+        </trans-unit>
+      </group>
+      <group id="shellAlpha.search.showAllMedia" restype="x-gettext-plurals">
+        <trans-unit id="shellAlpha.search.showAllMedia[0]" xml:space="preserve">
+          <source>Show {0} media result</source>
+        </trans-unit>
+        <trans-unit id="shellAlpha.search.showAllMedia[1]" xml:space="preserve">
+          <source>Show all {0} media results</source>
+        </trans-unit>
+      </group>
+      <group id="shellAlpha.search.showAllPages" restype="x-gettext-plurals">
+        <trans-unit id="shellAlpha.search.showAllPages[0]" xml:space="preserve">
+          <source>Show {0} page result</source>
+        </trans-unit>
+        <trans-unit id="shellAlpha.search.showAllPages[1]" xml:space="preserve">
+          <source>Show all {0} page results</source>
+        </trans-unit>
+      </group>
+      <trans-unit id="shellAlpha.searchSite" xml:space="preserve">
+        <source>Search the site</source>
+      </trans-unit>
       <trans-unit id="shellAlpha.searchTypes" xml:space="preserve">
         <source>Search element types…</source>
       </trans-unit>

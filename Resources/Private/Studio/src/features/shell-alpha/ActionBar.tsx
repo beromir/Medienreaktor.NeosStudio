@@ -30,8 +30,6 @@ import {
   hasContentSettings,
   InspectorPanel,
 } from '@/features/inspector/Inspector'
-import { PanelBody } from '@/features/panels/PanelSystem'
-import { panelRegistry } from '@/features/panels/registry'
 import {
   onPreviewCreateRequest,
   onPreviewEscape,
@@ -44,7 +42,6 @@ import {
 import { useKeyboardShortcut } from '@/features/shortcuts/useKeyboardShortcut'
 import { NodeTypeIcon } from '@/features/tree/nodeTypeIcon'
 import { translate as t } from '@/lib/i18n'
-import { useRegistry } from '@/lib/registry'
 import { cn } from '@/lib/utils'
 import {
   BackIcon,
@@ -73,17 +70,15 @@ import { PathMenu } from './PathMenu'
 import { ElementMenu } from './ElementMenu'
 import { useTrayOnSelection } from './preferences'
 
-type Open = 'settings' | 'add' | 'search' | null
+type Open = 'settings' | 'add' | null
 
 /** The bar's height plus its distance from the card's bottom edge. */
 const BAR_SPACE = 64
 /** How long the bar stays faded after the page stopped scrolling. */
 const FADE_SETTLE_MS = 450
 const ADD_ID = 'shell-alpha-add-menu'
-const SEARCH_ID = 'shell-alpha-search'
-const POPOVER_IDS = [ADD_ID, SEARCH_ID]
+const POPOVER_IDS = [ADD_ID]
 const BARS_ANCHOR = '--shell-alpha-bars'
-const GLOBAL_ANCHOR = '--shell-alpha-global-pill'
 const NODE_PILL_ANCHOR = '--shell-alpha-node-pill'
 /** As drawn: 8px above the bars, its left edge 235px left of their centre. */
 const ADD_PLACEMENT: Placement = {
@@ -92,15 +87,16 @@ const ADD_PLACEMENT: Placement = {
   offset: 8,
   shift: -235,
 }
-const SEARCH_PLACEMENT: Placement = { side: 'top', align: 'start', offset: 8 }
 
 /**
  * The floating action bar (R9 variant D): a global pill - Add, Search,
  * Undo/Redo - and, while a content element is selected, a node pill with
  * its type, Settings, Copy for MCP and more. Settings and Add open their
- * surfaces attached above the bar.
+ * surfaces attached above the bar; Search opens the search dialog.
  */
 export function ActionBar({
+  searchOpen,
+  onSearch,
   onOpenMode,
   onHistoryApplied,
   onReveal,
@@ -108,6 +104,8 @@ export function ActionBar({
   propertiesPinned,
   onKeepOpen,
 }: {
+  searchOpen: boolean
+  onSearch: () => void
   /** The Properties panel is docked: selecting no longer opens the tray. */
   propertiesDocked: boolean
   propertiesPinned: boolean
@@ -193,7 +191,7 @@ export function ActionBar({
 
   // What the bar and its open surface cover, for the page's scroll space
   // and for keeping the selection in view above them.
-  // The Add menu and Search are native popovers in the top layer, outside
+  // The Add menu is a native popover in the top layer, outside
   // the stack - measured by their position, not the stack's height.
   const stackRef = React.useRef<HTMLDivElement>(null)
   React.useLayoutEffect(() => {
@@ -226,7 +224,7 @@ export function ActionBar({
   const toggle = (which: Exclude<Open, null>) =>
     setOpen((current) => (current === which ? null : which))
   // The browser opened or light-dismissed one of the popovers.
-  const popoverChanged = (which: 'add' | 'search', value: boolean) =>
+  const popoverChanged = (which: 'add', value: boolean) =>
     setOpen((current) => (value ? which : current === which ? null : current))
 
   return (
@@ -250,7 +248,7 @@ export function ActionBar({
           />
         )}
         <div className="flex items-center gap-2" {...anchorProps(BARS_ANCHOR)}>
-          <BarPill {...anchorProps(GLOBAL_ANCHOR)}>
+          <BarPill>
             <Tooltip label={t('shellAlpha.add', 'Add')}>
               <AddButton
                 aria-label={t('shellAlpha.add', 'Add')}
@@ -262,9 +260,10 @@ export function ActionBar({
               </AddButton>
             </Tooltip>
             <LabelButton
-              open={open === 'search'}
-              aria-expanded={open === 'search'}
-              popoverTarget={SEARCH_ID}
+              open={searchOpen}
+              aria-haspopup="dialog"
+              aria-expanded={searchOpen}
+              onClick={onSearch}
             >
               <SearchIcon />
               {t('shellAlpha.search', 'Search')}
@@ -320,15 +319,6 @@ export function ActionBar({
             }}
           />
         )}
-      </NativePopover>
-      <NativePopover
-        id={SEARCH_ID}
-        anchor={GLOBAL_ANCHOR}
-        placement={SEARCH_PLACEMENT}
-        open={open === 'search'}
-        onOpenChange={(value) => popoverChanged('search', value)}
-      >
-        <SearchSurface />
       </NativePopover>
     </div>
   )
@@ -1005,30 +995,5 @@ function TypeRow({
         {label}
       </span>
     </button>
-  )
-}
-
-/**
- * Search: Studio has no global search yet - the closest is the Documents
- * panel's page search, shown here above the bar.
- */
-function SearchSurface() {
-  const panels = useRegistry(panelRegistry)
-  const documents = panels.find((definition) => definition.id === 'documents')
-  const ref = React.useRef<HTMLDivElement>(null)
-  React.useEffect(() => {
-    ref.current?.querySelector<HTMLInputElement>('input')?.focus()
-  }, [])
-  if (!documents) return null
-  return (
-    <Surface className="flex h-[min(30rem,calc(100svh-12rem))] w-95 flex-col overflow-hidden">
-      <div ref={ref} className="min-h-0 flex-1 overflow-y-auto">
-        <PanelBody
-          panel={documents.id}
-          component={documents.component}
-          visible
-        />
-      </div>
-    </Surface>
   )
 }

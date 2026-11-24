@@ -2,7 +2,7 @@ import * as React from 'react'
 import type { Node } from '@/api/neos/schema'
 import { useStudio } from '@/app/StudioContext'
 import type { EditingContext } from '@/app/useEditingContext'
-import type { HistoryLocation } from '@/features/history/location'
+import type { RevealLocation } from '@/app/useSelection'
 import { PanelBody, usePanelSwitcher } from '@/features/panels/PanelSystem'
 import {
   panelRegistry,
@@ -31,6 +31,7 @@ import {
   togglePin,
 } from './dock'
 import { PropertiesPanel } from './PropertiesPanel'
+import { SearchDialog } from './SearchDialog'
 import { Rail } from './Rail'
 import { DEVICE_WIDTHS, type Device, TopBar } from './TopBar'
 
@@ -72,7 +73,7 @@ export function AlphaShell({
   onVariantCreated: (point: string) => void
   onSwitchEditingContext: (workspaceName: string | null) => void
   onReload: () => void
-  onReveal: (location: HistoryLocation) => void
+  onReveal: (location: RevealLocation) => void
 }) {
   const definitions = useRegistry(panelRegistry)
   const { activate, activeMainPanel } = usePanelSwitcher()
@@ -161,6 +162,8 @@ export function AlphaShell({
     [activate, updateDock],
   )
 
+  const [searchOpen, setSearchOpen] = React.useState(false)
+
   const [device, setDevice] = usePersistedState<Device>(DEVICE_KEY, 'desktop')
   React.useEffect(() => {
     setPreviewChrome({ deviceWidth: DEVICE_WIDTHS[device] ?? null })
@@ -242,6 +245,8 @@ export function AlphaShell({
               ))}
             {mode === EDITOR && (
               <ActionBar
+                searchOpen={searchOpen}
+                onSearch={() => setSearchOpen(true)}
                 onOpenMode={activate}
                 propertiesDocked={propertiesDocked}
                 propertiesPinned={dock.pinned === PROPERTIES}
@@ -255,6 +260,14 @@ export function AlphaShell({
           </div>
         </main>
       </div>
+      <SearchDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        editing={editing}
+        onReveal={onReveal}
+        onOpenMode={activate}
+        onChangeDimension={onChangeDimension}
+      />
     </div>
   )
 }

@@ -37,6 +37,10 @@
   --color-shell-focus-ring: #00adee26;
   --color-shell-switch-track: #333333;
   --color-shell-icon: #7a7a7a;
+  --color-shell-glyph: #c8c8c8;
+  --color-shell-dashed: #ffffff26;
+  --color-shell-changed-tint: #e8a33d26;
+  --color-shell-changed-text: #f0c27a;
   --color-shell-scrim: #00000099;
   --color-shell-tooltip-border: #ffffff14;
 
