@@ -33,8 +33,10 @@ import {
 import { PanelBody } from '@/features/panels/PanelSystem'
 import { panelRegistry } from '@/features/panels/registry'
 import {
+  onPreviewCreateRequest,
   onPreviewEscape,
   onPreviewPointerNearBottom,
+  type PreviewCreateRequest,
   onPreviewScroll,
   setPreviewChrome,
   usePreviewChrome,
@@ -160,6 +162,22 @@ export function ActionBar({
   }
 
   React.useEffect(() => onPreviewEscape(() => setOpen(null)), [])
+
+  // A type dragged from the Add menu was dropped into the page.
+  const { nodesEdited, inspectNode } = useStudio()
+  const [dropped, setDropped] = React.useState<PreviewCreateRequest | null>(
+    null,
+  )
+  React.useEffect(
+    () =>
+      onPreviewCreateRequest((request) => {
+        // The menu closes, and with it the drag source - before its dragend.
+        setPreviewChrome({ typeDrag: null })
+        setOpen(null)
+        setDropped(request)
+      }),
+    [],
+  )
   useKeyboardShortcut({
     id: 'shellAlpha.closeSurface',
     combo: 'escape',
@@ -264,6 +282,26 @@ export function ActionBar({
           )}
         </div>
       </div>
+      {dropped && (
+        <CreateNodeFlow
+          request={dropped}
+          nodeTypes={nodeTypes}
+          onCreated={(created) => {
+            setDropped(null)
+            nodesEdited([dropped.parentAddress])
+            fetchNode(nodeAddressOf(created) as NodeAddress)
+              .then(inspectNode)
+              .catch(() => inspectNode(created))
+          }}
+          onCancel={(error) => {
+            if (error)
+              toast.error(error, {
+                title: t('creation.creatingFailed', 'Creating failed'),
+              })
+            setDropped(null)
+          }}
+        />
+      )}
       <NativePopover
         id={ADD_ID}
         anchor={BARS_ANCHOR}
@@ -616,9 +654,17 @@ function AddMenu({
     null,
   )
   const { selectDocument, nodesEdited } = useStudio()
+  const dragging = usePreviewChrome().typeDrag !== null
+  React.useEffect(() => () => setPreviewChrome({ typeDrag: null }), [])
   return (
     <>
-      <Surface className="flex max-h-[min(36rem,calc(100svh-12rem))] w-100 flex-col overflow-hidden">
+      <Surface
+        className={cn(
+          'flex max-h-[min(36rem,calc(100svh-12rem))] w-100 flex-col overflow-hidden transition-opacity',
+          // While a type is dragged into the page, the page shows through.
+          dragging && 'pointer-events-none opacity-25',
+        )}
+      >
         {target ? (
           <AddMenuBody
             key={JSON.stringify(target.request.referenceAddress)}
@@ -728,10 +774,13 @@ function AddMenuBody({
 
   // The insert line in the preview, while the menu is open.
   const aggregateId = request.referenceAddress.nodeAggregateId
+  const dragging = usePreviewChrome().typeDrag !== null
   React.useEffect(() => {
-    setPreviewChrome({ insertPreview: { aggregateId, mode: activeMode } })
+    setPreviewChrome({
+      insertPreview: dragging ? null : { aggregateId, mode: activeMode },
+    })
     return () => setPreviewChrome({ insertPreview: null })
-  }, [aggregateId, activeMode])
+  }, [aggregateId, activeMode, dragging])
 
   const modeLabels: Record<InsertMode, string> = {
     before: t('creation.mode.before', 'Before'),
@@ -934,7 +983,16 @@ function TypeRow({
     <button
       type="button"
       onClick={() => onPick(name)}
-      className="flex h-12 shrink-0 cursor-pointer items-center gap-3 rounded-shell-control px-2.5 text-left outline-none hover:bg-shell-ground focus-visible:bg-shell-ground"
+      draggable
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = 'copy'
+        event.dataTransfer.setData('text/plain', name)
+        // Not in the dragstart itself: the menu turns see-through for the
+        // drop, and changing the drag source right away cancels the drag.
+        window.setTimeout(() => setPreviewChrome({ typeDrag: name }))
+      }}
+      onDragEnd={() => setPreviewChrome({ typeDrag: null })}
+      className="flex h-12 shrink-0 cursor-pointer items-center gap-3 rounded-shell-control px-2.5 text-left outline-none hover:bg-shell-ground focus-visible:bg-shell-ground active:cursor-grabbing"
     >
       <span className="flex size-7.5 shrink-0 items-center justify-center rounded-shell-control bg-shell-input text-shell-text">
         <NodeTypeIcon

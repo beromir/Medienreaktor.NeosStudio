@@ -119,6 +119,17 @@ export type GuestToHostMessage =
    * The element goes before the succeeding sibling, or to the end of the
    * collection when the sibling is null.
    */
+  /**
+   * A node type dragged from the host (the alpha Add menu) was dropped into
+   * a collection: the host creates it there, through the creation dialog
+   * when the type has one.
+   */
+  | {
+      type: 'neos-studio/create-node-request'
+      nodeTypeName: string
+      parentNodeAddress: string
+      succeedingSiblingNodeAddress: string | null
+    }
   | {
       type: 'neos-studio/move-node-request'
       nodeAddress: string
@@ -264,6 +275,11 @@ export type HostToGuestMessage =
    * Draw the insert line where a new element would go, relative to the
    * element of this node; null removes it.
    */
+  /**
+   * A node type is dragged from the host (the alpha Add menu): collections
+   * that allow it become drop targets; null ends the drag.
+   */
+  | { type: 'neos-studio/type-drag'; nodeTypeName: string | null }
   | {
       type: 'neos-studio/insert-preview'
       aggregateId: string | null
@@ -411,6 +427,11 @@ const GUEST_MESSAGE_FIELDS: {
   'neos-studio/node-action-request': {
     actionId: isString,
     nodeAddress: isString,
+  },
+  'neos-studio/create-node-request': {
+    nodeTypeName: isString,
+    parentNodeAddress: isString,
+    succeedingSiblingNodeAddress: isStringOrNull,
   },
   'neos-studio/move-node-request': {
     nodeAddress: isString,

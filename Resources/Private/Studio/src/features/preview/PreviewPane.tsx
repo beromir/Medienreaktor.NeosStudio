@@ -59,6 +59,7 @@ import { handleActionsFor, runHandleAction } from './handleActions'
 import { useGuestBridge } from './useGuestBridge'
 import { usePreviewLayers } from './usePreviewLayers'
 import {
+  reportPreviewCreateRequest,
   reportPreviewEscape,
   reportPreviewPointerDown,
   reportPreviewPointerNearBottom,
@@ -467,6 +468,25 @@ export function PreviewPane({
         })
         break
       }
+      case 'neos-studio/create-node-request': {
+        const parentAddress = addressOf(message.parentNodeAddress)
+        const succeedingSiblingAddress =
+          message.succeedingSiblingNodeAddress === null
+            ? null
+            : addressOf(message.succeedingSiblingNodeAddress)
+        if (
+          !parentAddress ||
+          (message.succeedingSiblingNodeAddress !== null &&
+            !succeedingSiblingAddress)
+        )
+          break
+        reportPreviewCreateRequest({
+          nodeTypeName: message.nodeTypeName,
+          parentAddress,
+          succeedingSiblingAddress,
+        })
+        break
+      }
       case 'neos-studio/move-node-request': {
         const nodeAddress = addressOf(message.nodeAddress)
         const targetAddress = addressOf(message.parentNodeAddress)
@@ -661,7 +681,7 @@ export function PreviewPane({
   // The shell's wishes for the in-page chrome (see chromeStore), again
   // right after every guest boot.
   const chrome = usePreviewChrome()
-  const { minimal, scrollSpace, bottomInset, insertPreview } = chrome
+  const { minimal, scrollSpace, bottomInset, insertPreview, typeDrag } = chrome
   useEffect(() => {
     if (!guestReady) return
     postToGuest({
@@ -679,6 +699,10 @@ export function PreviewPane({
       mode: insertPreview?.mode ?? 'after',
     })
   }, [guestReady, insertPreview, postToGuest])
+  useEffect(() => {
+    if (!guestReady) return
+    postToGuest({ type: 'neos-studio/type-drag', nodeTypeName: typeDrag })
+  }, [guestReady, typeDrag, postToGuest])
 
   // Forward collaborators' live-typing ticks into the guest, which paints
   // them into the locked inline text. The guest ignores ticks for elements

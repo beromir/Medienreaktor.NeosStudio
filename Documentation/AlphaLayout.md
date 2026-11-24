@@ -43,6 +43,13 @@ Whether selection may open the tray at all is the
 `studio.alpha.trayOnSelection` user preference (on unless false), switched
 in the account menu.
 
+The element types listed in the Add menu can be dragged into the page as
+well as picked. While one is dragged the menu turns see-through, the
+collections that allow the type light up (the guest's `type-drag`), a
+line marks the insertion point, and the drop asks the shell to create
+the element there (`create-node-request`) - through the creation dialog
+when the type has one; the new element is selected.
+
 The tray and the Properties panel show a content element's content
 settings in the node type's inspector tabs (`ui.inspector.tabs`, icons
 from the tab config, pencil / cog / sliders when none is set). The tabs

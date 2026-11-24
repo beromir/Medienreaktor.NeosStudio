@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import type { NodeAddress } from '@/api/neos/schema'
 
 /**
  * What the shell around the preview wants from it, beyond the page itself:
@@ -18,6 +19,8 @@ export interface PreviewChrome {
   } | null
   /** Preview width in px for a device preset; null = the full width. */
   deviceWidth: number | null
+  /** A node type dragged from the shell into the page, null when none. */
+  typeDrag: string | null
   /** Whether the selected element renders text to type in (guest-reported). */
   selectionText: { aggregateId: string | null; editable: boolean } | null
 }
@@ -28,6 +31,7 @@ const CLASSIC: PreviewChrome = {
   bottomInset: 0,
   insertPreview: null,
   deviceWidth: null,
+  typeDrag: null,
   selectionText: null,
 }
 
@@ -117,4 +121,28 @@ export function onPreviewPointerDown(listener: () => void): () => void {
 
 export function reportPreviewPointerDown(): void {
   pointerDownListeners.forEach((listener) => listener())
+}
+
+export interface PreviewCreateRequest {
+  nodeTypeName: string
+  parentAddress: NodeAddress
+  succeedingSiblingAddress: NodeAddress | null
+}
+
+const createListeners = new Set<(request: PreviewCreateRequest) => void>()
+
+/** A node type dragged from the shell was dropped into the page. */
+export function onPreviewCreateRequest(
+  listener: (request: PreviewCreateRequest) => void,
+): () => void {
+  createListeners.add(listener)
+  return () => {
+    createListeners.delete(listener)
+  }
+}
+
+export function reportPreviewCreateRequest(
+  request: PreviewCreateRequest,
+): void {
+  createListeners.forEach((listener) => listener(request))
 }

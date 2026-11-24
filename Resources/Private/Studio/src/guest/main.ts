@@ -1238,15 +1238,17 @@ function onMouseOver(event: MouseEvent): void {
 
 /**
  * Moving an existing content element by dragging its "..." handle into a
- * content collection. Collections whose server-computed allowed-types list
- * includes the dragged type become drop targets, dragover positions an
- * insertion indicator between the hovered collection's children, and drop
- * reports the insertion point to the host, which runs the move command.
+ * content collection - or dropping a node type dragged from the host's Add
+ * menu, which the host announces with type-drag. Collections whose
+ * server-computed allowed-types list includes the dragged type become drop
+ * targets, dragover positions an insertion indicator between the hovered
+ * collection's children, and drop reports the insertion point to the host,
+ * which runs the move or the creation.
  */
 let activeDrag: {
   nodeTypeName: string
-  /** The element being moved. */
-  movingElement: HTMLElement
+  /** The element being moved; null while a new node type is dragged in. */
+  movingElement: HTMLElement | null
 } | null = null
 
 /** The insertion point under the pointer; before === null appends. */
@@ -1269,14 +1271,17 @@ function collectionAllows(
   }
 }
 
-function startDrag(nodeTypeName: string, movingElement: HTMLElement): void {
+function startDrag(
+  nodeTypeName: string,
+  movingElement: HTMLElement | null,
+): void {
   activeDrag = { nodeTypeName, movingElement }
   scheduleHandleUpdate()
   for (const collection of document.querySelectorAll<HTMLElement>(
     `[${COLLECTION_ATTRIBUTE}]`,
   )) {
     // An element cannot be moved into its own subtree.
-    if (movingElement.contains(collection)) continue
+    if (movingElement?.contains(collection)) continue
     if (collectionAllows(collection, nodeTypeName))
       collection.classList.add(DROPPABLE_CLASS)
   }
@@ -1474,7 +1479,8 @@ function onDragOver(event: DragEvent): void {
   }
   // preventDefault marks the spot as a valid drop location.
   event.preventDefault()
-  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+  if (event.dataTransfer)
+    event.dataTransfer.dropEffect = activeDrag.movingElement ? 'move' : 'copy'
   setDropTarget({
     collection,
     before: findInsertBefore(collection, event.clientX, event.clientY),
@@ -1490,7 +1496,14 @@ function onDrop(event: DragEvent): void {
   const succeedingSiblingNodeAddress =
     before?.getAttribute(WRAPPER_ATTRIBUTE) ?? null
   let message: GuestToHostMessage | null = null
-  if (parentNodeAddress) {
+  if (parentNodeAddress && drag.movingElement === null) {
+    message = {
+      type: 'neos-studio/create-node-request',
+      nodeTypeName: drag.nodeTypeName,
+      parentNodeAddress,
+      succeedingSiblingNodeAddress,
+    }
+  } else if (parentNodeAddress && drag.movingElement) {
     const nodeAddress = drag.movingElement.getAttribute(WRAPPER_ATTRIBUTE)
     if (nodeAddress && !isNoOpMove(drag.movingElement, collection, before)) {
       message = {
@@ -1939,6 +1952,11 @@ function onHostMessage(event: MessageEvent): void {
   }
   if (message?.type === 'neos-studio/chrome') {
     applyChrome(message, selectedElement)
+  }
+  if (message?.type === 'neos-studio/type-drag') {
+    if (message.nodeTypeName === null) {
+      if (activeDrag?.movingElement === null) endDrag()
+    } else if (activeDrag === null) startDrag(message.nodeTypeName, null)
   }
   if (message?.type === 'neos-studio/insert-preview') {
     const indexed =
