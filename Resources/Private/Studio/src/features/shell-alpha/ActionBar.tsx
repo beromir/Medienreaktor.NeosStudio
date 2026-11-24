@@ -59,6 +59,7 @@ import {
   Surface,
 } from './primitives'
 import { anchorProps, NativePopover, type Placement } from './NativePopover'
+import { Tooltip, useTooltip } from './Tooltip'
 import { PathMenu } from './PathMenu'
 import { ElementMenu } from './ElementMenu'
 import { useTrayOnSelection } from './preferences'
@@ -207,15 +208,16 @@ export function ActionBar({
         )}
         <div className="flex items-center gap-2" {...anchorProps(BARS_ANCHOR)}>
           <BarPill {...anchorProps(GLOBAL_ANCHOR)}>
-            <AddButton
-              aria-label={t('shellAlpha.add', 'Add')}
-              title={t('shellAlpha.add', 'Add')}
-              aria-expanded={open === 'add'}
-              data-popup-open={open === 'add' || undefined}
-              popoverTarget={ADD_ID}
-            >
-              <PlusIcon />
-            </AddButton>
+            <Tooltip label={t('shellAlpha.add', 'Add')}>
+              <AddButton
+                aria-label={t('shellAlpha.add', 'Add')}
+                aria-expanded={open === 'add'}
+                data-popup-open={open === 'add' || undefined}
+                popoverTarget={ADD_ID}
+              >
+                <PlusIcon />
+              </AddButton>
+            </Tooltip>
             <LabelButton
               open={open === 'search'}
               aria-expanded={open === 'search'}
@@ -349,31 +351,37 @@ function HistoryControls({
 
   return (
     <>
-      <IconButton
-        disabled={running || undoLabel === null}
-        onClick={() => run('undo')}
-        title={
+      <Tooltip
+        label={
           undoLabel === null
             ? t('undo.nothingToUndo', 'Nothing to undo')
             : t('undo.undoAction', 'Undo: {0}', [
                 describe(undoLabel, undoLocation),
               ])
         }
-        aria-label={t('undo.undo', 'Undo')}
       >
-        <UndoIcon />
-      </IconButton>
-      {redoLabel !== null && (
         <IconButton
-          disabled={running}
-          onClick={() => run('redo')}
-          title={t('undo.redoAction', 'Redo: {0}', [
+          disabled={running || undoLabel === null}
+          onClick={() => run('undo')}
+          aria-label={t('undo.undo', 'Undo')}
+        >
+          <UndoIcon />
+        </IconButton>
+      </Tooltip>
+      {redoLabel !== null && (
+        <Tooltip
+          label={t('undo.redoAction', 'Redo: {0}', [
             describe(redoLabel, redoLocation),
           ])}
-          aria-label={t('undo.redo', 'Redo')}
         >
-          <RedoIcon />
-        </IconButton>
+          <IconButton
+            disabled={running}
+            onClick={() => run('redo')}
+            aria-label={t('undo.redo', 'Redo')}
+          >
+            <RedoIcon />
+          </IconButton>
+        </Tooltip>
       )}
     </>
   )
@@ -395,6 +403,9 @@ function NodePill({
   const { inspectNode } = useStudio()
   const typeLabel = nodeTypes?.get(node.nodeType)?.label ?? node.nodeType
   const pillRef = React.useRef<HTMLDivElement>(null)
+  const pathTooltip = useTooltip(
+    t('shellAlpha.selectionPath', 'Selection path'),
+  )
   const { data: ancestors } = useNodeAncestors(nodeAddressOf(node))
   const parent = ancestors?.[0] ?? null
 
@@ -412,6 +423,7 @@ function NodePill({
 
   return (
     <BarPill ref={pillRef} {...anchorProps(NODE_PILL_ANCHOR)}>
+      {pathTooltip.tooltip}
       <PathMenu
         node={node}
         side="top"
@@ -420,7 +432,7 @@ function NodePill({
           <button
             type="button"
             className="inline-flex h-9 cursor-pointer items-center gap-1.75 rounded-full px-2.5 type-shell-control font-medium text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover"
-            title={t('shellAlpha.selectionPath', 'Selection path')}
+            {...pathTooltip.props}
           >
             <NodeTypeIcon
               nodeTypes={nodeTypes}
@@ -482,28 +494,31 @@ function SettingsTray({
         layout="tray"
         tabsEnd={
           <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={onKeepOpen}
-              aria-pressed={pinned}
-              title={t(
+            <Tooltip
+              label={t(
                 'shellAlpha.keepOpenHint',
                 'Keep the properties open in a panel on the left',
               )}
-              className={cn(
-                'flex h-7 cursor-pointer items-center gap-1.5 rounded-full pr-2.5 pl-2 type-shell-secondary outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
-                pinned
-                  ? 'bg-shell-ground text-shell-text'
-                  : 'text-shell-muted hover:bg-shell-hover hover:text-shell-text',
-              )}
             >
-              <PinIcon
-                filled={pinned}
-                width={pinned ? 12 : 13}
-                height={pinned ? 12 : 13}
-              />
-              {t('shellAlpha.keepOpen', 'Keep open')}
-            </button>
+              <button
+                type="button"
+                onClick={onKeepOpen}
+                aria-pressed={pinned}
+                className={cn(
+                  'flex h-7 cursor-pointer items-center gap-1.5 rounded-full pr-2.5 pl-2 type-shell-secondary outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
+                  pinned
+                    ? 'bg-shell-ground text-shell-text'
+                    : 'text-shell-muted hover:bg-shell-hover hover:text-shell-text',
+                )}
+              >
+                <PinIcon
+                  filled={pinned}
+                  width={pinned ? 12 : 13}
+                  height={pinned ? 12 : 13}
+                />
+                {t('shellAlpha.keepOpen', 'Keep open')}
+              </button>
+            </Tooltip>
             <IconButton
               size="sm"
               className="size-7 text-shell-muted"

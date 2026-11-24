@@ -56,6 +56,7 @@ import {
 } from './icons'
 import { NativePopover, type Placement } from './NativePopover'
 import { IconButton, Surface } from './primitives'
+import { Tooltip, useTooltip } from './Tooltip'
 
 const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
 
@@ -92,6 +93,9 @@ export function ElementMenu({
 }) {
   const { nodeEdited, nodesEdited, inspectNode } = useStudio()
   const [open, setOpen] = React.useState(false)
+  const moreTooltip = useTooltip(t('actions.more', 'More actions'), {
+    names: true,
+  })
   const [surface, setSurface] = React.useState<OpenPopover>(null)
   const [confirmDelete, setConfirmDelete] = React.useState(false)
   const { data: nodeType } = useNodeType(node.nodeType)
@@ -166,12 +170,13 @@ export function ElementMenu({
 
   return (
     <>
+      {moreTooltip.tooltip}
       <MenuPrimitive.Root open={open} onOpenChange={setOpen}>
         <MenuPrimitive.Trigger
           render={
             <IconButton
               open={open || surface !== null}
-              title={t('actions.more', 'More actions')}
+              {...moreTooltip.props}
               aria-label={t('actions.more', 'More actions')}
             />
           }
@@ -385,22 +390,23 @@ function ElementInfo({ node }: { node: Node }) {
             ])}
       </span>
       <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          onClick={() =>
-            void copy(
-              node.nodeAggregateId,
-              t('shellAlpha.element.idCopied', 'Copied the node ID'),
-            )
-          }
-          title={t('shellAlpha.element.copyId', 'Copy the node ID')}
-          className="flex h-6 min-w-0 cursor-pointer items-center gap-1.5 rounded-shell-control bg-shell-input pr-1.5 pl-2 text-shell-muted outline-none hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60"
-        >
-          <span className="max-w-26 truncate font-mono text-[0.6875rem] leading-3.5">
-            {node.nodeAggregateId}
-          </span>
-          <CopyIcon width={11} height={11} strokeWidth={1.2} />
-        </button>
+        <Tooltip label={t('shellAlpha.element.copyId', 'Copy the node ID')}>
+          <button
+            type="button"
+            onClick={() =>
+              void copy(
+                node.nodeAggregateId,
+                t('shellAlpha.element.idCopied', 'Copied the node ID'),
+              )
+            }
+            className="flex h-6 min-w-0 cursor-pointer items-center gap-1.5 rounded-shell-control bg-shell-input pr-1.5 pl-2 text-shell-muted outline-none hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60"
+          >
+            <span className="max-w-26 truncate font-mono text-[0.6875rem] leading-3.5">
+              {node.nodeAggregateId}
+            </span>
+            <CopyIcon width={11} height={11} strokeWidth={1.2} />
+          </button>
+        </Tooltip>
         <button
           type="button"
           onClick={() => void copyForMcp()}

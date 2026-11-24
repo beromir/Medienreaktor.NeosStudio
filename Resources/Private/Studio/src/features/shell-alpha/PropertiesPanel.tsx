@@ -7,6 +7,7 @@ import { translate as t } from '@/lib/i18n'
 import { ChevronDownIcon, CloseIcon } from './icons'
 import { PathMenu, useNodeName } from './PathMenu'
 import { IconButton } from './primitives'
+import { useTooltip } from './Tooltip'
 
 /** The page fields that lead the panel when the page itself is shown. */
 const PAGE_LEAD = ['title', 'uriPathSegment', 'hiddenInMenu', '_hiddenInMenu']
@@ -74,28 +75,34 @@ function Header() {
   const node = (inspectedNode ?? selectedDocument)!
   const { data: nodeTypes } = useNodeTypes()
   const name = useNodeName(node)
+  const pathTooltip = useTooltip(
+    t('shellAlpha.selectionPath', 'Selection path'),
+  )
   return (
-    <PathMenu
-      node={node}
-      side="bottom"
-      sideOffset={2}
-      trigger={
-        <button
-          type="button"
-          title={t('shellAlpha.selectionPath', 'Selection path')}
-          className="flex h-8 min-w-0 cursor-pointer items-center gap-2 rounded-shell-control pr-2.5 pl-2 text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover"
-        >
-          <NodeTypeIcon
-            nodeTypes={nodeTypes}
-            nodeTypeName={node.nodeType}
-            className="type-icon-s"
-          />
-          <span className="truncate text-[0.875rem] leading-4.5 font-semibold">
-            {name}
-          </span>
-          <ChevronDownIcon className="text-shell-muted" />
-        </button>
-      }
-    />
+    <>
+      {pathTooltip.tooltip}
+      <PathMenu
+        node={node}
+        side="bottom"
+        sideOffset={2}
+        trigger={
+          <button
+            type="button"
+            {...pathTooltip.props}
+            className="flex h-8 min-w-0 cursor-pointer items-center gap-2 rounded-shell-control pr-2.5 pl-2 text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover"
+          >
+            <NodeTypeIcon
+              nodeTypes={nodeTypes}
+              nodeTypeName={node.nodeType}
+              className="type-icon-s"
+            />
+            <span className="truncate text-[0.875rem] leading-4.5 font-semibold">
+              {name}
+            </span>
+            <ChevronDownIcon className="text-shell-muted" />
+          </button>
+        }
+      />
+    </>
   )
 }

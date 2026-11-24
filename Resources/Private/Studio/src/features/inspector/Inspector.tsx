@@ -41,6 +41,7 @@ import { usePresence } from '@/features/collaboration/PresenceContext'
 import { Icon } from '@/components/ui/icon'
 import { NodeTypeIcon } from '@/features/tree/nodeTypeIcon'
 import { translate as t } from '@/lib/i18n'
+import { Tooltip } from '@/features/shell-alpha/Tooltip'
 import { useRegistrySelector } from '@/lib/registry'
 import { cn } from '@/lib/utils'
 import {
@@ -790,26 +791,26 @@ function AlphaTabs({
             )}
           </TabsPrimitive.Tab>
         ) : (
-          <TabsPrimitive.Tab
-            key={tab.id}
-            value={tab.id}
-            title={tab.label}
-            aria-label={tab.label}
-            className={cn(
-              'relative flex h-7 w-8 shrink-0 cursor-pointer items-center justify-center rounded-shell-control outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
-              active
-                ? 'bg-shell-ground text-shell-text'
-                : 'text-shell-muted hover:bg-shell-hover-inset hover:text-shell-text',
-            )}
-          >
-            <Icon
-              name={tabIcon(tab)}
-              className="text-[0.8125rem] leading-none"
-            />
-            {errorCount > 0 && (
-              <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive" />
-            )}
-          </TabsPrimitive.Tab>
+          <Tooltip key={tab.id} side="bottom" label={tab.label}>
+            <TabsPrimitive.Tab
+              value={tab.id}
+              aria-label={tab.label}
+              className={cn(
+                'relative flex h-7 w-8 shrink-0 cursor-pointer items-center justify-center rounded-shell-control outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
+                active
+                  ? 'bg-shell-ground text-shell-text'
+                  : 'text-shell-muted hover:bg-shell-hover-inset hover:text-shell-text',
+              )}
+            >
+              <Icon
+                name={tabIcon(tab)}
+                className="text-[0.8125rem] leading-none"
+              />
+              {errorCount > 0 && (
+                <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive" />
+              )}
+            </TabsPrimitive.Tab>
+          </Tooltip>
         )
       })}
     </TabsPrimitive.List>

@@ -184,8 +184,9 @@ hover after 500ms - at once while another one shows or within 300ms after
 one hid - and on keyboard focus, and hides on leave, blur, a press and Esc.
 It describes its trigger with `aria-describedby`, or, on an icon-only
 button whose `aria-label` says the same, only shows that name. It is
-`pointer-events: none`, 22px high on `shell-raised`, 11px text. The
-classic layout and the plugin API keep the Base UI tooltip.
+`pointer-events: none`, 22px high on `shell-raised`, 11px text. Every
+hint in the alpha shell uses it instead of `title`. The classic layout
+and the plugin API keep the Base UI tooltip.
 
 Popups opened from inside one - context menus, the creation dialogs -
 portal into the popover (`PortalContainerContext`, used by every
