@@ -24,6 +24,7 @@ import type {
   NodeMenuAction,
   NodeMenuTarget,
 } from '@/features/editing/NodeContextMenu'
+import { hideNodes, unhideNodes } from '@/features/editing/nodeActions'
 import { InspectorPanel } from '@/features/inspector/Inspector'
 import { useAssetPicker } from '@/features/media/AssetPicker'
 import { MediaBrowser } from '@/features/media/MediaBrowser'
@@ -37,6 +38,7 @@ import { DocumentSearchList } from '@/features/tree/DocumentSearchList'
 import { DocumentsToolbar } from '@/features/tree/DocumentsToolbar'
 import { DocumentTree } from '@/features/tree/DocumentTree'
 import { Button } from '@/components/ui/button'
+import { toast } from '@/components/ui/toast'
 import { LoadingState } from '@/components/ui/spinner'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -99,9 +101,6 @@ function DocumentsPanel() {
     dimensionSpacePoint,
     selectedDocument,
     selectDocument,
-    inspectNode,
-    lastEdit,
-    nodeEdited,
     nodesEdited,
   } = useStudio()
   // Picking a document in the tree (or the search list) is "go there":
@@ -178,69 +177,7 @@ function DocumentsPanel() {
         <div
           className={cn('flex min-h-0 flex-1 flex-col', filtering && 'hidden')}
         >
-          <DocumentTree
-            key={JSON.stringify([
-              site.nodeName,
-              workspaceName,
-              dimensionSpacePoint,
-            ])}
-            site={site}
-            workspaceName={workspaceName}
-            dimensionSpacePoint={dimensionSpacePoint}
-            selectedAddress={
-              selectedDocument ? nodeAddressOf(selectedDocument) : null
-            }
-            lastEdit={lastEdit}
-            onSelect={openDocument}
-            onMoved={nodesEdited}
-            // Branches an access role refuses outright leave the tree; pages
-            // merely outside a role stay, dimmed and locked by the access
-            // decorator - they are often the path to a branch it does grant.
-            filterDocuments={(nodes) =>
-              nodes.filter(
-                (node) => documentAccessState(node, site.nodeName) !== 'hidden',
-              )
-            }
-            onCreateNew={(target) =>
-              setInsertRequest({
-                referenceAddress: target.address,
-                parentAddress: target.parentAddress,
-                defaultMode: 'inside',
-              })
-            }
-            onNodeAction={(action, targets) => {
-              reportNodeAction({ nodeEdited, nodesEdited }, action, targets)
-              const selectedTarget = targets.find((target) =>
-                sameNodeAddress(target.address, selectedDocument),
-              )
-              // The deleted document cannot stay selected - browse its parent.
-              if (
-                action === 'delete' &&
-                selectedTarget !== undefined &&
-                selectedTarget.parentAddress
-              ) {
-                fetchNode(selectedTarget.parentAddress)
-                  .then(selectDocument)
-                  .catch(() => {
-                    /* fine - the tree simply keeps the stale selection */
-                  })
-              }
-              // A batch hide/unhide skips the single-target path's inspected-
-              // node refetch - catch up here when the selected document (the
-              // inspected one) was among the targets.
-              if (
-                action !== 'delete' &&
-                targets.length > 1 &&
-                selectedTarget !== undefined
-              ) {
-                fetchNode(selectedTarget.address)
-                  .then(inspectNode)
-                  .catch(() => {
-                    /* fine - keep showing the previous snapshot */
-                  })
-              }
-            }}
-          />
+          <SiteDocumentTree onOpen={openDocument} onCreate={setInsertRequest} />
         </div>
       </div>
       <InsertNodeDialog
@@ -260,6 +197,105 @@ function DocumentsPanel() {
         onClose={() => setInsertRequest(null)}
       />
     </div>
+  )
+}
+
+/**
+ * The site's document tree with the Documents panel's wiring: access
+ * filtering, the context menu's follow-ups, creating through the caller's
+ * dialog. Shared with the alpha layout's Pages panel.
+ */
+export function SiteDocumentTree({
+  onOpen,
+  onCreate,
+  onCreateChild = false,
+}: {
+  onOpen: (document: Node) => void
+  onCreate: (request: InsertRequest) => void
+  /** Offer "+" (a new page inside) on the rows' hover. */
+  onCreateChild?: boolean
+}) {
+  const {
+    site,
+    workspaceName,
+    dimensionSpacePoint,
+    selectedDocument,
+    selectDocument,
+    inspectNode,
+    lastEdit,
+    nodeEdited,
+    nodesEdited,
+  } = useStudio()
+  if (!site || !workspaceName || !dimensionSpacePoint) return null
+  return (
+    <DocumentTree
+      key={JSON.stringify([site.nodeName, workspaceName, dimensionSpacePoint])}
+      site={site}
+      workspaceName={workspaceName}
+      dimensionSpacePoint={dimensionSpacePoint}
+      selectedAddress={
+        selectedDocument ? nodeAddressOf(selectedDocument) : null
+      }
+      lastEdit={lastEdit}
+      onSelect={onOpen}
+      onMoved={nodesEdited}
+      // Branches an access role refuses outright leave the tree; pages
+      // merely outside a role stay, dimmed and locked by the access
+      // decorator - they are often the path to a branch it does grant.
+      filterDocuments={(nodes) =>
+        nodes.filter(
+          (node) => documentAccessState(node, site.nodeName) !== 'hidden',
+        )
+      }
+      onCreateNew={(target) =>
+        onCreate({
+          referenceAddress: target.address,
+          parentAddress: target.parentAddress,
+          defaultMode: 'inside',
+        })
+      }
+      onCreateChild={
+        onCreateChild
+          ? (document) =>
+              onCreate({
+                referenceAddress: nodeAddressOf(document),
+                defaultMode: 'inside',
+              })
+          : undefined
+      }
+      onNodeAction={(action, targets) => {
+        reportNodeAction({ nodeEdited, nodesEdited }, action, targets)
+        const selectedTarget = targets.find((target) =>
+          sameNodeAddress(target.address, selectedDocument),
+        )
+        // The deleted document cannot stay selected - browse its parent.
+        if (
+          action === 'delete' &&
+          selectedTarget !== undefined &&
+          selectedTarget.parentAddress
+        ) {
+          fetchNode(selectedTarget.parentAddress)
+            .then(selectDocument)
+            .catch(() => {
+              /* fine - the tree simply keeps the stale selection */
+            })
+        }
+        // A batch hide/unhide skips the single-target path's inspected-
+        // node refetch - catch up here when the selected document (the
+        // inspected one) was among the targets.
+        if (
+          action !== 'delete' &&
+          targets.length > 1 &&
+          selectedTarget !== undefined
+        ) {
+          fetchNode(selectedTarget.address)
+            .then(inspectNode)
+            .catch(() => {
+              /* fine - keep showing the previous snapshot */
+            })
+        }
+      }}
+    />
   )
 }
 
@@ -283,6 +319,18 @@ function OutlinePanel() {
         lastEdit={lastEdit}
         onSelect={inspectNode}
         onMoved={nodesEdited}
+        onToggleHidden={(node) => {
+          const address = nodeAddressOf(node)
+          ;(node.isHidden ? unhideNodes : hideNodes)([address])
+            .then(() => nodeEdited(address, { reload: 'element' }))
+            .catch((e: unknown) =>
+              toast.error(e, {
+                title: node.isHidden
+                  ? t('editing.unhideFailed', 'Unhiding failed')
+                  : t('editing.hideFailed', 'Hiding failed'),
+              }),
+            )
+        }}
         onCreateNew={(target) =>
           setInsertRequest({
             referenceAddress: target.address,

@@ -280,6 +280,8 @@ export type HostToGuestMessage =
    * that allow it become drop targets; null ends the drag.
    */
   | { type: 'neos-studio/type-drag'; nodeTypeName: string | null }
+  /** Outline this node's element as hovered (a shell row is); null: none. */
+  | { type: 'neos-studio/hover-node'; aggregateId: string | null }
   | {
       type: 'neos-studio/insert-preview'
       aggregateId: string | null

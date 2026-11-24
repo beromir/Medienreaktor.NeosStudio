@@ -1911,6 +1911,16 @@ function replaceElement(aggregateId: string, html: string): boolean {
   return true
 }
 
+/** The element a row in the shell outlines while hovered. */
+let shellHovered: HTMLElement | null = null
+
+function setShellHover(element: HTMLElement | null): void {
+  if (shellHovered !== hoveredElement)
+    shellHovered?.classList.remove(HOVER_CLASS)
+  shellHovered = element?.isConnected ? element : null
+  shellHovered?.classList.add(HOVER_CLASS)
+}
+
 function onHostMessage(event: MessageEvent): void {
   if (event.origin !== window.location.origin || event.source !== window.parent)
     return
@@ -1957,6 +1967,13 @@ function onHostMessage(event: MessageEvent): void {
     if (message.nodeTypeName === null) {
       if (activeDrag?.movingElement === null) endDrag()
     } else if (activeDrag === null) startDrag(message.nodeTypeName, null)
+  }
+  if (message?.type === 'neos-studio/hover-node') {
+    setShellHover(
+      message.aggregateId === null
+        ? null
+        : (elementsByAggregateId.get(message.aggregateId) ?? null),
+    )
   }
   if (message?.type === 'neos-studio/insert-preview') {
     const indexed =

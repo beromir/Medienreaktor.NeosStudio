@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import { Placeholder } from '@/components/ui/placeholder'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { TreeRowDecor } from './nodeDecor'
+import { type AlphaRow, useTreeStyle } from './treeStyle'
 
 /**
  * The drag-and-drop feature's additions to the tree/item instances, absent
@@ -28,6 +29,8 @@ export function TreeList<T>({
   onItemContextMenu,
   selectOnContextMenu = false,
   rootless = false,
+  alphaRow,
+  hideRoot = false,
 }: {
   tree: TreeInstance<T>
   /** Accessible tree label (aria-label on the container). */
@@ -61,8 +64,20 @@ export function TreeList<T>({
    * the root special-casing the document tree/outliner rely on.
    */
   rootless?: boolean
+  /**
+   * The row's extras in the alpha layout (see treeStyle); without it the
+   * tree keeps its classic rows there too.
+   */
+  alphaRow?: (item: ItemInstance<T>) => AlphaRow | null
+  /** Alpha rows only: leave the visible root out (a panel header names it). */
+  hideRoot?: boolean
 }) {
-  const items = tree.getItems()
+  const alpha = useTreeStyle() === 'alpha' && alphaRow !== undefined
+  const allItems = tree.getItems()
+  const items =
+    alpha && hideRoot && !rootless
+      ? allItems.filter((item) => item.getItemMeta().level > 0)
+      : allItems
   const isEmpty = items.length === 0
   // Present only when the tree registered the drag-and-drop feature.
   const dnd = 'getDragLineStyle' in tree ? (tree as unknown as DndTree) : null
@@ -72,6 +87,7 @@ export function TreeList<T>({
       {...tree.getContainerProps(label)}
       className={cn(
         'flex flex-col outline-none select-none',
+        alpha && 'gap-0.5',
         // Fill the container so the empty/loading block centers vertically.
         isEmpty && 'min-h-0 flex-1',
       )}
@@ -91,6 +107,21 @@ export function TreeList<T>({
         />
       )}
       {items.map((item) => {
+        if (alpha)
+          return (
+            <AlphaTreeRow
+              key={item.getId()}
+              tree={tree}
+              item={item}
+              row={alphaRow(item)}
+              markers={decorate?.(item.getItemData())?.markers}
+              indent={
+                item.getItemMeta().level - (hideRoot && !rootless ? 1 : 0)
+              }
+              onItemContextMenu={onItemContextMenu}
+              selectOnContextMenu={selectOnContextMenu}
+            />
+          )
         const decor = decorate?.(item.getItemData()) ?? null
         // The tree's visible root (the site or the outlined document) isn't
         // collapsible - it has no sibling to collapse to, so no arrow, and
@@ -109,28 +140,7 @@ export function TreeList<T>({
           <button
             {...item.getProps()}
             key={item.getId()}
-            // Replaces the composed headless-tree onClick (selection + focus +
-            // primary action + expand toggle) with the same behavior MINUS the
-            // toggle: clicking a row must never expand/collapse - only the
-            // chevron does that.
-            onClick={(e) => {
-              if (e.shiftKey) {
-                item.selectUpTo(e.ctrlKey || e.metaKey)
-              } else if (e.ctrlKey || e.metaKey) {
-                item.toggleSelect()
-              } else {
-                tree.setSelectedItems([item.getId()])
-              }
-              if (!e.shiftKey) {
-                // Internal anchor bookkeeping the selection feature does on
-                // click; kept so shift-range selection anchors correctly.
-                tree.getDataRef<{
-                  selectUpToAnchorId?: string
-                }>().current.selectUpToAnchorId = item.getId()
-              }
-              item.setFocused()
-              item.primaryAction()
-            }}
+            onClick={(e) => clickRow(tree, item, e)}
             onContextMenu={
               onItemContextMenu &&
               ((e) => {
@@ -262,5 +272,160 @@ function TreeListSkeleton({ label }: { label?: string }) {
         </div>
       ))}
     </div>
+  )
+}
+
+/**
+ * headless-tree's composed row click (selection, focus, primary action)
+ * without its expand toggle: clicking a row never expands or collapses it,
+ * only the chevron does.
+ */
+function clickRow<T>(
+  tree: TreeInstance<T>,
+  item: ItemInstance<T>,
+  e: React.MouseEvent,
+) {
+  if (e.shiftKey) {
+    item.selectUpTo(e.ctrlKey || e.metaKey)
+  } else if (e.ctrlKey || e.metaKey) {
+    item.toggleSelect()
+  } else {
+    tree.setSelectedItems([item.getId()])
+  }
+  if (!e.shiftKey) {
+    // Internal anchor bookkeeping the selection feature does on click;
+    // kept so shift-range selection anchors correctly.
+    tree.getDataRef<{
+      selectUpToAnchorId?: string
+    }>().current.selectUpToAnchorId = item.getId()
+  }
+  item.setFocused()
+  item.primaryAction()
+}
+
+function toggleExpanded<T>(item: ItemInstance<T>, e: React.MouseEvent) {
+  e.stopPropagation()
+  if (!item.isFolder()) return
+  if (item.isExpanded()) item.collapse()
+  else item.expand()
+}
+
+/**
+ * The alpha layout's tree row (R34): 28px, fixed chevron and type icon
+ * slots, 16px indent per level, a quiet note that gives way to the row's
+ * actions on hover.
+ */
+function AlphaTreeRow<T>({
+  tree,
+  item,
+  row,
+  markers,
+  indent,
+  onItemContextMenu,
+  selectOnContextMenu,
+}: {
+  tree: TreeInstance<T>
+  item: ItemInstance<T>
+  row: AlphaRow | null
+  markers: React.ReactNode
+  indent: number
+  onItemContextMenu?: (item: ItemInstance<T>, event: React.MouseEvent) => void
+  selectOnContextMenu: boolean
+}) {
+  const selected = item.isSelected()
+  const isDropTarget =
+    'isUnorderedDragTarget' in item &&
+    (item as unknown as DndItem).isUnorderedDragTarget()
+  return (
+    <button
+      {...item.getProps()}
+      onClick={(e) => clickRow(tree, item, e)}
+      onMouseEnter={() => row?.onHover?.(true)}
+      onMouseLeave={() => row?.onHover?.(false)}
+      onContextMenu={
+        onItemContextMenu &&
+        ((e) => {
+          e.preventDefault()
+          if (selectOnContextMenu && !selected) {
+            tree.setSelectedItems([item.getId()])
+            tree.getDataRef<{
+              selectUpToAnchorId?: string
+            }>().current.selectUpToAnchorId = item.getId()
+          }
+          onItemContextMenu(item, e)
+        })
+      }
+      className={cn(
+        'group/row flex h-7 w-full shrink-0 items-center gap-1.5 overflow-hidden rounded-shell-control pr-2 text-left type-shell-control whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60 motion-safe:animate-tree-row-in',
+        selected
+          ? 'bg-shell-accent-tint font-medium text-shell-text'
+          : row?.hidden
+            ? 'text-shell-icon hover:bg-shell-ground'
+            : 'text-shell-label hover:bg-shell-ground hover:text-shell-text',
+        isDropTarget && 'ring-2 ring-shell-accent/60',
+      )}
+      style={{ paddingLeft: `${0.5 + indent}rem` }}
+    >
+      <span
+        className="flex w-2.5 shrink-0 justify-center text-shell-subtle"
+        onClick={(e) => toggleExpanded(item, e)}
+      >
+        {item.isFolder() && (
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 10 10"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d={item.isExpanded() ? 'M2 3.5l3 3 3-3' : 'M3.5 2l3 3-3 3'} />
+          </svg>
+        )}
+      </span>
+      <span
+        className={cn(
+          'flex w-3 shrink-0 justify-center text-[0.75rem] leading-none',
+          selected
+            ? 'text-shell-accent-pale'
+            : row?.hidden
+              ? 'text-shell-disabled opacity-70'
+              : 'text-shell-muted',
+        )}
+      >
+        {row?.icon}
+      </span>
+      {!item.hasLoadedData() ? (
+        <Skeleton
+          className="h-3 max-w-full"
+          style={{ width: `${skeletonWidth(item.getId())}px` }}
+        />
+      ) : (
+        <span className="min-w-0 flex-1 truncate">{item.getItemName()}</span>
+      )}
+      {markers && (
+        <span className="flex shrink-0 items-center gap-1">{markers}</span>
+      )}
+      {row?.note && (
+        <span
+          className={cn(
+            'shrink-0 text-[0.6875rem] leading-4 font-normal',
+            row.hidden ? 'text-shell-disabled' : 'text-shell-icon',
+            row.actions &&
+              'group-hover/row:hidden group-focus-within/row:hidden',
+          )}
+        >
+          {row.note}
+        </span>
+      )}
+      {row?.actions && (
+        <span className="-mr-1 hidden shrink-0 items-center group-hover/row:flex group-focus-within/row:flex">
+          {row.actions}
+        </span>
+      )}
+    </button>
   )
 }

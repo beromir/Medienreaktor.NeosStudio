@@ -4,6 +4,7 @@ import {
   fetchNode,
 } from '@/api/neos/endpoints/nodes'
 import { siteNodeAddress } from '@/api/neos/endpoints/sites'
+import { useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
 import type { Node, NodeAddress, Site } from '@/api/neos/schema'
 import { config } from '@/config'
 import { permittedActionsOn } from '@/features/access/permittedActions'
@@ -12,9 +13,10 @@ import type {
   NodeMenuAction,
   NodeMenuTarget,
 } from '@/features/editing/NodeContextMenu'
+import { alphaNodeRow, RowAction, RowMoreIcon, RowPlusIcon } from './alphaRow'
 import { TreeList } from './TreeList'
 import type { NodeEdit } from './useNodeEditRefresh'
-import { NodeTreeContextMenu, useNodeTree } from './useNodeTree'
+import { NodeTreeContextMenu, nodeOfItem, useNodeTree } from './useNodeTree'
 
 /**
  * Document tree of one site in one workspace and dimension space point (a
@@ -32,6 +34,7 @@ export function DocumentTree({
   onMoved,
   onCreateNew,
   filterDocuments,
+  onCreateChild,
 }: {
   site: Site
   workspaceName: string
@@ -61,7 +64,10 @@ export function DocumentTree({
    * its parent's list resolves.
    */
   filterDocuments?: (nodes: Node[]) => Node[]
+  /** Alpha rows: the hover action "+" for a new page inside this one. */
+  onCreateChild?: (node: Node) => void
 }) {
+  const { data: nodeTypes } = useNodeTypes()
   // The site node in the shown subgraph; every other item's address is the
   // same subgraph with the item's aggregate id.
   const siteNode = siteNodeAddress(site, workspaceName, dimensionSpacePoint)
@@ -127,6 +133,36 @@ export function DocumentTree({
         decorate={nodeTree.decorate}
         onItemContextMenu={nodeTree.openMenu}
         selectOnContextMenu
+        alphaRow={(item) =>
+          alphaNodeRow(
+            item,
+            nodeTypes,
+            nodeTree.loadedChildCount(item.getId()),
+            {
+              actions: (
+                <>
+                  {onCreateChild && (
+                    <RowAction
+                      label={t('tree.alpha.newChildPage', 'New page inside')}
+                      onClick={() => {
+                        const node = nodeOfItem(item.getItemData())
+                        if (node) onCreateChild(node)
+                      }}
+                    >
+                      <RowPlusIcon />
+                    </RowAction>
+                  )}
+                  <RowAction
+                    label={t('tree.alpha.pageMenu', 'Page menu')}
+                    onClick={(event) => nodeTree.openMenu(item, event)}
+                  >
+                    <RowMoreIcon />
+                  </RowAction>
+                </>
+              ),
+            },
+          )
+        }
       />
       <NodeTreeContextMenu
         nodeTree={nodeTree}

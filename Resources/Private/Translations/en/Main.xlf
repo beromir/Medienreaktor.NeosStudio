@@ -2678,6 +2678,21 @@
       <trans-unit id="trash.restoredWithAncestors" xml:space="preserve">
         <source>Restored {0} and {1} more.</source>
       </trans-unit>
+      <trans-unit id="tree.alpha.elementMenu" xml:space="preserve">
+        <source>Element menu</source>
+      </trans-unit>
+      <trans-unit id="tree.alpha.hidden" xml:space="preserve">
+        <source>hidden</source>
+      </trans-unit>
+      <trans-unit id="tree.alpha.inside" xml:space="preserve">
+        <source>{0} inside</source>
+      </trans-unit>
+      <trans-unit id="tree.alpha.newChildPage" xml:space="preserve">
+        <source>New page inside</source>
+      </trans-unit>
+      <trans-unit id="tree.alpha.pageMenu" xml:space="preserve">
+        <source>Page menu</source>
+      </trans-unit>
       <trans-unit id="tree.clearFilter" xml:space="preserve">
         <source>Clear filter</source>
       </trans-unit>

@@ -23,6 +23,8 @@ export interface PreviewChrome {
   typeDrag: string | null
   /** Whether the selected element renders text to type in (guest-reported). */
   selectionText: { aggregateId: string | null; editable: boolean } | null
+  /** An element to outline as hovered - a shell row under the pointer. */
+  hoverNode: string | null
 }
 
 const CLASSIC: PreviewChrome = {
@@ -33,6 +35,7 @@ const CLASSIC: PreviewChrome = {
   deviceWidth: null,
   typeDrag: null,
   selectionText: null,
+  hoverNode: null,
 }
 
 let chrome = CLASSIC

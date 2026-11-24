@@ -397,9 +397,15 @@ export function useNodeTree({
     setMenu({ target, selection })
   }
 
+  /** How many children the item has, once its list is loaded. */
+  const loadedChildCount = (itemId: string): number | null =>
+    tree.getDataRef<AsyncDataLoaderDataRef>().current.childrenIds?.[itemId]
+      ?.length ?? null
+
   return {
     tree,
     rootLoaded,
+    loadedChildCount,
     decorate,
     openMenu,
     menu,
