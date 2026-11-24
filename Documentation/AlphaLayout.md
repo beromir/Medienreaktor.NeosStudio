@@ -7,7 +7,7 @@ floating action bar. Users switch in the user menu ("Try the new layout
 user preference (`classic` | `alpha`), served in the boot config as
 `layout`.
 
-The design is work in progress (Paper file "Neos Studio", frames R3-R24).
+The design is work in progress (Paper file "Neos Studio", frames R3-R29).
 
 ## Where it lives
 
@@ -44,11 +44,9 @@ The tray and the Properties panel show the node type's inspector tabs
 (`ui.inspector.tabs`) as muted pills: the active tab with icon and label,
 the others icon only, their label as tooltip. Every group of the active tab
 starts open and collapses with its chevron; only groups configured
-`collapsed: true` start closed. In the 600px tray each group's fields share
-rows in fixed columns (176 / 176 / rest, aligned across groups); wide
-editors (image, asset, references, text areas, code, rich text, views and
-plugin editors) take a full row, the image editor as a compact row
-(thumbnail, file name, size, Crop, Replace). The tray's header holds only
+`collapsed: true` start closed. The tray lays the fields on a grid (see
+Controls and the tray grid); the image editor shows there as a compact
+row (thumbnail, file name, size, Crop, Replace). The tray's header holds only
 the tabs, "Keep open" and close - the node pill names the node.
 `InspectorPanel layout="panel" | "tray"` renders both; the classic
 inspector is the same component without `layout`.
@@ -68,6 +66,53 @@ The rail's mode switcher, open, always lists Editor, Media, Workspaces,
 Tasks (plugin modes after them), the current one highlighted in its own
 slot and the chevron last (R21). The open-tasks dot sits on Tasks while
 open, on the current mode's button while closed.
+
+## Controls and the tray grid (R28, R29)
+
+The alpha inspector (tray and Properties panel) has its own controls; the
+classic inspector keeps its own. The selection colour rule: a blue tint
+for what is on/off or picked/not picked, grey (`shell-raised`) for one of
+many where something is always selected - segmented controls, tabs, view
+toggles. Only one solid blue per moment.
+
+- Field labels sit on top, 12px `shell-muted`, never tinted.
+- Booleans are switches (`role="switch"`, label to the right): they take
+  effect at once. Read-only dims them.
+- Checkboxes only pick items for a later action (lists, the publish
+  popover). One look, in `shell-alpha.css` on `[data-slot='checkbox']`:
+  the Base UI `Checkbox` inside the alpha layout and the shell's
+  `CheckboxBox` (a row that is the checkbox itself) share it.
+- A static select box with two to four short options (they must fit one
+  tray column) is a segmented choice; option icons show alone, their label
+  as tooltip. Longer, grouped, empty-able, multiple and data source selects
+  stay dropdowns.
+- Inputs, selects, the date picker (`data-control="field"`) and the
+  reference pickers: 32px, 8px corners, `shell-input` with a hairline;
+  focus a `shell-focus` border with a 3px `shell-focus-ring`; an error
+  a `shell-danger` border and a 12px `shell-danger-text` line under the
+  field.
+- Multiple references are chips with a dashed "+ Add".
+- A property with `scope: nodeAggregate | specializations` carries a quiet
+  link icon after its label; its tooltip says "Shared across all languages"
+  (or "variants" unless the content varies by language alone), or that it
+  also changes the languages or variants based on this one. While such a
+  field has focus, a line under it names what the edit changes ("Applies to
+  English (US) and English (GB)"), from the node's covered dimension space
+  points. Switches commit at once and get no such line.
+
+In the 600px tray each group lays its fields on four columns (132px at
+14px gaps, 14px side padding). A field spans by its editor's `traySpan`
+(`PropertyEditorDefinition`, optional): 1 for segmented choices,
+selects and dates, 2 for text fields, URL path segments, the node type and
+range editors, the full row (`'row'`) for everything else - text areas,
+rich text, images and assets, references, link, code, views and every
+editor that does not say. Consecutive switches form one wrapping row of
+switch, label and scope icon (24px apart, 10px between rows). Groups stay
+sections with a header and a hairline; two consecutive groups that each
+need at most two columns share a row, each with its own header and a
+vertical hairline in the column gap, so the columns stay aligned. The
+rules live in `inspector/trayLayout.ts`. The Properties panel keeps one
+field per row.
 
 ## Publishing (R24)
 
@@ -98,6 +143,21 @@ it, measured in JavaScript. The browser closes them on Esc, on a click
 outside and when another one opens. The page in the preview is another
 document, so the guest relays a pointer down and Esc from there.
 
+The anchoring - anchor names, placement, the measured fallback - is shared
+in `shell-alpha/anchoring.ts`.
+
+The shell's tooltip (`shell-alpha/Tooltip.tsx`, `Tooltip` or
+`useTooltip`) is a native `popover="hint"`: it never closes an open
+`auto` popover, and browsers without `hint` treat it as `manual`. One
+shows at a time, centred 6px above its trigger (right of it in the rail),
+flipped and kept inside the viewport where there is no room. It opens on
+hover after 500ms - at once while another one shows or within 300ms after
+one hid - and on keyboard focus, and hides on leave, blur, a press and Esc.
+It describes its trigger with `aria-describedby`, or, on an icon-only
+button whose `aria-label` says the same, only shows that name. It is
+`pointer-events: none`, 22px high on `shell-raised`, 11px text. The
+classic layout and the plugin API keep the Base UI tooltip.
+
 Popups opened from inside one - context menus, the creation dialogs -
 portal into the popover (`PortalContainerContext`, used by every
 `components/ui` portal), so they stay above it and count as inside for its
@@ -125,10 +185,15 @@ Figma variables:
 | shell-accent / -light / -pale | #00ADEE / #5CC9F5 / #7FD6F7 |
 | shell-accent-tint / -tint-strong / -check | #00ADEE33 / #00ADEE4D / #00ADEE40 |
 | shell-conflict | #FF8700 |
-| shell-danger | #D9434A |
+| shell-danger / -text | #D9434A / #F08A8A |
+| shell-focus / -ring | #00ADEE99 / #00ADEE26 |
+| shell-switch-track | #333333 |
+| shell-icon | #7A7A7A |
+| shell-tooltip-border | #FFFFFF14 |
 | shell-scrim | #00000099 |
 | radius surface / site / control / segment | 16 / 10 / 8 / 5 px (chrome: full) |
 | shadow bar / surface / dialog | 0 10px 30px #00000066 / 0 16px 40px #00000066 / 0 24px 60px #00000080 |
+| shadow thumb / tooltip | 0 1px 3px #00000080 / 0 4px 10px #00000066 |
 | type: control / secondary / count | 13/16, 12/16, 11/14 semibold |
 
 The semantic overrides at the end of the file (background, popover, border,
