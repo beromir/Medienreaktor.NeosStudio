@@ -41,6 +41,7 @@ import { usePresence } from '@/features/collaboration/PresenceContext'
 import { Icon } from '@/components/ui/icon'
 import { NodeTypeIcon } from '@/features/tree/nodeTypeIcon'
 import { translate as t } from '@/lib/i18n'
+import { useRegistrySelector } from '@/lib/registry'
 import { cn } from '@/lib/utils'
 import {
   clientEvalNode,
@@ -56,7 +57,10 @@ import {
 } from './inspectorSchema'
 import { InspectorLayoutContext } from './layoutContext'
 import { PropertyHints } from './hints/registry'
+import { BOOLEAN_EDITOR } from './editors/BooleanEditor'
+import { propertyEditorRegistry, type TraySpan } from './editors/registry'
 import { PropertyEditor } from './PropertyEditor'
+import { columnsNeeded, trayCells, trayRows, type TrayCell } from './trayLayout'
 import { validateValue } from './validators'
 import { InspectorViewRenderer } from './views/InspectorViewRenderer'
 
@@ -445,18 +449,14 @@ export function InspectorPanel({
           >
             {(tab) => (
               <div inert={!editable} className={cn(!editable && 'opacity-60')}>
-                {tab.groups.map((group, index) => (
-                  <PropertySection
-                    key={`${node.nodeType}:${group.id}`}
-                    layout={layout}
-                    last={index === tab.groups.length - 1}
-                    group={group}
-                    node={node}
-                    validationErrors={validationErrors}
-                    onSave={save}
-                    onLiveChange={reportLiveChange}
-                  />
-                ))}
+                <PropertySections
+                  layout={layout}
+                  groups={tab.groups}
+                  node={node}
+                  validationErrors={validationErrors}
+                  onSave={save}
+                  onLiveChange={reportLiveChange}
+                />
               </div>
             )}
           </AlphaTabs>
@@ -865,34 +865,104 @@ function withLead(
   })
 }
 
-/** Editors compact enough to share a tray row; every other one takes a row. */
-const COMPACT_EDITORS = new Set([
-  'Neos.Neos/Inspector/Editors/TextFieldEditor',
-  'Neos.Neos/Inspector/Editors/UriPathSegmentEditor',
-  'Neos.Neos/Inspector/Editors/BooleanEditor',
-  'Neos.Neos/Inspector/Editors/SelectBoxEditor',
-  'Neos.Neos/Inspector/Editors/DateTimeEditor',
-  'Neos.Neos/Inspector/Editors/RangeEditor',
-  'Neos.Neos/Inspector/Editors/LinkEditor',
-  'Neos.Neos/Inspector/Editors/NodeTypeEditor',
-])
-
-function wideInTray(item: InspectorItem): boolean {
+/** The tray span of an item: by its editor, the full row when it does not say. */
+function itemSpan(item: InspectorItem): TraySpan {
+  if (item.kind !== 'property') return 'row'
+  const span = propertyEditorRegistry.getDefinition(
+    item.property.editor,
+  )?.traySpan
   return (
-    item.kind !== 'property' || !COMPACT_EDITORS.has(item.property.editor ?? '')
+    (typeof span === 'function' ? span(item.property.editorOptions) : span) ??
+    'row'
   )
+}
+
+const isSwitch = (item: InspectorItem) =>
+  item.kind === 'property' && item.property.editor === BOOLEAN_EDITOR
+
+const SPAN_CLASS: Record<TraySpan, string> = {
+  1: 'col-span-1',
+  2: 'col-span-2',
+  row: 'col-span-full',
+}
+
+/**
+ * The groups of a tab in the alpha layout. The Properties panel stacks
+ * them, one field per row. The tray lays each group's fields on a
+ * four-column grid (R29), and two consecutive groups that need at most two
+ * columns each share a row, split by a hairline in the column gap.
+ */
+function PropertySections({
+  layout,
+  groups,
+  ...props
+}: Omit<PropertyGroupProps, 'group'> & {
+  layout: 'panel' | 'tray'
+  groups: InspectorGroup[]
+}) {
+  // Plugins may register editors - and their spans - after the first render.
+  useRegistrySelector(propertyEditorRegistry, (registry) => registry.getAll())
+  if (layout === 'panel')
+    return groups.map((group) => (
+      <PropertySection
+        key={`${props.node.nodeType}:${group.id}`}
+        layout="panel"
+        group={group}
+        {...props}
+      />
+    ))
+  const cells = new Map(
+    groups.map((group) => [group, trayCells(group.items, isSwitch, itemSpan)]),
+  )
+  const rows = trayRows(groups, (group) => columnsNeeded(cells.get(group)!))
+  return rows.map((row, index) => {
+    const last = index === rows.length - 1
+    const section = (group: InspectorGroup, half?: 'start' | 'end') => (
+      <PropertySection
+        key={`${props.node.nodeType}:${group.id}`}
+        layout="tray"
+        half={half}
+        last={last}
+        group={group}
+        cells={cells.get(group)}
+        {...props}
+      />
+    )
+    const [first, second] = row
+    return second ? (
+      <div
+        key={`${props.node.nodeType}:${first.id}+${second.id}`}
+        className={cn(
+          'grid grid-cols-2',
+          !last && 'border-b border-shell-border-strong',
+        )}
+      >
+        {section(first, 'start')}
+        {section(second, 'end')}
+      </div>
+    ) : (
+      section(first)
+    )
+  })
 }
 
 /**
  * A group of the alpha inspector: label and chevron, open unless configured
- * collapsed. In the tray its fields share rows in fixed columns, aligned
- * across groups.
+ * collapsed.
  */
 function PropertySection({
   layout,
-  last,
+  last = false,
+  half,
+  cells,
   ...props
-}: PropertyGroupProps & { layout: 'panel' | 'tray'; last: boolean }) {
+}: PropertyGroupProps & {
+  layout: 'panel' | 'tray'
+  last?: boolean
+  /** Which half of a shared tray row the group takes. */
+  half?: 'start' | 'end'
+  cells?: TrayCell<InspectorItem>[]
+}) {
   const { group } = props
   const [open, setOpen] = useState(!group.collapsed)
   const chevron = (
@@ -909,10 +979,19 @@ function PropertySection({
       <path d="M1 1l3 3 3-3" />
     </svg>
   )
+  const inline =
+    half === 'start'
+      ? 'pr-1.75 pl-3.5'
+      : half === 'end'
+        ? 'pr-3.5 pl-1.75'
+        : 'px-3.5'
   return (
     <section
       className={cn(
-        (layout === 'panel' || !last) && 'border-b border-shell-border-strong',
+        half === 'start' && 'border-r border-shell-border-strong',
+        !half &&
+          (layout === 'panel' || !last) &&
+          'border-b border-shell-border-strong',
       )}
     >
       <button
@@ -923,8 +1002,8 @@ function PropertySection({
           'flex w-full cursor-pointer items-center text-left outline-none focus-visible:bg-white/4',
           layout === 'panel'
             ? 'justify-between px-4 pt-3.5'
-            : 'gap-2 px-3.5 pt-3',
-          open ? (layout === 'panel' ? 'pb-3.5' : 'pb-2.5') : 'pb-3.5',
+            : cn('gap-2 pt-3.5', inline),
+          open ? (layout === 'panel' ? 'pb-3.5' : 'pb-3') : 'pb-3.5',
         )}
       >
         <span className="text-[0.75rem] leading-4 font-semibold text-shell-text">
@@ -946,22 +1025,45 @@ function PropertySection({
         className={cn(
           layout === 'panel'
             ? 'flex flex-col gap-3.5 px-4 pb-4.5'
-            : 'grid grid-cols-[11rem_11rem_minmax(0,1fr)] items-end gap-x-4 gap-y-3.5 px-3.5 pb-4',
+            : cn(
+                'grid items-start gap-x-3.5 gap-y-3 pb-4',
+                half ? 'grid-cols-2' : 'grid-cols-4',
+                inline,
+              ),
           !open && 'hidden',
         )}
       >
-        <PropertyItems
-          {...props}
-          itemClassName={
-            layout === 'tray'
-              ? (item) => (wideInTray(item) ? 'col-span-full' : undefined)
-              : undefined
-          }
-        />
+        {cells ? (
+          cells.map((cell) =>
+            cell.kind === 'switches' ? (
+              <div
+                key={cellKey(cell.items[0])}
+                className="col-span-full flex flex-wrap gap-x-6 gap-y-2.5"
+              >
+                <PropertyItems
+                  {...props}
+                  group={{ ...group, items: cell.items }}
+                />
+              </div>
+            ) : (
+              <PropertyItems
+                key={cellKey(cell.item)}
+                {...props}
+                group={{ ...group, items: [cell.item] }}
+                itemClassName={() => cn('min-w-0', SPAN_CLASS[cell.span])}
+              />
+            ),
+          )
+        ) : (
+          <PropertyItems {...props} />
+        )}
       </div>
     </section>
   )
 }
+
+const cellKey = (item: InspectorItem) =>
+  item.kind === 'property' ? item.property.name : item.view.name
 
 function PropertyItems({
   group,

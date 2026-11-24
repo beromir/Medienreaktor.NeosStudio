@@ -45,10 +45,12 @@ export function registerBuiltinPropertyEditors(): void {
   propertyEditorRegistry.register({
     id: TEXT_FIELD_EDITOR,
     component: TextFieldEditor,
+    traySpan: 2,
   })
   propertyEditorRegistry.register({
     id: URI_PATH_SEGMENT_EDITOR,
     component: UriPathSegmentEditor,
+    traySpan: 2,
   })
   propertyEditorRegistry.register({
     id: TEXT_AREA_EDITOR,
@@ -61,6 +63,7 @@ export function registerBuiltinPropertyEditors(): void {
   propertyEditorRegistry.register({
     id: DATE_TIME_EDITOR,
     component: DateTimeEditor,
+    traySpan: 1,
   })
   propertyEditorRegistry.register({
     id: LINK_EDITOR,
@@ -75,6 +78,7 @@ export function registerBuiltinPropertyEditors(): void {
   propertyEditorRegistry.register({
     id: SELECT_BOX_EDITOR,
     component: SelectBoxEditor,
+    traySpan: (options) => (options.multiple === true ? 'row' : 1),
   })
   propertyEditorRegistry.register({
     id: REFERENCE_EDITOR,
@@ -87,10 +91,12 @@ export function registerBuiltinPropertyEditors(): void {
   propertyEditorRegistry.register({
     id: NODE_TYPE_EDITOR,
     component: NodeTypeEditor,
+    traySpan: 2,
   })
   propertyEditorRegistry.register({
     id: RANGE_EDITOR,
     component: RangeEditor,
+    traySpan: 2,
   })
   propertyEditorRegistry.register({
     id: RICH_TEXT_EDITOR,

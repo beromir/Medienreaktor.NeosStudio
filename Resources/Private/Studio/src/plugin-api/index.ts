@@ -442,6 +442,7 @@ export type {
   PropertyEditorDefinition,
   PropertyEditorProps,
   PropertyEditorSubject,
+  TraySpan,
 } from '@/features/inspector/editors/registry'
 export type {
   StudioActions,

@@ -106,7 +106,16 @@ export interface PropertyEditorDefinition {
    * to false: the host renders the label above the control.
    */
   rendersOwnLabel?: boolean
+  /**
+   * How many of the four columns of the alpha layout's settings tray the
+   * field takes: 1, 2 or 'row' for the full row - also the default, so an
+   * editor that does not say gets all the room. A function decides by the
+   * property's editor options. Other hosts ignore it.
+   */
+  traySpan?: TraySpan | ((options: Record<string, unknown>) => TraySpan)
 }
+
+export type TraySpan = 1 | 2 | 'row'
 
 /**
  * Composes the shared store rather than extending it: its public `get(id)`

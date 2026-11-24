@@ -185,7 +185,7 @@ function SegmentedSelect({
             value={item.key}
             disabled={item.disabled}
             aria-label={item.icon ? item.label : undefined}
-            className="flex h-6.5 min-w-0 flex-1 cursor-pointer items-center justify-center rounded-shell-segment px-2 text-[0.75rem] leading-4 text-shell-muted outline-none hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-checked:bg-shell-raised data-checked:font-semibold data-checked:text-shell-text data-disabled:cursor-default data-disabled:text-shell-disabled"
+            className="flex h-6.5 min-w-0 grow cursor-pointer items-center justify-center rounded-shell-segment px-1.5 text-[0.75rem] leading-4 text-shell-muted outline-none hover:text-shell-text focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-checked:bg-shell-raised data-checked:font-semibold data-checked:text-shell-text data-disabled:cursor-default data-disabled:text-shell-disabled"
           >
             {item.icon ? (
               <Icon name={item.icon} />
