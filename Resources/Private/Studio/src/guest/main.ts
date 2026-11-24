@@ -1299,19 +1299,28 @@ function endDrag(): void {
 }
 
 /**
- * The collection's own child content elements (not those of nested
- * collections) - the elements the dragged node can be inserted between. A
- * moved element is not its own sibling, so it never counts.
+ * The collection's own child elements - the elements the dragged node can be
+ * inserted between: those whose nearest enclosing wrapper is the collection
+ * (or another stamp of it), not those inside them, such as the tethered
+ * columns of a columns element. A moved element is not its own sibling, so
+ * it never counts.
  */
 function childElementsOf(collection: HTMLElement): HTMLElement[] {
+  const collectionId = aggregateIdOf(collection)
   return Array.from(
     collection.querySelectorAll<HTMLElement>(`[${WRAPPER_ATTRIBUTE}]`),
-  ).filter(
-    (element) =>
-      element !== activeDrag?.movingElement &&
-      element.parentElement?.closest(`[${COLLECTION_ATTRIBUTE}]`) ===
-        collection,
-  )
+  ).filter((element) => {
+    if (element === activeDrag?.movingElement) return false
+    const parent = element.parentElement?.closest<HTMLElement>(
+      `[${WRAPPER_ATTRIBUTE}]`,
+    )
+    return (
+      parent === collection ||
+      (parent != null &&
+        collectionId !== null &&
+        aggregateIdOf(parent) === collectionId)
+    )
+  })
 }
 
 /**
