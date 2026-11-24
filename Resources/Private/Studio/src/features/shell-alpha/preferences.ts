@@ -2,22 +2,21 @@ import { useMutation } from '@tanstack/react-query'
 import { updateProfile, useProfile } from '@/api/neos/endpoints/me'
 import { neosKeys } from '@/api/neos/keys'
 import { queryClient } from '@/app/queryClient'
+import { restorePinned } from './dock'
 
-/**
- * Whether selecting a node opens the settings tray (the default), or only
- * the Settings button does - a user preference, to compare the two.
- */
-export const TRAY_ON_SELECTION_PREFERENCE = 'studio.alpha.trayOnSelection'
+/** The panels the editor pinned (docked); the others float. */
+export const PINNED_PANELS_PREFERENCE = 'studio.alpha.pinnedPanels'
 
-export function useTrayOnSelection(): [boolean, (value: boolean) => void] {
+export function usePinnedPanels(): [string[], (pinned: string[]) => void] {
   const { data: profile } = useProfile()
   const mutation = useMutation({
-    mutationFn: (value: boolean) =>
-      updateProfile({ preferences: { [TRAY_ON_SELECTION_PREFERENCE]: value } }),
+    mutationFn: (pinned: string[]) =>
+      updateProfile({ preferences: { [PINNED_PANELS_PREFERENCE]: pinned } }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: neosKeys.profile }),
   })
-  const stored = profile?.preferences?.[TRAY_ON_SELECTION_PREFERENCE]
-  const value = mutation.isPending ? mutation.variables : stored !== false
-  return [value, (next) => mutation.mutate(next)]
+  const pinned = mutation.isPending
+    ? mutation.variables
+    : restorePinned(profile?.preferences?.[PINNED_PANELS_PREFERENCE])
+  return [pinned, (next) => mutation.mutate(next)]
 }

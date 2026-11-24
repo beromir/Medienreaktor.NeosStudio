@@ -1973,9 +1973,6 @@
       <trans-unit id="shellAlpha.account.profile" xml:space="preserve">
         <source>Profile &amp; password</source>
       </trans-unit>
-      <trans-unit id="shellAlpha.account.trayOnSelection" xml:space="preserve">
-        <source>Open settings on selection</source>
-      </trans-unit>
       <trans-unit id="shellAlpha.add" xml:space="preserve">
         <source>Add</source>
       </trans-unit>
@@ -2017,9 +2014,6 @@
       </trans-unit>
       <trans-unit id="shellAlpha.changeType.title" xml:space="preserve">
         <source>Change {0} to…</source>
-      </trans-unit>
-      <trans-unit id="shellAlpha.closeTray" xml:space="preserve">
-        <source>Close the tray or menu</source>
       </trans-unit>
       <trans-unit id="shellAlpha.collapseModes" xml:space="preserve">
         <source>Collapse modes</source>
@@ -2087,11 +2081,8 @@
       <trans-unit id="shellAlpha.element.show" xml:space="preserve">
         <source>Show</source>
       </trans-unit>
-      <trans-unit id="shellAlpha.keepOpen" xml:space="preserve">
-        <source>Keep open</source>
-      </trans-unit>
-      <trans-unit id="shellAlpha.keepOpenHint" xml:space="preserve">
-        <source>Keep the properties open in a panel on the left</source>
+      <trans-unit id="shellAlpha.escape" xml:space="preserve">
+        <source>Close the menu, deselect, close panels</source>
       </trans-unit>
       <trans-unit id="shellAlpha.mode.editor" xml:space="preserve">
         <source>Editor</source>

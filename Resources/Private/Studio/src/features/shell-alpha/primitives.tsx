@@ -3,7 +3,7 @@ import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { cn } from '@/lib/utils'
 import { containedPortal } from '@/lib/portalContainer'
 import { translate as t } from '@/lib/i18n'
-import { PinIcon } from './icons'
+import { CloseIcon, PinIcon } from './icons'
 import { Tooltip } from './Tooltip'
 
 const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
@@ -216,8 +216,8 @@ export function BarDivider() {
 }
 
 /**
- * Pins a docked panel: a pinned panel stays when another opens, which
- * opens beside it.
+ * A panel's pin: pinned, the panel docks beside the preview and the
+ * preview narrows; unpinned, it floats over the preview.
  */
 export function PinButton({
   pinned,
@@ -250,5 +250,44 @@ export function PinButton({
         />
       </button>
     </Tooltip>
+  )
+}
+
+/** A side panel's header: title, a quiet subtitle, pin and close. */
+export function PanelHeader({
+  title,
+  subtitle,
+  pin,
+  onClose,
+}: {
+  title: string
+  subtitle?: string
+  pin: React.ReactNode
+  onClose: () => void
+}) {
+  return (
+    <div className="flex h-12 shrink-0 items-center justify-between pr-2 pl-3.5">
+      <div className="flex min-w-0 items-baseline gap-2">
+        <span className="type-shell-control font-semibold text-shell-text">
+          {title}
+        </span>
+        {subtitle && (
+          <span className="truncate type-shell-secondary text-shell-subtle">
+            {subtitle}
+          </span>
+        )}
+      </div>
+      <div className="flex shrink-0 items-center gap-0.5">
+        {pin}
+        <IconButton
+          size="sm"
+          className="size-7 rounded-shell-control text-shell-muted"
+          onClick={onClose}
+          aria-label={t('common.close', 'Close')}
+        >
+          <CloseIcon />
+        </IconButton>
+      </div>
+    </div>
   )
 }
