@@ -574,10 +574,14 @@ export function PreviewPane({
     const drain = () => {
       const pending = peekPendingFlash()
       if (pending === null) return
-      if (pending !== selectedAggregateId) return
+      if (pending.aggregateId !== selectedAggregateId) return
       if (!activeFrameRef.current?.contentWindow) return
       takePendingFlash()
-      postToGuest({ type: 'neos-studio/flash-node', aggregateId: pending })
+      postToGuest({
+        type: 'neos-studio/flash-node',
+        aggregateId: pending.aggregateId,
+        highlight: pending.highlight,
+      })
     }
     drain()
     return subscribeFlashRequest(drain)

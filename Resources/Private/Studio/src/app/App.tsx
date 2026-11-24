@@ -12,7 +12,6 @@ import {
   type NodeAddress,
 } from '@/api/neos/schema'
 import type { EditingElement } from '@/features/collaboration/types'
-import type { HistoryLocation } from '@/features/history/location'
 import { useTaskDecorationData } from '@/features/tasks/decorationData'
 import {
   invalidateAfterContentEdit,
@@ -34,7 +33,7 @@ import {
 import { useEditingContext } from '@/app/useEditingContext'
 import { emitStudioEvent } from '@/app/events'
 import { useEditSignals } from '@/app/useEditSignals'
-import { useSelection } from '@/app/useSelection'
+import { type RevealLocation, useSelection } from '@/app/useSelection'
 import { useStableCallbacks } from '@/app/useStableCallbacks'
 import { useStudioStateEvents } from '@/app/useStudioStateEvents'
 import {
@@ -346,7 +345,7 @@ function Shell() {
     },
     // After an undo/redo: show its result where it is - on another page, or
     // in another dimension, too.
-    reveal: (location: HistoryLocation) =>
+    reveal: (location: RevealLocation) =>
       guardSelection(location.node ?? location.document, () =>
         selection.reveal(location, followDimensionOf),
       ),

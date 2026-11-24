@@ -12,12 +12,18 @@
  * A plain module-level signal, same reasoning as the boot handshake in ./boot: shell-internal, not
  * plugin API.
  */
-let pending: string | null = null
+export interface FlashRequest {
+  aggregateId: string
+  /** Text in the element to mark as well - a search's match. */
+  highlight?: string
+}
+
+let pending: FlashRequest | null = null
 const listeners = new Set<() => void>()
 
 /** Ask for the element of this node aggregate to pulse, as soon as the preview can show it. */
-export function flashNode(aggregateId: string): void {
-  pending = aggregateId
+export function flashNode(aggregateId: string, highlight?: string): void {
+  pending = { aggregateId, highlight }
   for (const listener of listeners) listener()
 }
 
@@ -26,12 +32,12 @@ export function flashNode(aggregateId: string): void {
  * before it can decide whether it is in a position to show it - the shell boots on the previously
  * selected document, and posting there would burn the request on the wrong page.
  */
-export function peekPendingFlash(): string | null {
+export function peekPendingFlash(): FlashRequest | null {
   return pending
 }
 
 /** The pending request, if any - consuming it, so a pulse never repeats on a later reload. */
-export function takePendingFlash(): string | null {
+export function takePendingFlash(): FlashRequest | null {
   const request = pending
   pending = null
   return request

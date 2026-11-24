@@ -70,6 +70,17 @@ function useSelectedNode(selected: Selected | null): Node | null {
   return data ?? selected.placeholder
 }
 
+/** Where reveal() goes. */
+export interface RevealLocation {
+  document: NodeAddress
+  /** The content node to select in the document; null: the document itself. */
+  node: NodeAddress | null
+  /** Shown when the document doesn't resolve (any more). */
+  fallback: NodeAddress | null
+  /** Text to mark in the node while it flashes: a search's match. */
+  highlight?: string
+}
+
 export type Selection = {
   documentAddress: NodeAddress | null
   /** The selected document, null while none is (or it is gone). */
@@ -101,11 +112,7 @@ export type Selection = {
    * more) falls back to `fallback`, a node that doesn't to the document.
    */
   reveal: (
-    location: {
-      document: NodeAddress
-      node: NodeAddress | null
-      fallback: NodeAddress | null
-    },
+    location: RevealLocation,
     beforeSelect?: (node: Node) => void,
   ) => void
   /**
@@ -278,7 +285,10 @@ export function useSelection(siteAddress: NodeAddress | null): Selection {
         beforeSelect?.(node)
         select({ document: selectedOf(node), inspected: selectedOf(node) })
       }),
-    reveal: ({ document: documentAddress, node, fallback }, beforeSelect) => {
+    reveal: (
+      { document: documentAddress, node, fallback, highlight },
+      beforeSelect,
+    ) => {
       const show = (shown: Node) => {
         beforeSelect?.(shown)
         select({ document: selectedOf(shown), inspected: selectedOf(shown) })
@@ -294,7 +304,7 @@ export function useSelection(siteAddress: NodeAddress | null): Selection {
             ...previous,
             inspected: selectedOf(contentNode),
           }))
-          flashNode(contentNode.nodeAggregateId)
+          flashNode(contentNode.nodeAggregateId, highlight)
         })
       }
       whenCurrent(fetchNode(documentAddress), show, () => {

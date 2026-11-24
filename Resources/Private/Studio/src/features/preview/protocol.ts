@@ -306,11 +306,16 @@ export type HostToGuestMessage =
       reveal?: boolean
     }
   /**
-   * Pulse this element briefly. Sent when the editor arrives from a deep link and did not do the
+   * Pulse this element briefly. Sent when the editor arrives from a deep link or a search result and did not do the
    * selecting themselves, so the selection outline alone would be easy to miss. Ignored when the
    * node is not rendered on this page.
    */
-  | { type: 'neos-studio/flash-node'; aggregateId: string }
+  | {
+      type: 'neos-studio/flash-node'
+      aggregateId: string
+      /** Text in the element to mark while it pulses: a search's match. */
+      highlight?: string
+    }
   /**
    * The registered handle actions changed (also sent once the guest is
    * ready). With `available` false none could show, and the guest asks

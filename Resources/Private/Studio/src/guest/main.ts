@@ -46,6 +46,7 @@ import {
   unmountRichTextEditors,
   type RichTextHooks,
 } from './richtext'
+import { highlightText, textHighlightStyles } from './textHighlight'
 import { relabelToolbars, TOOLBAR_CLASS } from './toolbar'
 import {
   applyChrome,
@@ -424,7 +425,8 @@ function injectStyles(): void {
       cursor: pointer;
       pointer-events: auto;
     }
-  `
+  ` +
+    textHighlightStyles
   document.head.appendChild(style)
 }
 
@@ -555,7 +557,7 @@ let cancelPendingFlashStart: (() => void) | null = null
  * Restarting on an already-pulsing element is deliberate: a second deep link to the same node
  * should visibly answer, and re-adding the class after a reflow restarts the animation.
  */
-function flash(element: HTMLElement | null): void {
+function flash(element: HTMLElement | null, highlight?: string): void {
   // A previous call still waiting for the scroll to settle must not start
   // late - it would pulse the old element, or clobber this call's timer.
   cancelPendingFlashStart?.()
@@ -582,6 +584,7 @@ function flash(element: HTMLElement | null): void {
     // Force a reflow so the class re-add restarts the animation rather than continuing the old one.
     void target.offsetWidth
     target.classList.add(FLASH_CLASS)
+    if (highlight) highlightText(target, highlight, FLASH_DURATION_MS * 2)
     flashTimer = window.setTimeout(() => {
       target.classList.remove(FLASH_CLASS)
       if (flashedElement === target) flashedElement = null
@@ -1966,7 +1969,10 @@ function onHostMessage(event: MessageEvent): void {
     setInsertPreview(indexed?.isConnected ? indexed : null, message.mode)
   }
   if (message?.type === 'neos-studio/flash-node') {
-    flash(elementsByAggregateId.get(message.aggregateId) ?? null)
+    flash(
+      elementsByAggregateId.get(message.aggregateId) ?? null,
+      message.highlight,
+    )
   }
   if (message?.type === 'neos-studio/element-info-request') {
     const element = elementsByAggregateId.get(message.aggregateId)
