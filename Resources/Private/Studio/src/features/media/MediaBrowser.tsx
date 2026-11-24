@@ -11,6 +11,7 @@ import { AssetList } from './AssetList'
 import { MediaFooter } from './MediaFooter'
 import { MediaHeader } from './MediaHeader'
 import { MediaUploader } from './MediaUploader'
+import { onAssetOpenRequest, takeAssetOpenRequest } from './openAsset'
 import { assetKey, useMediaBrowserState } from './useMediaBrowserState'
 
 export interface MediaBrowserProps {
@@ -70,6 +71,17 @@ export function MediaBrowser({
   const [detailsAsset, setDetailsAsset] = useState<Asset | null>(null)
   // Manage mode only: the asset a right-click context menu is open for.
   const [menuTarget, setMenuTarget] = useState<AssetMenuTarget | null>(null)
+  useEffect(() => {
+    if (mode !== 'manage') return
+    const open = () => {
+      const asset = takeAssetOpenRequest()
+      if (!asset) return
+      setActive(asset)
+      setDetailsAsset(asset)
+    }
+    open()
+    return onAssetOpenRequest(open)
+  }, [mode, setActive])
 
   const activate = (asset: Asset) => {
     if (mode === 'picker') onPick?.(asset)
