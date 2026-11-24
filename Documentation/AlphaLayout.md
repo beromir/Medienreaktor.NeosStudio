@@ -36,7 +36,10 @@ nothing to type (an image, columns, a plugin) opens it. Once open, the tray
 follows every selection until it is closed (Esc, a click on empty page
 space, its close button). The node pill's labelled Settings button always
 opens it, and shows grey while the tray or the Properties panel shows the
-node. Whether selection may open the tray at all is the
+node. An element with nothing to set once the element menu's properties
+are left out (an untouched content collection) has no tray and no
+Settings button; an open tray closes when the selection moves to one.
+Whether selection may open the tray at all is the
 `studio.alpha.trayOnSelection` user preference (on unless false), switched
 in the account menu.
 

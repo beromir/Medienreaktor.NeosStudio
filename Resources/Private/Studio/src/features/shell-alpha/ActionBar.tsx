@@ -7,7 +7,11 @@ import {
   fetchNode,
   useNodeAncestors,
 } from '@/api/neos/endpoints/nodes'
-import { isOfType, useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
+import {
+  isOfType,
+  useNodeType,
+  useNodeTypes,
+} from '@/api/neos/endpoints/nodeTypes'
 import { neosKeys } from '@/api/neos/keys'
 import { type Node, nodeAddressOf, type NodeAddress } from '@/api/neos/schema'
 import { useStudio } from '@/app/StudioContext'
@@ -22,7 +26,10 @@ import {
 import type { CreatableNodeTypeGroup } from '@/features/creation/creatableNodeTypes'
 import { redo, undo, useHistory } from '@/features/history/historyStore'
 import type { HistoryLocation } from '@/features/history/location'
-import { InspectorPanel } from '@/features/inspector/Inspector'
+import {
+  hasContentSettings,
+  InspectorPanel,
+} from '@/features/inspector/Inspector'
 import { PanelBody } from '@/features/panels/PanelSystem'
 import { panelRegistry } from '@/features/panels/registry'
 import {
@@ -119,6 +126,17 @@ export function ActionBar({
   const nodeKey = node?.nodeAggregateId ?? null
   const [trayOnSelection] = useTrayOnSelection()
   const hasText = useHasInlineText(node)
+  // The full node type - the listing carries no inspector configuration.
+  const { data: nodeType } = useNodeType(node?.nodeType ?? null)
+  // A content element with nothing to set (an untouched content collection)
+  // gets no tray and no Settings button; null while its type loads.
+  const hasSettings = React.useMemo(
+    () =>
+      node && nodeType?.name === node.nodeType
+        ? hasContentSettings(nodeType)
+        : null,
+    [node, nodeType],
+  )
   // The tray follows the selection while open and closes with it. Closed,
   // it opens for a node with nothing to type - decided once its type is
   // known.
@@ -129,9 +147,16 @@ export function ActionBar({
     setUndecided(nodeKey !== null && open !== 'settings' ? nodeKey : null)
     if (nodeKey === null && open === 'settings') setOpen(null)
   }
-  if (undecided !== null && undecided === nodeKey && hasText !== null) {
+  if (hasSettings === false && open === 'settings') setOpen(null)
+  if (
+    undecided !== null &&
+    undecided === nodeKey &&
+    hasText !== null &&
+    hasSettings !== null
+  ) {
     setUndecided(null)
-    if (!hasText && trayOnSelection && !propertiesDocked) setOpen('settings')
+    if (!hasText && hasSettings && trayOnSelection && !propertiesDocked)
+      setOpen('settings')
   }
 
   React.useEffect(() => onPreviewEscape(() => setOpen(null)), [])
@@ -195,7 +220,7 @@ export function ActionBar({
       )}
     >
       <div className="pointer-events-auto flex max-w-full flex-col items-center gap-2 *:max-w-full">
-        {open === 'settings' && node && (
+        {open === 'settings' && node && hasSettings !== false && (
           <SettingsTray
             node={node}
             pinned={propertiesPinned}
@@ -232,6 +257,7 @@ export function ActionBar({
             <NodePill
               node={node}
               settingsOpen={open === 'settings'}
+              hasSettings={hasSettings !== false}
               settingsShown={open === 'settings' || propertiesDocked}
               onToggleSettings={() => toggle('settings')}
             />
@@ -389,11 +415,13 @@ function HistoryControls({
 
 function NodePill({
   node,
+  hasSettings,
   settingsOpen,
   settingsShown,
   onToggleSettings,
 }: {
   node: Node
+  hasSettings: boolean
   settingsOpen: boolean
   /** The tray or the Properties panel shows this node. */
   settingsShown: boolean
@@ -450,15 +478,17 @@ function NodePill({
           {t('shellAlpha.element.hidden', 'Hidden')}
         </span>
       )}
-      <LabelButton
-        open={settingsShown}
-        aria-expanded={settingsOpen}
-        onClick={onToggleSettings}
-        className="gap-1.75 pr-3.25 pl-2.75"
-      >
-        <SettingsIcon />
-        {t('shellAlpha.settings', 'Settings')}
-      </LabelButton>
+      {hasSettings && (
+        <LabelButton
+          open={settingsShown}
+          aria-expanded={settingsOpen}
+          onClick={onToggleSettings}
+          className="gap-1.75 pr-3.25 pl-2.75"
+        >
+          <SettingsIcon />
+          {t('shellAlpha.settings', 'Settings')}
+        </LabelButton>
+      )}
       <ElementMenu
         node={node}
         parent={parent}

@@ -14,6 +14,7 @@ import {
   useNodeTypes,
 } from '@/api/neos/endpoints/nodeTypes'
 import {
+  type NodeType,
   isRemoved,
   nodeAddressKey,
   nodeAddressOf,
@@ -924,6 +925,14 @@ const ELEMENT_META_PROPERTIES = new Set([
   'disableAfterDateTime',
 ])
 const NODE_INFO_VIEW = 'Neos.Neos/Inspector/Views/NodeInfoView'
+
+/**
+ * Whether a content element has anything for the alpha tray and panel once
+ * the element menu's properties are left out - ClientEval aside.
+ */
+export function hasContentSettings(nodeType: NodeType): boolean {
+  return withoutElementMeta(buildInspectorSchema(nodeType), true).length > 0
+}
 
 function withoutElementMeta(
   tabs: InspectorTab[],
