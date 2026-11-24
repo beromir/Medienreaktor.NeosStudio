@@ -1,47 +1,73 @@
 # The alpha layout
 
 An opt-in redesign of the shell, next to today's layout: dark only, a top
-bar, a left rail, one docked panel and the preview as a card with a
-floating action bar. Users switch in the user menu ("Try the new layout
-(alpha)") and back in the account menu; the choice is the `studio.layout`
-user preference (`classic` | `alpha`), served in the boot config as
-`layout`.
+bar, a left rail, the preview as a card with a floating action bar, and
+panels on both sides of it. Users switch in the user menu ("Try the new
+layout (alpha)") and back in the account menu; the choice is the
+`studio.layout` user preference (`classic` | `alpha`), served in the boot
+config as `layout`.
 
-The design is work in progress (Paper file "Neos Studio", frames R3-R29).
+The design is work in progress (Paper file "Neos Studio", frames R3-R34).
 
 ## Where it lives
 
 - `src/features/shell-alpha/`: the shell (`AlphaShell`), `TopBar`, `Rail`,
-  `ActionBar`, primitives and icons, and `shell-alpha.css`.
+  `ActionBar`, the panels (`PagesPanel`, `PropertiesPanel` with the
+  `BranchMap`), primitives and icons, and `shell-alpha.css`.
 - `src/lib/layoutMode.ts`: the switch.
-- `src/features/preview/chromeStore.ts` and `src/guest/chrome.ts`: what the
-  shell asks of the preview - minimal in-page chrome (no element handle, no
-  "+" buttons, a thin selection outline), scroll space under the bar, the
-  insert line of the Add menu, the device width - and the guest's scroll and
+- `src/features/preview/chromeStore.ts` and `src/guest/`: what the shell
+  asks of the preview - minimal in-page chrome, scroll space under the bar,
+  the insert line of the Add menu, the device width, the element a shell
+  row outlines while hovered (`hoverNode`) - and the guest's scroll and
   pointer reports that fade the bar.
+- `src/features/tree/treeStyle.ts`: the alpha tree row (see Trees).
 
 Panels come from the panel registry, plugin panels included: main-region
-panels are the rail's modes, the others its panel buttons, docked between
-rail and preview (see Editing for the pin). The Documents panel is the
-page tree dropdown; the settings tray and the Properties panel show the
-Inspector's own fields (`InspectorPanel layout`). Header actions sit in the top
-bar, node actions in the node pill's element menu.
+panels are the rail's modes, the others its panel buttons, opening in the
+left column (see Panels). The Documents panel gives way to the shell's own
+Pages panel and the page tree dropdown; the Properties panel shows the
+Inspector's own fields (`InspectorPanel layout="panel"`). Header actions
+sit in the top bar, node actions in the node pill's element menu.
 
-## Editing (the "Candidate" frames, R19-R27)
+## Panels (R31-R33)
 
-Selecting an element with text to type in the preview (an inline-editable
-property the element renders, as the guest reports it with
-`selection-text`) leaves the settings tray as it is; selecting one with
-nothing to type (an image, columns, a plugin) opens it. Once open, the tray
-follows every selection until it is closed (Esc, a click on empty page
-space, its close button). The node pill's labelled Settings button always
-opens it, and shows grey while the tray or the Properties panel shows the
-node. An element with nothing to set once the element menu's properties
-are left out (an untouched content collection) has no tray and no
-Settings button; an open tray closes when the selection moves to one.
-Whether selection may open the tray at all is the
-`studio.alpha.trayOnSelection` user preference (on unless false), switched
-in the account menu.
+Left is where you go, right is what you selected. The left column holds
+Pages, Outline, Clipboard, Trash, then plugin panels and History - one at
+a time; opening another replaces it in the same floating or pinned state.
+The right side holds the Properties panel and nothing else.
+
+Every panel floats by default: it lies over the preview 14px inside the
+card, with a shadow, and the preview keeps its full width, so the site
+keeps its real desktop layout. The pin in its header docks it beside the
+preview, which narrows instead; with both sides pinned the site may switch
+to a narrower layout - the editor's choice. Each panel keeps its pin as
+the `studio.alpha.pinnedPanels` user preference (the list of pinned panel
+ids), so it holds across sessions and browsers; which panels are open is
+kept per browser. A floating panel stays open until it is closed - its ✕,
+its rail button (Settings for Properties) or Esc; a click in the page
+never closes it. The action bar centres in the part of the preview no
+floating panel covers. The rules live in `shell-alpha/dock.ts`.
+
+The Properties panel opens only on purpose: from the node pill's Settings
+button, which shows grey while the panel is open. Selecting never opens
+it, so the preview does not jump between widths. While open it follows
+the selection and shows the page when the page is selected - its title,
+URL path and menu visibility first. Its header names the node; the fields
+scroll, the branch map stays at the bottom. An element with nothing to set
+once the element menu's properties are left out (an untouched content
+collection) has no Settings button.
+
+The settings tray of R19-R29 is gone: on centred sites it always covered
+what was being edited.
+
+## Selecting
+
+A click on an element selects it. A second click on the selected element
+deselects it - the page becomes the selection - unless the element has
+text of its own to type in (the guest knows from its inline-editable
+properties), where the click places the caret as before. Esc deselects
+anywhere; with the page selected, Esc closes the floating panels,
+Properties first. Esc always closes an open Add menu or Search first.
 
 The element types listed in the Add menu can be dragged into the page as
 well as picked. While one is dragged the menu turns see-through, the
@@ -50,41 +76,68 @@ line marks the insertion point, and the drop asks the shell to create
 the element there (`create-node-request`) - through the creation dialog
 when the type has one; the new element is selected.
 
-The tray and the Properties panel show a content element's content
-settings in the node type's inspector tabs (`ui.inspector.tabs`, icons
-from the tab config, pencil / cog / sliders when none is set). The tabs
-never move (R27): the tray puts them - icon and label, the active one
-filled - in one 48px row at its bottom together with "Keep open" and
-close; the tray grows upward with the content, so that row stays right
-above the action bar. A single tab leaves the row with only its buttons.
-The panel keeps them at the top as 32x28 icons at fixed positions, the
-label as tooltip, and drops the row for a single tab. Every group of the
-active tab starts open and collapses with its chevron; only groups
-configured `collapsed: true` start closed. The tray lays the fields on a grid
-(see Controls and the tray grid); the image editor shows there as a
-compact row (thumbnail, file name, size, Crop, Replace). The node pill
-names the node. `InspectorPanel layout="panel" | "tray"` renders both; the
-classic inspector is the same component without `layout`.
-
-Docked panels sit between rail and preview, one at a time. Each header has
-a pin: a pinned panel stays, the next one opens beside it (between it and
-the preview) and further ones replace that second panel - two at most, one
-pin. Pinning the other panel moves the pin; panels never move, the preview
-gets narrower instead. The tray's "Keep open" is the same pin: it docks
-the Properties panel pinned. The rules live in `shell-alpha/dock.ts`. The
-Properties panel follows the selection and, with nothing selected, shows
-the page - its title, URL path and menu visibility first. Its header opens
-the path menu (parents, the node, its children), as does the node button
-of the action bar.
+The Properties panel shows a content element's content settings in the
+node type's inspector tabs (`ui.inspector.tabs`, icons from the tab
+config, pencil / cog / sliders when none is set), at the top as 32x28
+icons at fixed positions, the label as tooltip; a single tab has no tab
+row. Every group of the active tab starts open and collapses with its
+chevron; only groups configured `collapsed: true` start closed. The node
+pill names the node.
 
 The rail's mode switcher, open, always lists Editor, Media, Workspaces,
 Tasks (plugin modes after them), the current one highlighted in its own
 slot and the chevron last (R21). The open-tasks dot sits on Tasks while
 open, on the current mode's button while closed.
 
+## The branch map (R30)
+
+At the bottom of the Properties panel, under a hairline: the branch
+around the selection in seven rows of 26px, always the same height, so
+nothing moves when the selection does. It hides while the Outline is open,
+which shows the whole tree already, and replaces the path menu the panel's
+header had (R15).
+
+The rows fill in this order: the path line (the page down to the level
+above the parent, folded to the page and the two nearest levels with
+"…"); the parent, open; the selection with up to two siblings on either
+side and up to three of its children; then the parent's next siblings,
+closed. With the page selected: the page and its collections. What does
+not fit becomes "+ n more", which opens the Outline. The arrow of the path
+line selects the level above the parent, a segment selects that level, a
+row selects its element, which scrolls the preview to it; hovering a row
+outlines its element in the preview. Closed rows show how many elements
+they hold ("3 inside").
+
+## Pages (R33)
+
+The rail's first panel button: the site's document tree with a filter
+(the server-side search of the Documents panel), hover actions on each row
+(+ a new page inside, ⋯ the page menu), drag to reorder, and "New page"
+(inside the current page) at the bottom. Opening a page keeps the panel
+open. The breadcrumb's page dropdown shows the same tree for quick jumps
+and closes on a pick. Pages and content stay separate panels.
+
+## Trees (R34)
+
+The Outline, Pages and the branch map draw one row: 28px (the map 26px,
+12px text), 8px corners, a fixed 10px chevron slot and a 12px type icon
+slot, so labels line up at every level, 16px indent per level. The icon is
+the node type's own; collections without an icon of their own get a frame
+instead of a folder. The selection - in Pages the current page - gets the
+blue tint, its icon `shell-accent-pale`; hover a grey fill, and the
+trailing note ("n inside" on closed rows once their children are loaded,
+"hidden" on hidden ones) gives way to the row's actions: in the Outline
+show/hide and ⋯ (the element menu), in Pages + and ⋯. Hovering an Outline
+row outlines its element in the preview. The Outline leaves out its root
+row; the panel header names the page.
+
+`TreeList` draws these rows when the alpha shell provides the tree style
+(`TreeStyleContext`) and the tree passes `alphaRow`; other trees (the
+media folders) keep their classic rows inside the alpha layout too.
+
 ## The element menu (R25)
 
-What is about the element rather than its content leaves the tray and the
+What is about the element rather than its content leaves the Properties
 panel: Neos' type group (`_nodeType`), visibility (`_hidden` and the timed
 `enableAfterDateTime` / `disableAfterDateTime`) and the node info view are
 not rendered for content elements; other groups an integrator puts in the
@@ -108,7 +161,7 @@ outline (the minimal chrome's styles for the server-rendered
 
 ## Controls and the tray grid (R28, R29)
 
-The alpha inspector (tray and Properties panel) has its own controls; the
+The alpha inspector (the Properties panel) has its own controls; the
 classic inspector keeps its own. The selection colour rule: a blue tint
 for what is on/off or picked/not picked, grey (`shell-raised`) for one of
 many where something is always selected - segmented controls, tabs, view
@@ -122,7 +175,7 @@ toggles. Only one solid blue per moment.
   the Base UI `Checkbox` inside the alpha layout and the shell's
   `CheckboxBox` (a row that is the checkbox itself) share it.
 - A static select box with two to four short options (they must fit one
-  tray column) is a segmented choice; option icons show alone, their label
+  tray grid column) is a segmented choice; option icons show alone, their label
   as tooltip. Longer, grouped, empty-able, multiple and data source selects
   stay dropdowns.
 - Inputs, selects, the date picker (`data-control="field"`) and the
@@ -139,7 +192,9 @@ toggles. Only one solid blue per moment.
   English (US) and English (GB)"), from the node's covered dimension space
   points. Switches commit at once and get no such line.
 
-In the 600px tray each group lays its fields on four columns (132px at
+The tray is gone (R31), but its grid stays in `InspectorPanel
+layout="tray"` while `traySpan` is part of the plugin API. In the 600px
+tray each group lays its fields on four columns (132px at
 14px gaps, 14px side padding). A field spans by its editor's `traySpan`
 (`PropertyEditorDefinition`, optional): 1 for segmented choices,
 selects and dates, 2 for text fields, URL path segments, the node type and
