@@ -28,7 +28,7 @@ export const CONTENT_NODE_TYPES =
   'Neos.Neos:Content,Neos.Neos:ContentCollection'
 
 /** Content elements alone, without the collections that hold them. */
-const CONTENT_NODE_TYPE = 'Neos.Neos:Content'
+export const CONTENT_NODE_TYPE = 'Neos.Neos:Content'
 
 /** The query parameters of getNode (Neos.Api's). */
 type NodeQuery = NonNullable<operations['getNode']['parameters']['query']>
@@ -411,6 +411,18 @@ export async function searchNodes(
   limit = 20,
   signal?: AbortSignal,
 ): Promise<Node[]> {
+  return (await searchNodeListing(context, term, nodeTypes, limit, signal))
+    .nodes
+}
+
+/** searchNodes with how many hits there are in all. */
+export async function searchNodeListing(
+  context: NodeAddress,
+  term: string,
+  nodeTypes: string,
+  limit = 20,
+  signal?: AbortSignal,
+): Promise<{ nodes: Node[]; total: number }> {
   const listing = await unwrap(
     api.GET(NODES, {
       params: {
@@ -423,7 +435,7 @@ export async function searchNodes(
       signal,
     }),
   )
-  return listing.data
+  return { nodes: listing.data, total: listing.meta.total }
 }
 
 /**

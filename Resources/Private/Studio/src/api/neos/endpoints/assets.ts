@@ -163,6 +163,24 @@ export function useAssets(
   })
 }
 
+/** The local assets the media library finds for the term. */
+export async function searchAssets(
+  term: string,
+  limit = 20,
+  signal?: AbortSignal,
+): Promise<{ assets: Asset[]; total: number }> {
+  const listing = await unwrap(
+    api.GET('/assets/{assetSourceId}', {
+      params: {
+        path: { assetSourceId: LOCAL_ASSET_SOURCE },
+        query: { search: term, limit },
+      },
+      signal,
+    }),
+  )
+  return { assets: listing.data, total: listing.meta.total }
+}
+
 const ASSET = '/assets/{assetSourceId}/{assetId}'
 
 /** The path parameters of a local Neos asset. */
