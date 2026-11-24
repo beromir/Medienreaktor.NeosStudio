@@ -14,47 +14,60 @@ import {
   resetPreviewChrome,
   setPreviewChrome,
 } from '@/features/preview/chromeStore'
+import { TreeStyleContext } from '@/features/tree/treeStyle'
 import { translate as t } from '@/lib/i18n'
 import { useRegistry } from '@/lib/registry'
 import { cn } from '@/lib/utils'
 import { ActionBar } from './ActionBar'
-import { CloseIcon } from './icons'
-import { IconButton, PinButton } from './primitives'
 import {
-  closeDocked,
-  type Dock,
-  EMPTY_DOCK,
-  keepOpen,
-  openDocked,
-  restoreDock,
-  toggleDocked,
-  togglePin,
+  closeFloating,
+  closeLeft,
+  NO_PANELS,
+  openLeft,
+  type Panels,
+  PROPERTIES,
+  restorePanels,
+  setProperties,
+  toggleLeft,
+  togglePinned,
 } from './dock'
+import { PAGES, PagesPanel } from './PagesPanel'
+import { usePinnedPanels } from './preferences'
+import { PanelHeader, PinButton } from './primitives'
 import { PropertiesPanel } from './PropertiesPanel'
 import { SearchDialog } from './SearchDialog'
 import { Rail } from './Rail'
 import { DEVICE_WIDTHS, type Device, TopBar } from './TopBar'
 
 const EDITOR = 'visual-editor'
-const DOCK_KEY = 'neos-studio.alpha.dock'
+const PANELS_KEY = 'neos-studio.alpha.panels'
 const DEVICE_KEY = 'neos-studio.alpha.device'
 /** Panels with a place of their own in this layout, not in the rail. */
 const PLACED_ELSEWHERE = new Set(['documents', 'inspector'])
 const EDITOR_TOOLS = ['outline', 'clipboard', 'trash']
-/** The Properties panel: the shell's own, not a registered panel. */
-export const PROPERTIES = 'shellAlpha:properties'
-const PROPERTIES_DEFINITION: PanelDefinition = {
-  id: PROPERTIES,
-  title: () => t('shellAlpha.properties', 'Properties'),
+/** Pages: the shell's own document tree panel, first in the rail. */
+const PAGES_DEFINITION: PanelDefinition = {
+  id: PAGES,
+  title: () => t('shellAlpha.pages', 'Pages'),
   component: () => null,
   defaultPlacement: { kind: 'dock', region: 'sidebar' },
 }
 
+/*
+ * Floating panels lie over the preview card, 14px inside its edges. The
+ * action bar centres between them: its stack sits in the card's content
+ * box, 7px (border and padding) inside the card.
+ */
+const LEFT_WIDTH = 280
+const RIGHT_WIDTH = 300
+const FLOAT_INSET = 14
+const CARD_INSET = 7
+
 /**
- * The alpha layout: top bar, rail, one docked panel and the preview card
- * with the floating action bar. Panels - built-in and plugin ones - come
- * from the panel registry: main-region panels are the rail's modes, the
- * others its panel buttons, opening docked between rail and preview.
+ * The alpha layout: top bar, rail, the preview card with the floating
+ * action bar, a left panel and the Properties panel on the right. Panels -
+ * built-in and plugin ones - come from the panel registry: main-region
+ * panels are the rail's modes, the others its panel buttons.
  */
 export function AlphaShell({
   editing,
@@ -77,6 +90,7 @@ export function AlphaShell({
 }) {
   const definitions = useRegistry(panelRegistry)
   const { activate, activeMainPanel } = usePanelSwitcher()
+  const { inspectedNode, selectedDocument, inspectNode } = useStudio()
 
   const modes = definitions.filter(
     (definition) =>
@@ -107,42 +121,52 @@ export function AlphaShell({
     const history = others.find((definition) => definition.id === 'history')
     const second = [...rest, ...(history ? [history] : [])]
     return [
-      PROPERTIES_DEFINITION,
+      PAGES_DEFINITION,
       ...tools,
-      ...(tools.length && second.length ? [null] : []),
+      ...(second.length ? [null] : []),
       ...second,
     ]
   }, [definitions])
 
   const exists = React.useCallback(
     (panel: string) =>
-      panel === PROPERTIES ||
+      panel === PAGES ||
       panelRegistry.getAll().some((definition) => definition.id === panel),
     [],
   )
-  const [storedDock, setDock] = usePersistedState<Dock>(DOCK_KEY, EMPTY_DOCK)
-  const dock = restoreDock(storedDock, exists)
-  const dockedDefinitions =
-    mode !== EDITOR
-      ? []
-      : dock.open.flatMap(
-          (panel) =>
-            (panel === PROPERTIES
-              ? PROPERTIES_DEFINITION
-              : definitions.find((definition) => definition.id === panel)) ??
-            [],
-        )
-  const propertiesDocked = dockedDefinitions.some(
-    (definition) => definition.id === PROPERTIES,
+  const [storedPanels, setPanels] = usePersistedState<Panels>(
+    PANELS_KEY,
+    NO_PANELS,
   )
-  const updateDock = React.useCallback(
-    (change: (dock: Dock) => Dock) =>
-      setDock((current) => change(restoreDock(current, exists))),
-    [setDock, exists],
+  const panels = restorePanels(storedPanels, exists)
+  const updatePanels = React.useCallback(
+    (change: (panels: Panels) => Panels) =>
+      setPanels((current) => change(restorePanels(current, exists))),
+    [setPanels, exists],
+  )
+  const [pinnedPanels, setPinnedPanels] = usePinnedPanels()
+  const isPinned = (panel: string) => pinnedPanels.includes(panel)
+  const pinButton = (panel: string) => (
+    <PinButton
+      pinned={isPinned(panel)}
+      onClick={() => setPinnedPanels(togglePinned(pinnedPanels, panel))}
+    />
   )
 
-  // Reveal requests for panels that are not modes open them docked (the
-  // panel system handles the modes itself).
+  const editor = mode === EDITOR
+  const leftDefinition =
+    !editor || panels.left === null
+      ? null
+      : panels.left === PAGES
+        ? PAGES_DEFINITION
+        : (definitions.find((definition) => definition.id === panels.left) ??
+          null)
+  const leftPinned = leftDefinition !== null && isPinned(leftDefinition.id)
+  const propertiesOpen = editor && panels.properties
+  const propertiesPinned = propertiesOpen && isPinned(PROPERTIES)
+
+  // Reveal requests for panels that are not modes open them on the left
+  // (the panel system handles the modes itself).
   React.useEffect(
     () =>
       onPanelRevealRequest((panel) => {
@@ -153,16 +177,33 @@ export function AlphaShell({
           !definition ||
           (definition.defaultPlacement.kind === 'dock' &&
             definition.defaultPlacement.region === 'main') ||
-          definition.id === 'documents'
+          PLACED_ELSEWHERE.has(definition.id)
         )
           return
         activate(EDITOR)
-        updateDock((current) => openDocked(current, panel))
+        updatePanels((current) => openLeft(current, panel))
       }),
-    [activate, updateDock],
+    [activate, updatePanels],
   )
 
   const [searchOpen, setSearchOpen] = React.useState(false)
+
+  // Esc: deselects the element (the page becomes the selection), then
+  // closes what floats. False when there was nothing to do.
+  const escape = (): boolean => {
+    if (
+      inspectedNode !== null &&
+      selectedDocument !== null &&
+      inspectedNode.nodeAggregateId !== selectedDocument.nodeAggregateId
+    ) {
+      inspectNode(selectedDocument)
+      return true
+    }
+    const next = closeFloating(panels, isPinned)
+    if (next === panels) return false
+    updatePanels(() => next)
+    return true
+  }
 
   const [device, setDevice] = usePersistedState<Device>(DEVICE_KEY, 'desktop')
   React.useEffect(() => {
@@ -177,88 +218,112 @@ export function AlphaShell({
   )
   if (!visited.has(mode)) setVisited(new Set(visited).add(mode))
 
+  const closeLeftPanel = (panel: string) =>
+    updatePanels((current) => closeLeft(current, panel))
+
   return (
-    <div className="flex h-svh min-w-0 flex-1 flex-col bg-shell-ground px-2 pb-2 text-shell-text">
-      <TopBar
-        editing={editing}
-        document={document}
-        device={device}
-        onDeviceChange={setDevice}
-        onSelectSite={onSelectSite}
-        onChangeDimension={onChangeDimension}
-        onVariantCreated={onVariantCreated}
-        onSwitchEditingContext={onSwitchEditingContext}
-        onOpenMode={activate}
-      />
-      <div className="flex min-h-0 flex-1 gap-2">
-        <Rail
-          modes={modes}
-          mode={mode}
-          onModeChange={activate}
-          panels={mode === EDITOR ? railPanels : []}
-          docked={dockedDefinitions.map((definition) => definition.id)}
-          onToggleDocked={(panel) =>
-            updateDock((current) => toggleDocked(current, panel))
-          }
+    <TreeStyleContext.Provider value="alpha">
+      <div className="flex h-svh min-w-0 flex-1 flex-col bg-shell-ground px-2 pb-2 text-shell-text">
+        <TopBar
+          editing={editing}
+          document={document}
+          device={device}
+          onDeviceChange={setDevice}
+          onSelectSite={onSelectSite}
+          onChangeDimension={onChangeDimension}
+          onVariantCreated={onVariantCreated}
+          onSwitchEditingContext={onSwitchEditingContext}
+          onOpenMode={activate}
         />
-        {dockedDefinitions.map((definition) => {
-          const pin = (
-            <PinButton
-              pinned={dock.pinned === definition.id}
-              onClick={() =>
-                updateDock((current) => togglePin(current, definition.id))
+        <div className="relative flex min-h-0 flex-1 gap-2">
+          <Rail
+            modes={modes}
+            mode={mode}
+            onModeChange={activate}
+            panels={editor ? railPanels : []}
+            open={leftDefinition?.id ?? null}
+            onTogglePanel={(panel) =>
+              updatePanels((current) => toggleLeft(current, panel))
+            }
+          />
+          {leftDefinition &&
+            (leftDefinition.id === PAGES ? (
+              <PagesPanel
+                className={panelFrame('left', leftPinned)}
+                pin={pinButton(PAGES)}
+                onClose={() => closeLeftPanel(PAGES)}
+              />
+            ) : (
+              <LeftPanel
+                key={leftDefinition.id}
+                className={panelFrame('left', leftPinned)}
+                definition={leftDefinition}
+                pin={pinButton(leftDefinition.id)}
+                onClose={() => closeLeftPanel(leftDefinition.id)}
+              />
+            ))}
+          <main className="flex min-w-0 flex-1 flex-col rounded-shell-surface border border-shell-border bg-shell-surface p-1.5">
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-shell-site">
+              {modes
+                .filter((definition) => visited.has(definition.id))
+                .map((definition) => (
+                  <div
+                    key={definition.id}
+                    className={cn(
+                      'flex min-h-0 flex-1 flex-col',
+                      definition.id !== EDITOR && 'overflow-y-auto',
+                      definition.id !== mode && 'hidden',
+                    )}
+                  >
+                    <PanelBody
+                      panel={definition.id}
+                      component={definition.component}
+                      visible={definition.id === mode}
+                    />
+                  </div>
+                ))}
+              {editor && (
+                <ActionBar
+                  searchOpen={searchOpen}
+                  onSearch={() => setSearchOpen(true)}
+                  onOpenMode={activate}
+                  insets={{
+                    left:
+                      leftDefinition && !leftPinned
+                        ? FLOAT_INSET + LEFT_WIDTH - CARD_INSET
+                        : 0,
+                    right:
+                      propertiesOpen && !propertiesPinned
+                        ? FLOAT_INSET + RIGHT_WIDTH - CARD_INSET
+                        : 0,
+                  }}
+                  propertiesOpen={propertiesOpen}
+                  onToggleProperties={() =>
+                    updatePanels((current) =>
+                      setProperties(current, !current.properties),
+                    )
+                  }
+                  onEscape={escape}
+                  onHistoryApplied={onReload}
+                  onReveal={onReveal}
+                />
+              )}
+            </div>
+          </main>
+          {propertiesOpen && (
+            <PropertiesPanel
+              className={panelFrame('right', propertiesPinned)}
+              pin={pinButton(PROPERTIES)}
+              showBranchMap={panels.left !== 'outline'}
+              onShowOutline={() =>
+                updatePanels((current) => openLeft(current, 'outline'))
+              }
+              onClose={() =>
+                updatePanels((current) => setProperties(current, false))
               }
             />
-          )
-          const close = () =>
-            updateDock((current) => closeDocked(current, definition.id))
-          return definition.id === PROPERTIES ? (
-            <PropertiesPanel key={definition.id} pin={pin} onClose={close} />
-          ) : (
-            <DockedPanel
-              key={definition.id}
-              definition={definition}
-              pin={pin}
-              onClose={close}
-            />
-          )
-        })}
-        <main className="flex min-w-0 flex-1 flex-col rounded-shell-surface border border-shell-border bg-shell-surface p-1.5">
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-shell-site">
-            {modes
-              .filter((definition) => visited.has(definition.id))
-              .map((definition) => (
-                <div
-                  key={definition.id}
-                  className={cn(
-                    'flex min-h-0 flex-1 flex-col',
-                    definition.id !== EDITOR && 'overflow-y-auto',
-                    definition.id !== mode && 'hidden',
-                  )}
-                >
-                  <PanelBody
-                    panel={definition.id}
-                    component={definition.component}
-                    visible={definition.id === mode}
-                  />
-                </div>
-              ))}
-            {mode === EDITOR && (
-              <ActionBar
-                searchOpen={searchOpen}
-                onSearch={() => setSearchOpen(true)}
-                onOpenMode={activate}
-                propertiesDocked={propertiesDocked}
-                propertiesPinned={dock.pinned === PROPERTIES}
-                onKeepOpen={() =>
-                  updateDock((current) => keepOpen(current, PROPERTIES))
-                }
-                onHistoryApplied={onReload}
-                onReveal={onReveal}
-              />
-            )}
-          </div>
-        </main>
+          )}
+        </div>
       </div>
       <SearchDialog
         open={searchOpen}
@@ -268,48 +333,48 @@ export function AlphaShell({
         onOpenMode={activate}
         onChangeDimension={onChangeDimension}
       />
-    </div>
+    </TreeStyleContext.Provider>
   )
 }
 
-function DockedPanel({
+/**
+ * A panel's frame: docked beside the preview when pinned, else floating
+ * over the preview card's edge - the row's left edge is the rail's (44px
+ * and an 8px gap), its right edge the card's.
+ */
+function panelFrame(side: 'left' | 'right', pinned: boolean): string {
+  return cn(
+    'flex shrink-0 flex-col overflow-hidden rounded-shell-surface bg-shell-surface',
+    side === 'left' ? 'w-70' : 'w-75',
+    pinned
+      ? 'border border-shell-border'
+      : cn(
+          'absolute top-3.5 bottom-3.5 z-20 border border-shell-tooltip-border shadow-shell-panel',
+          side === 'left' ? 'left-[66px]' : 'right-3.5',
+        ),
+  )
+}
+
+function LeftPanel({
   definition,
   pin,
   onClose,
+  className,
 }: {
   definition: PanelDefinition
   pin: React.ReactNode
   onClose: () => void
+  className: string
 }) {
   const { selectedDocument } = useStudio()
   return (
-    <aside
-      aria-label={panelTitle(definition)}
-      className="flex w-70 shrink-0 flex-col overflow-hidden rounded-shell-surface border border-shell-border bg-shell-surface"
-    >
-      <div className="flex h-12 shrink-0 items-center justify-between pr-2 pl-3.5">
-        <div className="flex min-w-0 items-baseline gap-2">
-          <span className="type-shell-control font-semibold text-shell-text">
-            {panelTitle(definition)}
-          </span>
-          {selectedDocument && (
-            <span className="truncate type-shell-secondary text-shell-subtle">
-              {selectedDocument.label}
-            </span>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-0.5">
-          {pin}
-          <IconButton
-            size="sm"
-            className="size-7 rounded-shell-control text-shell-muted"
-            onClick={onClose}
-            aria-label={t('common.close', 'Close')}
-          >
-            <CloseIcon />
-          </IconButton>
-        </div>
-      </div>
+    <aside aria-label={panelTitle(definition)} className={className}>
+      <PanelHeader
+        title={panelTitle(definition)}
+        subtitle={selectedDocument?.label}
+        pin={pin}
+        onClose={onClose}
+      />
       <div className="min-h-0 flex-1 overflow-y-auto">
         <PanelBody
           key={definition.id}

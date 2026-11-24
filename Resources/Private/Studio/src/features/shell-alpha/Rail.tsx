@@ -16,7 +16,6 @@ import { translate as t } from '@/lib/i18n'
 import { setLayoutMode } from '@/lib/layoutMode'
 import { cn } from '@/lib/utils'
 import {
-  CheckIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   ClipboardIcon,
@@ -30,8 +29,8 @@ import {
   LogoutIcon,
   MediaModeIcon,
   OutlineIcon,
+  PagesIcon,
   PersonIcon,
-  SettingsIcon,
   TasksModeIcon,
   TrashIcon,
   WorkspacesModeIcon,
@@ -42,7 +41,6 @@ import {
   ShellMenuSeparator,
   surfacePopup,
 } from './primitives'
-import { useTrayOnSelection } from './preferences'
 import { Tooltip } from './Tooltip'
 import { containedPortal } from '@/lib/portalContainer'
 
@@ -63,7 +61,7 @@ const MODE_ICONS: Record<string, React.ReactNode> = {
 }
 
 const PANEL_ICONS: Record<string, React.ReactNode> = {
-  'shellAlpha:properties': <SettingsIcon />,
+  'shellAlpha:pages': <PagesIcon />,
   outline: <OutlineIcon />,
   clipboard: <ClipboardIcon />,
   trash: <TrashIcon />,
@@ -111,16 +109,17 @@ export function Rail({
   mode,
   onModeChange,
   panels,
-  docked,
-  onToggleDocked,
+  open,
+  onTogglePanel,
 }: {
   modes: PanelDefinition[]
   mode: string
   onModeChange: (panel: string) => void
   /** The panels of the current mode, in rail order; null entries divide. */
   panels: (PanelDefinition | null)[]
-  docked: string[]
-  onToggleDocked: (panel: string) => void
+  /** The left column's open panel. */
+  open: string | null
+  onTogglePanel: (panel: string) => void
 }) {
   const [modesOpen, setModesOpen] = React.useState(false)
   const openTasks = useOpenTaskCount()
@@ -214,8 +213,8 @@ export function Rail({
               <PanelButton
                 key={definition.id}
                 definition={definition}
-                active={docked.includes(definition.id)}
-                onClick={() => onToggleDocked(definition.id)}
+                active={open === definition.id}
+                onClick={() => onTogglePanel(definition.id)}
               />
             ),
           )}
@@ -281,7 +280,6 @@ function useOpenTaskCount(): number {
 function AccountMenu() {
   const { data: me } = useMe()
   const { openSettings } = useModals()
-  const [trayOnSelection, setTrayOnSelection] = useTrayOnSelection()
   const name = me?.user?.label ?? me?.account.identifier ?? ''
   const role = me?.account.roles
     .map((identifier) => identifier.split(':').pop() ?? identifier)
@@ -346,23 +344,6 @@ function AccountMenu() {
               }
             >
               {t('shellAlpha.account.help', 'Help & documentation')}
-            </ShellMenuItem>
-            <ShellMenuItem
-              icon={<SettingsIcon width={12} height={12} />}
-              closeOnClick={false}
-              trailing={
-                trayOnSelection ? (
-                  <span className="text-shell-accent-light">
-                    <CheckIcon />
-                  </span>
-                ) : undefined
-              }
-              onClick={() => setTrayOnSelection(!trayOnSelection)}
-            >
-              {t(
-                'shellAlpha.account.trayOnSelection',
-                'Open settings on selection',
-              )}
             </ShellMenuItem>
             <ShellMenuItem
               icon={<LayoutIcon />}

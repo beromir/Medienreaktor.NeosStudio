@@ -536,20 +536,24 @@ function aggregateIdOf(element: HTMLElement): string | null {
 }
 
 /** Whether the element renders an inline-editable property of its own. */
+function ownsInlineText(element: HTMLElement, aggregateId: string): boolean {
+  // Wrappers nest - also of the same node - so ownership goes by identity.
+  return Array.from(element.querySelectorAll(`[${PROPERTY_ATTRIBUTE}]`)).some(
+    (property) => {
+      const wrapper = property.closest<HTMLElement>(`[${WRAPPER_ATTRIBUTE}]`)
+      return wrapper !== null && aggregateIdOf(wrapper) === aggregateId
+    },
+  )
+}
+
 function reportSelectionText(
   aggregateId: string | null,
   element: HTMLElement | null,
 ): void {
-  // Wrappers nest - also of the same node - so ownership goes by identity.
   const editable =
     element !== null &&
     aggregateId !== null &&
-    Array.from(element.querySelectorAll(`[${PROPERTY_ATTRIBUTE}]`)).some(
-      (property) => {
-        const wrapper = property.closest<HTMLElement>(`[${WRAPPER_ATTRIBUTE}]`)
-        return wrapper !== null && aggregateIdOf(wrapper) === aggregateId
-      },
-    )
+    ownsInlineText(element, aggregateId)
   post({
     type: 'neos-studio/selection-text',
     aggregateId: element ? aggregateId : null,
@@ -1143,7 +1147,22 @@ function onClick(event: MouseEvent): void {
   if (wrapper) {
     // Resolve double-stamped elements to their outermost wrapper, so the
     // selection outline matches the swap unit and the host-driven outline.
-    select(outermostWrapper(wrapper), { notifyHost: true })
+    const element = outermostWrapper(wrapper)
+    // The alpha layout: clicking the selection again deselects it - unless
+    // the element has text to type in, where the click places the caret.
+    const aggregateId = aggregateIdOf(element)
+    if (
+      minimalChrome &&
+      element === selectedElement &&
+      aggregateId !== null &&
+      !ownsInlineText(element, aggregateId)
+    ) {
+      select(null, { notifyHost: false })
+      reportSelectionText(null, null)
+      post({ type: 'neos-studio/document-selected' })
+      return
+    }
+    select(element, { notifyHost: true })
     return
   }
   // A click outside every content element (and outside the guest's own
@@ -1606,7 +1625,7 @@ function drawAlphaChrome(): void {
   drawSelectionChrome(
     {
       selected: selectedElement,
-      hovered: hoveredElement,
+      hovered: shellHovered ?? hoveredElement,
       hidden: selectedElement?.hasAttribute(HIDDEN_ATTRIBUTE) === true,
       tabLabel: movable
         ? nodeTypeLabel(movable.getAttribute(NODE_TYPE_ATTRIBUTE))
@@ -2282,6 +2301,20 @@ function replaceElement(aggregateId: string, html: string): boolean {
   return true
 }
 
+/** The alpha layout's chrome is on (see chrome.ts). */
+let minimalChrome = false
+
+/** The element a row in the shell outlines while hovered. */
+let shellHovered: HTMLElement | null = null
+
+function setShellHover(element: HTMLElement | null): void {
+  if (shellHovered !== hoveredElement)
+    shellHovered?.classList.remove(HOVER_CLASS)
+  shellHovered = element?.isConnected ? element : null
+  shellHovered?.classList.add(HOVER_CLASS)
+  scheduleHandleUpdate()
+}
+
 function onHostMessage(event: MessageEvent): void {
   if (event.origin !== window.location.origin || event.source !== window.parent)
     return
@@ -2322,6 +2355,7 @@ function onHostMessage(event: MessageEvent): void {
     scheduleHandleUpdate()
   }
   if (message?.type === 'neos-studio/chrome') {
+    minimalChrome = message.minimal
     applyChrome(message, selectedElement)
     scheduleHandleUpdate()
   }
@@ -2333,6 +2367,13 @@ function onHostMessage(event: MessageEvent): void {
     if (message.nodeTypeName === null) {
       if (activeDrag?.movingElement === null) endDrag()
     } else if (activeDrag === null) startDrag(message.nodeTypeName, null)
+  }
+  if (message?.type === 'neos-studio/hover-node') {
+    setShellHover(
+      message.aggregateId === null
+        ? null
+        : (elementsByAggregateId.get(message.aggregateId) ?? null),
+    )
   }
   if (message?.type === 'neos-studio/insert-preview') {
     const indexed =

@@ -1,80 +1,76 @@
 /**
- * The docked panels between rail and preview: one at a time, unless one is
- * pinned - then the next opens beside it and further ones replace that
- * second panel. Two at most, one pin; panels keep their place when the pin
- * moves, the preview gets narrower instead.
+ * The panels around the preview: one panel in the left column at a time and
+ * the Properties panel alone on the right. Each one floats over the preview
+ * unless the editor pinned it, which docks it beside the preview instead;
+ * the pins are a user preference, the open panels a per-browser state.
  */
-export interface Dock {
-  /** Left to right. */
-  open: string[]
-  pinned: string | null
+export interface Panels {
+  /** The left column's panel, null when it is closed. */
+  left: string | null
+  properties: boolean
 }
 
-export const EMPTY_DOCK: Dock = { open: [], pinned: null }
+export const NO_PANELS: Panels = { left: null, properties: false }
 
-export function openDocked(dock: Dock, panel: string): Dock {
-  if (dock.open.includes(panel)) return dock
-  const pinned =
-    dock.pinned !== null && dock.open.includes(dock.pinned) ? dock.pinned : null
-  if (pinned === null) return { open: [panel], pinned: null }
-  const other = dock.open.find((candidate) => candidate !== pinned)
-  return {
-    open:
-      other === undefined
-        ? [pinned, panel]
-        : dock.open.map((candidate) =>
-            candidate === other ? panel : candidate,
-          ),
-    pinned,
-  }
-}
-
-export function closeDocked(dock: Dock, panel: string): Dock {
-  return {
-    open: dock.open.filter((candidate) => candidate !== panel),
-    pinned: dock.pinned === panel ? null : dock.pinned,
-  }
+/** Opening a left panel replaces the open one. */
+export function openLeft(panels: Panels, panel: string): Panels {
+  return panels.left === panel ? panels : { ...panels, left: panel }
 }
 
 /** A rail button: opens its panel, or closes it when open. */
-export function toggleDocked(dock: Dock, panel: string): Dock {
-  return dock.open.includes(panel)
-    ? closeDocked(dock, panel)
-    : openDocked(dock, panel)
+export function toggleLeft(panels: Panels, panel: string): Panels {
+  return { ...panels, left: panels.left === panel ? null : panel }
 }
 
-/** The pin of an open panel: pins it (moving the pin) or unpins it. */
-export function togglePin(dock: Dock, panel: string): Dock {
-  if (!dock.open.includes(panel)) return dock
-  return { ...dock, pinned: dock.pinned === panel ? null : panel }
+export function closeLeft(panels: Panels, panel: string): Panels {
+  return panels.left === panel ? { ...panels, left: null } : panels
 }
 
-/** Opens the panel pinned - the tray's "Keep open". */
-export function keepOpen(dock: Dock, panel: string): Dock {
-  if (dock.open.includes(panel)) return { ...dock, pinned: panel }
-  const kept =
-    dock.pinned !== null && dock.open.includes(dock.pinned)
-      ? [dock.pinned]
-      : dock.open.slice(0, 1)
-  return { open: [panel, ...kept], pinned: panel }
+export function setProperties(panels: Panels, open: boolean): Panels {
+  return panels.properties === open ? panels : { ...panels, properties: open }
 }
 
-/** A stored dock, cut down to what is valid. */
-export function restoreDock(
+/**
+ * Esc: closes what floats - the Properties panel first, the left panel
+ * next - and leaves pinned panels alone. Unchanged when nothing floats.
+ */
+export function closeFloating(
+  panels: Panels,
+  pinned: (panel: string) => boolean,
+): Panels {
+  if (panels.properties && !pinned(PROPERTIES))
+    return { ...panels, properties: false }
+  if (panels.left !== null && !pinned(panels.left))
+    return { ...panels, left: null }
+  return panels
+}
+
+/** The Properties panel's id, for its pin. */
+export const PROPERTIES = 'shellAlpha:properties'
+
+/** The pinned panels with the panel's pin flipped. */
+export function togglePinned(pinned: readonly string[], panel: string) {
+  return pinned.includes(panel)
+    ? pinned.filter((candidate) => candidate !== panel)
+    : [...pinned, panel]
+}
+
+/** A stored state, cut down to what is valid. */
+export function restorePanels(
   value: unknown,
   exists: (panel: string) => boolean,
-): Dock {
-  if (typeof value !== 'object' || value === null) return EMPTY_DOCK
-  const { open, pinned } = value as Partial<Dock>
-  const panels = Array.isArray(open)
-    ? open
-        .filter(
-          (panel): panel is string =>
-            typeof panel === 'string' && exists(panel),
-        )
-        .slice(0, 2)
+): Panels {
+  if (typeof value !== 'object' || value === null) return NO_PANELS
+  const { left, properties } = value as Partial<Panels>
+  return {
+    left: typeof left === 'string' && exists(left) ? left : null,
+    properties: properties === true,
+  }
+}
+
+/** A stored preference, cut down to a list of panel ids. */
+export function restorePinned(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((panel): panel is string => typeof panel === 'string')
     : []
-  const pin =
-    typeof pinned === 'string' && panels.includes(pinned) ? pinned : null
-  return { open: pin === null ? panels.slice(0, 1) : panels, pinned: pin }
 }

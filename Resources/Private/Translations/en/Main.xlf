@@ -1985,9 +1985,6 @@
       <trans-unit id="shellAlpha.account.profile" xml:space="preserve">
         <source>Profile &amp; password</source>
       </trans-unit>
-      <trans-unit id="shellAlpha.account.trayOnSelection" xml:space="preserve">
-        <source>Open settings on selection</source>
-      </trans-unit>
       <trans-unit id="shellAlpha.add" xml:space="preserve">
         <source>Add</source>
       </trans-unit>
@@ -2002,6 +1999,12 @@
       </trans-unit>
       <trans-unit id="shellAlpha.back" xml:space="preserve">
         <source>Back</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.branchMap" xml:space="preserve">
+        <source>Branch</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.branchMore" xml:space="preserve">
+        <source>+ {0} more</source>
       </trans-unit>
       <trans-unit id="shellAlpha.changeType.apply" xml:space="preserve">
         <source>Change type</source>
@@ -2029,9 +2032,6 @@
       </trans-unit>
       <trans-unit id="shellAlpha.changeType.title" xml:space="preserve">
         <source>Change {0} to…</source>
-      </trans-unit>
-      <trans-unit id="shellAlpha.closeTray" xml:space="preserve">
-        <source>Close the tray or menu</source>
       </trans-unit>
       <trans-unit id="shellAlpha.collapseModes" xml:space="preserve">
         <source>Collapse modes</source>
@@ -2099,17 +2099,20 @@
       <trans-unit id="shellAlpha.element.show" xml:space="preserve">
         <source>Show</source>
       </trans-unit>
-      <trans-unit id="shellAlpha.keepOpen" xml:space="preserve">
-        <source>Keep open</source>
+      <trans-unit id="shellAlpha.escape" xml:space="preserve">
+        <source>Close the menu, deselect, close panels</source>
       </trans-unit>
-      <trans-unit id="shellAlpha.keepOpenHint" xml:space="preserve">
-        <source>Keep the properties open in a panel on the left</source>
+      <trans-unit id="shellAlpha.filterPages" xml:space="preserve">
+        <source>Filter pages</source>
       </trans-unit>
       <trans-unit id="shellAlpha.mode.editor" xml:space="preserve">
         <source>Editor</source>
       </trans-unit>
       <trans-unit id="shellAlpha.mode.media" xml:space="preserve">
         <source>Media</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.newPage" xml:space="preserve">
+        <source>New page</source>
       </trans-unit>
       <trans-unit id="shellAlpha.page" xml:space="preserve">
         <source>page</source>
@@ -2118,6 +2121,9 @@
         <source>Page</source>
       </trans-unit>
       <trans-unit id="shellAlpha.pageTree" xml:space="preserve">
+        <source>Pages</source>
+      </trans-unit>
+      <trans-unit id="shellAlpha.pages" xml:space="preserve">
         <source>Pages</source>
       </trans-unit>
       <trans-unit id="shellAlpha.pin" xml:space="preserve">
@@ -2816,6 +2822,21 @@
       </trans-unit>
       <trans-unit id="trash.restoredWithAncestors" xml:space="preserve">
         <source>Restored {0} and {1} more.</source>
+      </trans-unit>
+      <trans-unit id="tree.alpha.elementMenu" xml:space="preserve">
+        <source>Element menu</source>
+      </trans-unit>
+      <trans-unit id="tree.alpha.hidden" xml:space="preserve">
+        <source>hidden</source>
+      </trans-unit>
+      <trans-unit id="tree.alpha.inside" xml:space="preserve">
+        <source>{0} inside</source>
+      </trans-unit>
+      <trans-unit id="tree.alpha.newChildPage" xml:space="preserve">
+        <source>New page inside</source>
+      </trans-unit>
+      <trans-unit id="tree.alpha.pageMenu" xml:space="preserve">
+        <source>Page menu</source>
       </trans-unit>
       <trans-unit id="tree.clearFilter" xml:space="preserve">
         <source>Clear filter</source>

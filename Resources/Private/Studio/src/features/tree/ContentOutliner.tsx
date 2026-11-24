@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import {
   CONTENT_NODE_TYPES,
   fetchChildren,
@@ -10,16 +11,19 @@ import {
   nodeAddressKey,
   nodeAddressOf,
 } from '@/api/neos/schema'
+import { useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
 import { config } from '@/config'
+import { setPreviewChrome } from '@/features/preview/chromeStore'
 import { permittedActionsOn } from '@/features/access/permittedActions'
 import { translate as t } from '@/lib/i18n'
 import type {
   NodeMenuAction,
   NodeMenuTarget,
 } from '@/features/editing/NodeContextMenu'
+import { alphaNodeRow, RowAction, RowEyeIcon, RowMoreIcon } from './alphaRow'
 import { TreeList } from './TreeList'
 import type { NodeEdit } from './useNodeEditRefresh'
-import { NodeTreeContextMenu, useNodeTree } from './useNodeTree'
+import { NodeTreeContextMenu, nodeOfItem, useNodeTree } from './useNodeTree'
 
 export type { NodeEdit } from './useNodeEditRefresh'
 
@@ -36,6 +40,7 @@ export function ContentOutliner({
   onNodeAction,
   onMoved,
   onCreateNew,
+  onToggleHidden,
 }: {
   document: Node | null
   workspaceName: string | null
@@ -53,6 +58,8 @@ export function ContentOutliner({
   onMoved?: (affectedAddresses: NodeAddress[]) => void
   /** "Create new…" was picked in the context menu for this target. */
   onCreateNew?: (target: NodeMenuTarget) => void
+  /** Alpha rows: the hover action that hides or shows an element. */
+  onToggleHidden?: (node: Node) => void
 }) {
   // No document is a transient state only (a document is selected
   // automatically on boot and after site/dimension switches) - stay empty.
@@ -71,6 +78,7 @@ export function ContentOutliner({
       onNodeAction={onNodeAction}
       onMoved={onMoved}
       onCreateNew={onCreateNew}
+      onToggleHidden={onToggleHidden}
     />
   )
 }
@@ -84,6 +92,7 @@ function OutlinerTree({
   onNodeAction,
   onMoved,
   onCreateNew,
+  onToggleHidden,
 }: {
   document: Node
   workspaceName: string | null
@@ -93,7 +102,10 @@ function OutlinerTree({
   onNodeAction?: (action: NodeMenuAction, targets: NodeMenuTarget[]) => void
   onMoved?: (affectedAddresses: NodeAddress[]) => void
   onCreateNew?: (target: NodeMenuTarget) => void
+  onToggleHidden?: (node: Node) => void
 }) {
+  const { data: nodeTypes } = useNodeTypes()
+  useEffect(() => () => setPreviewChrome({ hoverNode: null }), [])
   // Outlining a DELETED page (selected from the trash): its content inherits
   // the "removed" tag, so every read here has to ask for deleted nodes or the
   // outline comes back empty.
@@ -157,6 +169,45 @@ function OutlinerTree({
         decorate={nodeTree.decorate}
         onItemContextMenu={nodeTree.openMenu}
         selectOnContextMenu
+        hideRoot
+        alphaRow={(item) => {
+          const node = nodeOfItem(item.getItemData())
+          const tethered = node?.classification === 'tethered'
+          return alphaNodeRow(
+            item,
+            nodeTypes,
+            nodeTree.loadedChildCount(item.getId()),
+            {
+              // Hovering a row outlines its element in the preview.
+              onHover: (hovered) =>
+                setPreviewChrome({
+                  hoverNode: hovered && node ? node.nodeAggregateId : null,
+                }),
+              actions: (
+                <>
+                  {node && !tethered && onToggleHidden && (
+                    <RowAction
+                      label={
+                        node.isHidden
+                          ? t('editing.unhide', 'Unhide')
+                          : t('editing.hide', 'Hide')
+                      }
+                      onClick={() => onToggleHidden(node)}
+                    >
+                      <RowEyeIcon off={node.isHidden} />
+                    </RowAction>
+                  )}
+                  <RowAction
+                    label={t('tree.alpha.elementMenu', 'Element menu')}
+                    onClick={(event) => nodeTree.openMenu(item, event)}
+                  >
+                    <RowMoreIcon />
+                  </RowAction>
+                </>
+              ),
+            },
+          )
+        }}
       />
       <NodeTreeContextMenu
         nodeTree={nodeTree}

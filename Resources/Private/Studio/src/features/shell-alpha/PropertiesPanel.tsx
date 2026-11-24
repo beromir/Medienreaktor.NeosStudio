@@ -1,28 +1,35 @@
 import type * as React from 'react'
 import { useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
+import type { Node } from '@/api/neos/schema'
 import { useStudio } from '@/app/StudioContext'
 import { InspectorPanel } from '@/features/inspector/Inspector'
 import { NodeTypeIcon } from '@/features/tree/nodeTypeIcon'
 import { translate as t } from '@/lib/i18n'
-import { ChevronDownIcon, CloseIcon } from './icons'
-import { PathMenu, useNodeName } from './PathMenu'
+import { BranchMap } from './BranchMap'
+import { CloseIcon } from './icons'
+import { useNodeName } from './PathMenu'
 import { IconButton } from './primitives'
-import { useTooltip } from './Tooltip'
 
 /** The page fields that lead the panel when the page itself is shown. */
 const PAGE_LEAD = ['title', 'uriPathSegment', 'hiddenInMenu', '_hiddenInMenu']
 
 /**
- * The tray's fields, kept open on the left ("Keep open"): the inspector of
- * the selected element, or of the page while nothing is selected. The header
- * names the node and opens the path menu over the panel; header and fields
- * stay where they are when the selection changes.
+ * The right side: the selected element's settings, or the page's while the
+ * page is selected, with the branch map at the bottom. The fields scroll,
+ * header and map stay where they are when the selection changes.
  */
 export function PropertiesPanel({
+  className,
   pin,
+  showBranchMap,
+  onShowOutline,
   onClose,
 }: {
+  className: string
   pin: React.ReactNode
+  /** The Outline shows the whole tree already. */
+  showBranchMap: boolean
+  onShowOutline: () => void
   onClose: () => void
 }) {
   const { inspectedNode, selectedDocument, nodeEdited } = useStudio()
@@ -35,10 +42,10 @@ export function PropertiesPanel({
   return (
     <aside
       aria-label={t('shellAlpha.properties', 'Properties')}
-      className="flex w-75 shrink-0 flex-col overflow-hidden rounded-shell-surface border border-shell-border bg-shell-surface"
+      className={className}
     >
-      <div className="flex h-13 shrink-0 items-center justify-between px-2">
-        {node ? <Header key="header" /> : <span />}
+      <div className="flex h-13 shrink-0 items-center justify-between gap-2 px-2">
+        {node ? <Header node={node} /> : <span />}
         <div className="flex shrink-0 items-center gap-0.5">
           {pin}
           <IconButton
@@ -66,43 +73,26 @@ export function PropertiesPanel({
           }
         />
       )}
+      {node && showBranchMap && (
+        <BranchMap node={node} onShowOutline={onShowOutline} />
+      )}
     </aside>
   )
 }
 
-function Header() {
-  const { inspectedNode, selectedDocument } = useStudio()
-  const node = (inspectedNode ?? selectedDocument)!
+function Header({ node }: { node: Node }) {
   const { data: nodeTypes } = useNodeTypes()
   const name = useNodeName(node)
-  const pathTooltip = useTooltip(
-    t('shellAlpha.selectionPath', 'Selection path'),
-  )
   return (
-    <>
-      {pathTooltip.tooltip}
-      <PathMenu
-        node={node}
-        side="bottom"
-        sideOffset={2}
-        trigger={
-          <button
-            type="button"
-            {...pathTooltip.props}
-            className="flex h-8 min-w-0 cursor-pointer items-center gap-2 rounded-shell-control pr-2.5 pl-2 text-shell-text outline-none hover:bg-shell-hover focus-visible:ring-2 focus-visible:ring-shell-accent/60 data-popup-open:bg-shell-hover"
-          >
-            <NodeTypeIcon
-              nodeTypes={nodeTypes}
-              nodeTypeName={node.nodeType}
-              className="type-icon-s"
-            />
-            <span className="truncate text-[0.875rem] leading-4.5 font-semibold">
-              {name}
-            </span>
-            <ChevronDownIcon className="text-shell-muted" />
-          </button>
-        }
+    <div className="flex h-8 min-w-0 items-center gap-2 pr-2.5 pl-2 text-shell-text">
+      <NodeTypeIcon
+        nodeTypes={nodeTypes}
+        nodeTypeName={node.nodeType}
+        className="type-icon-s"
       />
-    </>
+      <span className="truncate text-[0.875rem] leading-4.5 font-semibold">
+        {name}
+      </span>
+    </div>
   )
 }

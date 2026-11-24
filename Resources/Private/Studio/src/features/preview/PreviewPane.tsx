@@ -687,7 +687,14 @@ export function PreviewPane({
   // The shell's wishes for the in-page chrome (see chromeStore), again
   // right after every guest boot.
   const chrome = usePreviewChrome()
-  const { minimal, scrollSpace, bottomInset, insertPreview, typeDrag } = chrome
+  const {
+    minimal,
+    scrollSpace,
+    bottomInset,
+    insertPreview,
+    typeDrag,
+    hoverNode,
+  } = chrome
   useEffect(() => {
     if (!guestReady) return
     postToGuest({
@@ -722,6 +729,10 @@ export function PreviewPane({
       current = false
     }
   }, [guestReady, minimal, nodeTypes, postToGuest])
+  useEffect(() => {
+    if (!guestReady) return
+    postToGuest({ type: 'neos-studio/hover-node', aggregateId: hoverNode })
+  }, [guestReady, hoverNode, postToGuest])
 
   // Forward collaborators' live-typing ticks into the guest, which paints
   // them into the locked inline text. The guest ignores ticks for elements

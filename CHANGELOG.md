@@ -10,11 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - An opt-in alpha of the redesigned shell (user menu → "Try the new layout
-  (alpha)"): top bar, rail with modes and panels, one docked panel, and the
-  preview as a card with a floating action bar - settings tray, Add menu,
-  fade on scroll. Dark only. Panels, header actions, node actions and node
-  decorators of plugins keep working. Selecting an element opens the
-  settings tray; "Keep open" docks its fields as a Properties panel. See
+  (alpha)"): top bar, rail with modes and panels, and the preview as a card
+  with a floating action bar - Add menu, fade on scroll. Dark only. Panels
+  float over the preview and dock when pinned: Pages, Outline and the other
+  tools on the left, the Properties panel with a branch map on the right,
+  opened from the node pill's Settings. Panels, header actions, node actions
+  and node decorators of plugins keep working. See
   Documentation/AlphaLayout.md.
 
 ## [2.6.1] - 2026-11-19

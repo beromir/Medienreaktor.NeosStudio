@@ -289,6 +289,8 @@ export type HostToGuestMessage =
       type: 'neos-studio/node-types'
       types: Record<string, { label: string; icon: string | null }>
     }
+  /** Outline this node's element as hovered (a shell row is); null: none. */
+  | { type: 'neos-studio/hover-node'; aggregateId: string | null }
   | {
       type: 'neos-studio/insert-preview'
       aggregateId: string | null

@@ -26,10 +26,7 @@ import {
 import type { CreatableNodeTypeGroup } from '@/features/creation/creatableNodeTypes'
 import { redo, undo, useHistory } from '@/features/history/historyStore'
 import type { HistoryLocation } from '@/features/history/location'
-import {
-  hasContentSettings,
-  InspectorPanel,
-} from '@/features/inspector/Inspector'
+import { hasContentSettings } from '@/features/inspector/Inspector'
 import {
   onPreviewCreateRequest,
   onPreviewEscape,
@@ -43,11 +40,10 @@ import { useKeyboardShortcut } from '@/features/shortcuts/useKeyboardShortcut'
 import { NodeTypeIcon } from '@/features/tree/nodeTypeIcon'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { useLatestRef } from '@/hooks/use-latest-ref'
 import {
   BackIcon,
   ChevronDownIcon,
-  PinIcon,
-  CloseIcon,
   EyeOffIcon,
   PageIcon,
   PlusIcon,
@@ -68,9 +64,8 @@ import { anchorProps, NativePopover, type Placement } from './NativePopover'
 import { Tooltip, useTooltip } from './Tooltip'
 import { PathMenu } from './PathMenu'
 import { ElementMenu } from './ElementMenu'
-import { useTrayOnSelection } from './preferences'
 
-type Open = 'settings' | 'add' | null
+type Open = 'add' | null
 
 /** The bar's height plus its distance from the card's bottom edge. */
 const BAR_SPACE = 64
@@ -91,8 +86,9 @@ const ADD_PLACEMENT: Placement = {
 /**
  * The floating action bar (R9 variant D): a global pill - Add, Search,
  * Undo/Redo - and, while a content element is selected, a node pill with
- * its type, Settings, Copy for MCP and more. Settings and Add open their
- * surfaces attached above the bar; Search opens the search dialog.
+ * its type, Settings (the Properties panel) and more. Add opens its
+ * surface above the bar, Search the search dialog. It centres in the part
+ * of the preview no floating panel covers.
  */
 export function ActionBar({
   searchOpen,
@@ -100,17 +96,19 @@ export function ActionBar({
   onOpenMode,
   onHistoryApplied,
   onReveal,
-  propertiesDocked,
-  propertiesPinned,
-  onKeepOpen,
+  insets,
+  propertiesOpen,
+  onToggleProperties,
+  onEscape,
 }: {
   searchOpen: boolean
   onSearch: () => void
-  /** The Properties panel is docked: selecting no longer opens the tray. */
-  propertiesDocked: boolean
-  propertiesPinned: boolean
-  /** "Keep open": dock the tray's fields as the Properties panel. */
-  onKeepOpen: () => void
+  /** px the floating panels cover on either side of the preview. */
+  insets: { left: number; right: number }
+  propertiesOpen: boolean
+  onToggleProperties: () => void
+  /** Esc with nothing of the bar's open; false when it did nothing either. */
+  onEscape: () => boolean
   onOpenMode: (panel: string) => void
   onHistoryApplied: () => void
   onReveal: (location: HistoryLocation) => void
@@ -124,12 +122,10 @@ export function ActionBar({
     !isOfType(nodeTypes, inspectedNode.nodeType, DOCUMENT_NODE_TYPE)
   const node = isContent ? inspectedNode : null
   const nodeKey = node?.nodeAggregateId ?? null
-  const [trayOnSelection] = useTrayOnSelection()
-  const hasText = useHasInlineText(node)
   // The full node type - the listing carries no inspector configuration.
   const { data: nodeType } = useNodeType(node?.nodeType ?? null)
   // A content element with nothing to set (an untouched content collection)
-  // gets no tray and no Settings button; null while its type loads.
+  // gets no Settings button; null while its type loads.
   const hasSettings = React.useMemo(
     () =>
       node && nodeType?.name === node.nodeType
@@ -137,29 +133,15 @@ export function ActionBar({
         : null,
     [node, nodeType],
   )
-  // The tray follows the selection while open and closes with it. Closed,
-  // it opens for a node with nothing to type - decided once its type is
-  // known.
-  const [trayNode, setTrayNode] = React.useState(nodeKey)
-  const [undecided, setUndecided] = React.useState<string | null>(null)
-  if (trayNode !== nodeKey) {
-    setTrayNode(nodeKey)
-    setUndecided(nodeKey !== null && open !== 'settings' ? nodeKey : null)
-    if (nodeKey === null && open === 'settings') setOpen(null)
+  const escape = () => {
+    if (open !== null) {
+      setOpen(null)
+      return true
+    }
+    return onEscape()
   }
-  if (hasSettings === false && open === 'settings') setOpen(null)
-  if (
-    undecided !== null &&
-    undecided === nodeKey &&
-    hasText !== null &&
-    hasSettings !== null
-  ) {
-    setUndecided(null)
-    if (!hasText && hasSettings && trayOnSelection && !propertiesDocked)
-      setOpen('settings')
-  }
-
-  React.useEffect(() => onPreviewEscape(() => setOpen(null)), [])
+  const escapeRef = useLatestRef(escape)
+  React.useEffect(() => onPreviewEscape(() => escapeRef.current()), [escapeRef])
 
   // A type dragged from the Add menu was dropped into the page.
   const { nodesEdited, inspectNode } = useStudio()
@@ -179,12 +161,9 @@ export function ActionBar({
   useKeyboardShortcut({
     id: 'shellAlpha.closeSurface',
     combo: 'escape',
-    title: t('shellAlpha.closeTray', 'Close the tray or menu'),
+    title: t('shellAlpha.escape', 'Close the menu, deselect, close panels'),
     category: t('shortcuts.category.editing', 'Editing'),
-    handler: () => {
-      if (open === null) return false
-      setOpen(null)
-    },
+    handler: () => escape(),
   })
 
   const faded = useFade(open !== null, nodeKey)
@@ -221,8 +200,6 @@ export function ActionBar({
     setPreviewChrome({ minimal: true, scrollSpace: BAR_SPACE })
   }, [])
 
-  const toggle = (which: Exclude<Open, null>) =>
-    setOpen((current) => (current === which ? null : which))
   // The browser opened or light-dismissed one of the popovers.
   const popoverChanged = (which: 'add', value: boolean) =>
     setOpen((current) => (value ? which : current === which ? null : current))
@@ -231,22 +208,12 @@ export function ActionBar({
     <div
       ref={stackRef}
       className={cn(
-        'pointer-events-none absolute inset-x-0 bottom-4 z-10 flex flex-col items-center gap-2 px-4 transition-[opacity,translate] duration-200',
+        'pointer-events-none absolute bottom-4 z-10 flex flex-col items-center gap-2 px-4 transition-[opacity,translate,left,right] duration-200',
         faded && 'translate-y-2 opacity-0',
       )}
+      style={{ left: insets.left, right: insets.right }}
     >
       <div className="pointer-events-auto flex max-w-full flex-col items-center gap-2 *:max-w-full">
-        {open === 'settings' && node && hasSettings !== false && (
-          <SettingsTray
-            node={node}
-            pinned={propertiesPinned}
-            onClose={() => setOpen(null)}
-            onKeepOpen={() => {
-              setOpen(null)
-              onKeepOpen()
-            }}
-          />
-        )}
         <div className="flex items-center gap-2" {...anchorProps(BARS_ANCHOR)}>
           <BarPill>
             <Tooltip label={t('shellAlpha.add', 'Add')}>
@@ -273,10 +240,9 @@ export function ActionBar({
           {node && (
             <NodePill
               node={node}
-              settingsOpen={open === 'settings'}
               hasSettings={hasSettings !== false}
-              settingsShown={open === 'settings' || propertiesDocked}
-              onToggleSettings={() => toggle('settings')}
+              settingsOpen={propertiesOpen}
+              onToggleSettings={onToggleProperties}
             />
           )}
         </div>
@@ -322,16 +288,6 @@ export function ActionBar({
       </NativePopover>
     </div>
   )
-}
-
-/**
- * Whether the node renders text to type in the preview (an inline-editable
- * property of its own, as the page reports it); null until reported.
- */
-function useHasInlineText(node: Node | null): boolean | null {
-  const { selectionText } = usePreviewChrome()
-  if (!node || selectionText?.aggregateId !== node.nodeAggregateId) return null
-  return selectionText.editable
 }
 
 /**
@@ -445,14 +401,12 @@ function NodePill({
   node,
   hasSettings,
   settingsOpen,
-  settingsShown,
   onToggleSettings,
 }: {
   node: Node
   hasSettings: boolean
+  /** The Properties panel is open - it shows the selected node. */
   settingsOpen: boolean
-  /** The tray or the Properties panel shows this node. */
-  settingsShown: boolean
   onToggleSettings: () => void
 }) {
   const { data: nodeTypes } = useNodeTypes()
@@ -508,7 +462,7 @@ function NodePill({
       )}
       {hasSettings && (
         <LabelButton
-          open={settingsShown}
+          open={settingsOpen}
           aria-expanded={settingsOpen}
           onClick={onToggleSettings}
           className="gap-1.75 pr-3.25 pl-2.75"
@@ -524,71 +478,6 @@ function NodePill({
         pillAnchor={NODE_PILL_ANCHOR}
       />
     </BarPill>
-  )
-}
-
-/**
- * Attached above the bar: the node's inspector tabs, each group's fields in
- * a row. The node pill names the node, so the header holds only the tabs.
- */
-function SettingsTray({
-  node,
-  pinned,
-  onClose,
-  onKeepOpen,
-}: {
-  node: Node
-  /** The Properties panel is docked pinned already. */
-  pinned: boolean
-  onClose: () => void
-  onKeepOpen: () => void
-}) {
-  const { nodeEdited } = useStudio()
-  return (
-    <Surface className="flex w-150 flex-col overflow-hidden">
-      <InspectorPanel
-        node={node}
-        onNodeEdited={nodeEdited}
-        layout="tray"
-        tabsEnd={
-          <div className="flex shrink-0 items-center gap-1">
-            <Tooltip
-              label={t(
-                'shellAlpha.keepOpenHint',
-                'Keep the properties open in a panel on the left',
-              )}
-            >
-              <button
-                type="button"
-                onClick={onKeepOpen}
-                aria-pressed={pinned}
-                className={cn(
-                  'flex h-7 cursor-pointer items-center gap-1.5 rounded-full pr-2.5 pl-2 type-shell-secondary outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
-                  pinned
-                    ? 'bg-shell-ground text-shell-text'
-                    : 'text-shell-muted hover:bg-shell-hover hover:text-shell-text',
-                )}
-              >
-                <PinIcon
-                  filled={pinned}
-                  width={pinned ? 12 : 13}
-                  height={pinned ? 12 : 13}
-                />
-                {t('shellAlpha.keepOpen', 'Keep open')}
-              </button>
-            </Tooltip>
-            <IconButton
-              size="sm"
-              className="size-7 text-shell-muted"
-              onClick={onClose}
-              aria-label={t('common.close', 'Close')}
-            >
-              <CloseIcon />
-            </IconButton>
-          </div>
-        }
-      />
-    </Surface>
   )
 }
 
