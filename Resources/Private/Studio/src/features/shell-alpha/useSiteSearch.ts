@@ -197,7 +197,9 @@ const MAX_ORDERED_PARENTS = 40
  * The positions among their siblings of the nodes where the hits' branches
  * part, read with the children of their parents.
  */
-function useChildPositions(hits: NodeHit[]): ReadonlyMap<string, number> {
+export function useChildPositions(
+  hits: Pick<NodeHit, 'nodeAggregateId' | 'node' | 'ancestors'>[],
+): ReadonlyMap<string, number> {
   const parents = React.useMemo(() => {
     const nodes = new Map<string, Node>()
     for (const hit of hits) {

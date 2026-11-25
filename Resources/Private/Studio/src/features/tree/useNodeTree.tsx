@@ -426,8 +426,10 @@ export function NodeTreeContextMenu({
   onNodeAction,
   onMoved,
   onCreateNew,
+  visibilityFirst,
 }: {
   nodeTree: Pick<ReturnType<typeof useNodeTree>, 'menu' | 'closeMenu'>
+  visibilityFirst?: boolean
   /** Which tree this is - offered to the registered node actions. */
   surface: NodeActionSurface
   entityLabel: string
@@ -449,6 +451,7 @@ export function NodeTreeContextMenu({
       onDone={(action, targets) => onNodeAction?.(action, targets)}
       onPasted={(affectedAddresses) => onMoved?.(affectedAddresses)}
       onCreateNew={onCreateNew}
+      visibilityFirst={visibilityFirst}
     />
   )
 }

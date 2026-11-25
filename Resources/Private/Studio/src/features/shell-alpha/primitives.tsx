@@ -285,16 +285,14 @@ export function CloseAction({ onClick }: { onClick: () => void }) {
   )
 }
 
-/** A side panel's header: title, a quiet subtitle, pin and close. */
+/** A left panel's header: title, a quiet subtitle and close. */
 export function PanelHeader({
   title,
   subtitle,
-  pin,
   onClose,
 }: {
   title: string
   subtitle?: string
-  pin: React.ReactNode
   onClose: () => void
 }) {
   return (
@@ -309,10 +307,7 @@ export function PanelHeader({
           </span>
         )}
       </div>
-      <div className="flex shrink-0 items-center gap-0.5">
-        {pin}
-        <CloseAction onClick={onClose} />
-      </div>
+      <CloseAction onClick={onClose} />
     </div>
   )
 }

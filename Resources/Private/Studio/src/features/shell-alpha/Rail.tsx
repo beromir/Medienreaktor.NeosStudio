@@ -28,9 +28,8 @@ import {
   LayoutIcon,
   LogoutIcon,
   MediaModeIcon,
-  OutlineIcon,
-  PagesIcon,
   PersonIcon,
+  StructureIcon,
   TasksModeIcon,
   TrashIcon,
   WorkspacesModeIcon,
@@ -61,8 +60,7 @@ const MODE_ICONS: Record<string, React.ReactNode> = {
 }
 
 const PANEL_ICONS: Record<string, React.ReactNode> = {
-  'shellAlpha:pages': <PagesIcon />,
-  outline: <OutlineIcon />,
+  'shellAlpha:structure': <StructureIcon />,
   clipboard: <ClipboardIcon />,
   trash: <TrashIcon />,
   history: <HistoryIcon />,

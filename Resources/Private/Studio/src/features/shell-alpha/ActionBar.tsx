@@ -64,6 +64,7 @@ import { anchorProps, NativePopover, type Placement } from './NativePopover'
 import { Tooltip, useTooltip } from './Tooltip'
 import { PathMenu } from './PathMenu'
 import { ElementMenu } from './ElementMenu'
+import { type AddRequest, onAddRequest } from './addRequest'
 
 type Open = 'add' | null
 
@@ -158,6 +159,18 @@ export function ActionBar({
       }),
     [],
   )
+  // An Outline row's +: the Add menu at that row instead of the selection.
+  const [addAt, setAddAt] = React.useState<AddRequest | null>(null)
+  React.useEffect(
+    () =>
+      onAddRequest((request) => {
+        setAddAt(request)
+        setOpen('add')
+      }),
+    [],
+  )
+  if (open !== 'add' && addAt !== null) setAddAt(null)
+
   useKeyboardShortcut({
     id: 'shellAlpha.closeSurface',
     combo: 'escape',
@@ -278,6 +291,7 @@ export function ActionBar({
           <AddMenu
             document={selectedDocument}
             node={node}
+            at={addAt}
             onClose={() => setOpen(null)}
             onUpload={() => {
               setOpen(null)
@@ -520,15 +534,27 @@ function useInsertTarget(
 function AddMenu({
   document,
   node,
+  at,
   onClose,
   onUpload,
 }: {
   document: Node
   node: Node | null
+  /** A position picked elsewhere (an Outline row), over the selection's. */
+  at: AddRequest | null
   onClose: () => void
   onUpload: () => void
 }) {
-  const target = useInsertTarget(document, node)
+  const selectionTarget = useInsertTarget(document, node)
+  const target = at
+    ? {
+        request: {
+          referenceAddress: nodeAddressOf(at.node),
+          defaultMode: at.mode,
+        },
+        label: at.node.label || at.node.nodeAggregateId,
+      }
+    : selectionTarget
   const [pageRequest, setPageRequest] = React.useState<InsertRequest | null>(
     null,
   )
@@ -546,7 +572,10 @@ function AddMenu({
       >
         {target ? (
           <AddMenuBody
-            key={JSON.stringify(target.request.referenceAddress)}
+            key={JSON.stringify([
+              target.request.referenceAddress,
+              target.request.defaultMode,
+            ])}
             request={target.request}
             referenceLabel={target.label}
             onCreated={onClose}

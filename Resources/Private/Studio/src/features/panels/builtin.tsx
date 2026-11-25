@@ -24,7 +24,6 @@ import type {
   NodeMenuAction,
   NodeMenuTarget,
 } from '@/features/editing/NodeContextMenu'
-import { hideNodes, unhideNodes } from '@/features/editing/nodeActions'
 import { InspectorPanel } from '@/features/inspector/Inspector'
 import { useAssetPicker } from '@/features/media/AssetPicker'
 import { MediaBrowser } from '@/features/media/MediaBrowser'
@@ -38,7 +37,6 @@ import { DocumentSearchList } from '@/features/tree/DocumentSearchList'
 import { DocumentsToolbar } from '@/features/tree/DocumentsToolbar'
 import { DocumentTree } from '@/features/tree/DocumentTree'
 import { Button } from '@/components/ui/button'
-import { toast } from '@/components/ui/toast'
 import { LoadingState } from '@/components/ui/spinner'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -300,6 +298,25 @@ export function SiteDocumentTree({
 }
 
 function OutlinePanel() {
+  return (
+    <div className="p-3">
+      <PageOutline />
+    </div>
+  )
+}
+
+/**
+ * The selected page's content tree with the Outline panel's wiring. Shared
+ * with the alpha layout's structure panel, which adds the rows' + and its
+ * Collapse all.
+ */
+export function PageOutline({
+  onAdd,
+  collapseAll,
+}: {
+  onAdd?: (node: Node, mode: 'after' | 'inside') => void
+  collapseAll?: number
+}) {
   const {
     selectedDocument,
     workspaceName,
@@ -311,7 +328,7 @@ function OutlinePanel() {
   } = useStudio()
   const [insertRequest, setInsertRequest] = useState<InsertRequest | null>(null)
   return (
-    <div className="p-3">
+    <>
       <ContentOutliner
         document={selectedDocument}
         workspaceName={workspaceName}
@@ -319,18 +336,8 @@ function OutlinePanel() {
         lastEdit={lastEdit}
         onSelect={inspectNode}
         onMoved={nodesEdited}
-        onToggleHidden={(node) => {
-          const address = nodeAddressOf(node)
-          ;(node.isHidden ? unhideNodes : hideNodes)([address])
-            .then(() => nodeEdited(address, { reload: 'element' }))
-            .catch((e: unknown) =>
-              toast.error(e, {
-                title: node.isHidden
-                  ? t('editing.unhideFailed', 'Unhiding failed')
-                  : t('editing.hideFailed', 'Hiding failed'),
-              }),
-            )
-        }}
+        onAdd={onAdd}
+        collapseAll={collapseAll}
         onCreateNew={(target) =>
           setInsertRequest({
             referenceAddress: target.address,
@@ -378,7 +385,7 @@ function OutlinePanel() {
         }}
         onClose={() => setInsertRequest(null)}
       />
-    </div>
+    </>
   )
 }
 

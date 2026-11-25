@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import {
   CONTENT_NODE_TYPES,
   fetchChildren,
@@ -11,7 +11,7 @@ import {
   nodeAddressKey,
   nodeAddressOf,
 } from '@/api/neos/schema'
-import { useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
+import { isOfType, useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
 import { config } from '@/config'
 import { setPreviewChrome } from '@/features/preview/chromeStore'
 import { permittedActionsOn } from '@/features/access/permittedActions'
@@ -20,7 +20,7 @@ import type {
   NodeMenuAction,
   NodeMenuTarget,
 } from '@/features/editing/NodeContextMenu'
-import { alphaNodeRow, RowAction, RowEyeIcon, RowMoreIcon } from './alphaRow'
+import { alphaNodeRow, RowAction, RowMoreIcon, RowPlusIcon } from './alphaRow'
 import { TreeList } from './TreeList'
 import type { NodeEdit } from './useNodeEditRefresh'
 import { NodeTreeContextMenu, nodeOfItem, useNodeTree } from './useNodeTree'
@@ -40,7 +40,8 @@ export function ContentOutliner({
   onNodeAction,
   onMoved,
   onCreateNew,
-  onToggleHidden,
+  onAdd,
+  collapseAll,
 }: {
   document: Node | null
   workspaceName: string | null
@@ -58,8 +59,13 @@ export function ContentOutliner({
   onMoved?: (affectedAddresses: NodeAddress[]) => void
   /** "Create new…" was picked in the context menu for this target. */
   onCreateNew?: (target: NodeMenuTarget) => void
-  /** Alpha rows: the hover action that hides or shows an element. */
-  onToggleHidden?: (node: Node) => void
+  /**
+   * Alpha rows: the hover action that adds after an element, or inside (at
+   * the end) on anything that holds elements.
+   */
+  onAdd?: (node: Node, mode: 'after' | 'inside') => void
+  /** Changing it folds every row (the alpha Outline's Collapse all). */
+  collapseAll?: number
 }) {
   // No document is a transient state only (a document is selected
   // automatically on boot and after site/dimension switches) - stay empty.
@@ -78,7 +84,8 @@ export function ContentOutliner({
       onNodeAction={onNodeAction}
       onMoved={onMoved}
       onCreateNew={onCreateNew}
-      onToggleHidden={onToggleHidden}
+      onAdd={onAdd}
+      collapseAll={collapseAll}
     />
   )
 }
@@ -92,7 +99,8 @@ function OutlinerTree({
   onNodeAction,
   onMoved,
   onCreateNew,
-  onToggleHidden,
+  onAdd,
+  collapseAll,
 }: {
   document: Node
   workspaceName: string | null
@@ -102,9 +110,13 @@ function OutlinerTree({
   onNodeAction?: (action: NodeMenuAction, targets: NodeMenuTarget[]) => void
   onMoved?: (affectedAddresses: NodeAddress[]) => void
   onCreateNew?: (target: NodeMenuTarget) => void
-  onToggleHidden?: (node: Node) => void
+  onAdd?: (node: Node, mode: 'after' | 'inside') => void
+  collapseAll?: number
 }) {
   const { data: nodeTypes } = useNodeTypes()
+  const holdsElements = (node: Node) =>
+    nodeTypes !== undefined &&
+    isOfType(nodeTypes, node.nodeType, 'Neos.Neos:ContentCollection')
   useEffect(() => () => setPreviewChrome({ hoverNode: null }), [])
   // Outlining a DELETED page (selected from the trash): its content inherits
   // the "removed" tag, so every read here has to ask for deleted nodes or the
@@ -157,6 +169,18 @@ function OutlinerTree({
     onMoved,
   })
 
+  // The document's own row stays open: it is the hidden root.
+  const tree = nodeTree.tree
+  const collapsedFor = useRef(collapseAll)
+  useEffect(() => {
+    if (collapseAll === collapsedFor.current) return
+    collapsedFor.current = collapseAll
+    tree.applySubStateUpdate('expandedItems', (expanded) =>
+      expanded.filter((id) => id === document.nodeAggregateId),
+    )
+  }, [collapseAll, tree, document.nodeAggregateId])
+  const menuOpenFor = nodeTree.menu?.target.address.nodeAggregateId ?? null
+
   return (
     <>
       <TreeList
@@ -172,7 +196,6 @@ function OutlinerTree({
         hideRoot
         alphaRow={(item) => {
           const node = nodeOfItem(item.getItemData())
-          const tethered = node?.classification === 'tethered'
           return alphaNodeRow(
             item,
             nodeTypes,
@@ -185,20 +208,23 @@ function OutlinerTree({
                 }),
               actions: (
                 <>
-                  {node && !tethered && onToggleHidden && (
+                  {node && onAdd && (
                     <RowAction
                       label={
-                        node.isHidden
-                          ? t('editing.unhide', 'Unhide')
-                          : t('editing.hide', 'Hide')
+                        holdsElements(node)
+                          ? t('tree.alpha.addInside', 'Add inside')
+                          : t('tree.alpha.addAfter', 'Add after')
                       }
-                      onClick={() => onToggleHidden(node)}
+                      onClick={() =>
+                        onAdd(node, holdsElements(node) ? 'inside' : 'after')
+                      }
                     >
-                      <RowEyeIcon off={node.isHidden} />
+                      <RowPlusIcon />
                     </RowAction>
                   )}
                   <RowAction
                     label={t('tree.alpha.elementMenu', 'Element menu')}
+                    open={menuOpenFor === item.getId()}
                     onClick={(event) => nodeTree.openMenu(item, event)}
                   >
                     <RowMoreIcon />
@@ -218,6 +244,7 @@ function OutlinerTree({
         onNodeAction={onNodeAction}
         onMoved={onMoved}
         onCreateNew={onCreateNew}
+        visibilityFirst={onAdd !== undefined}
       />
     </>
   )

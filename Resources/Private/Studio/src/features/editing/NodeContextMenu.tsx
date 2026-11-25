@@ -120,7 +120,10 @@ export function NodeContextMenu({
   onPasted,
   onCreateNew,
   surface,
+  visibilityFirst = false,
 }: {
+  /** Hide / Unhide lead the menu (the alpha Outline's element menu). */
+  visibilityFirst?: boolean
   target: NodeMenuTarget | null
   /**
    * Every target the menu acts on when it was opened on a multi-selection,
@@ -376,6 +379,34 @@ export function NodeContextMenu({
       )
   }
 
+  // One entry per applicable direction: a single target gets its one entry,
+  // a mixed multi-selection gets both - each acting on (and counting) its
+  // own subset. An entry whose whole subset is tethered/unpermitted renders
+  // disabled.
+  const visibility = (
+    <>
+      {targets.some((t) => !t.hidden) && (
+        <DropdownMenuItem
+          disabled={hidable.length === 0}
+          onClick={() => runVisibilityAction(hidable, 'hide')}
+        >
+          <i className="fas fa-fw fa-eye-slash" aria-hidden />
+          {t('editing.hide', 'Hide')}
+          {count(hidable.length)}
+        </DropdownMenuItem>
+      )}
+      {targets.some((t) => t.hidden) && (
+        <DropdownMenuItem
+          disabled={unhidable.length === 0}
+          onClick={() => runVisibilityAction(unhidable, 'unhide')}
+        >
+          <i className="fas fa-fw fa-eye" aria-hidden />
+          {t('editing.unhide', 'Unhide')}
+          {count(unhidable.length)}
+        </DropdownMenuItem>
+      )}
+    </>
+  )
   return (
     <>
       {target && (
@@ -396,6 +427,12 @@ export function NodeContextMenu({
             }}
           />
           <DropdownMenuContent align="end">
+            {visibilityFirst && (
+              <>
+                {visibility}
+                <DropdownMenuSeparator />
+              </>
+            )}
             {onCreateNew && (
               <>
                 <DropdownMenuItem
@@ -464,30 +501,7 @@ export function NodeContextMenu({
                 <DropdownMenuSeparator />
               </>
             )}
-            {/* One entry per applicable direction: a single target gets its
-                one entry (as before), a mixed multi-selection gets both -
-                each acting on (and counting) its own subset. An entry whose
-                whole subset is tethered/unpermitted renders disabled. */}
-            {targets.some((t) => !t.hidden) && (
-              <DropdownMenuItem
-                disabled={hidable.length === 0}
-                onClick={() => runVisibilityAction(hidable, 'hide')}
-              >
-                <i className="fas fa-fw fa-eye-slash" aria-hidden />
-                {t('editing.hide', 'Hide')}
-                {count(hidable.length)}
-              </DropdownMenuItem>
-            )}
-            {targets.some((t) => t.hidden) && (
-              <DropdownMenuItem
-                disabled={unhidable.length === 0}
-                onClick={() => runVisibilityAction(unhidable, 'unhide')}
-              >
-                <i className="fas fa-fw fa-eye" aria-hidden />
-                {t('editing.unhide', 'Unhide')}
-                {count(unhidable.length)}
-              </DropdownMenuItem>
-            )}
+            {!visibilityFirst && visibility}
             <DropdownMenuItem
               variant="destructive"
               disabled={deletable.length === 0}

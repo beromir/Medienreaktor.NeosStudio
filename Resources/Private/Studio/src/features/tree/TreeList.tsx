@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import { Placeholder } from '@/components/ui/placeholder'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { TreeRowDecor } from './nodeDecor'
+import { Chevron } from '@/features/shell-alpha/icons'
 import { type AlphaRow, useTreeStyle } from './treeStyle'
 
 /**
@@ -31,6 +32,7 @@ export function TreeList<T>({
   rootless = false,
   alphaRow,
   hideRoot = false,
+  selectionLook = 'selection',
 }: {
   tree: TreeInstance<T>
   /** Accessible tree label (aria-label on the container). */
@@ -71,6 +73,11 @@ export function TreeList<T>({
   alphaRow?: (item: ItemInstance<T>) => AlphaRow | null
   /** Alpha rows only: leave the visible root out (a panel header names it). */
   hideRoot?: boolean
+  /**
+   * Alpha rows only: how the selected row shows - the selection's blue
+   * tint, or the grey fill of the current page (one of many).
+   */
+  selectionLook?: 'selection' | 'current'
 }) {
   const alpha = useTreeStyle() === 'alpha' && alphaRow !== undefined
   const allItems = tree.getItems()
@@ -120,6 +127,7 @@ export function TreeList<T>({
               }
               onItemContextMenu={onItemContextMenu}
               selectOnContextMenu={selectOnContextMenu}
+              selectionLook={selectionLook}
             />
           )
         const decor = decorate?.(item.getItemData()) ?? null
@@ -323,6 +331,7 @@ function AlphaTreeRow<T>({
   indent,
   onItemContextMenu,
   selectOnContextMenu,
+  selectionLook,
 }: {
   tree: TreeInstance<T>
   item: ItemInstance<T>
@@ -331,8 +340,10 @@ function AlphaTreeRow<T>({
   indent: number
   onItemContextMenu?: (item: ItemInstance<T>, event: React.MouseEvent) => void
   selectOnContextMenu: boolean
+  selectionLook: 'selection' | 'current'
 }) {
   const selected = item.isSelected()
+  const current = selected && selectionLook === 'current'
   const isDropTarget =
     'isUnorderedDragTarget' in item &&
     (item as unknown as DndItem).isUnorderedDragTarget()
@@ -357,43 +368,36 @@ function AlphaTreeRow<T>({
       }
       className={cn(
         'group/row flex h-7 w-full shrink-0 items-center gap-1.5 overflow-hidden rounded-shell-control pr-2 text-left type-shell-control whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60 motion-safe:animate-tree-row-in',
-        selected
-          ? 'bg-shell-accent-tint font-medium text-shell-text'
-          : row?.hidden
-            ? 'text-shell-icon hover:bg-shell-ground'
-            : 'text-shell-label hover:bg-shell-ground hover:text-shell-text',
+        row?.actions && 'hover:pr-1 focus-within:pr-1',
+        current
+          ? 'bg-shell-raised font-semibold text-shell-text'
+          : selected
+            ? 'bg-shell-accent-tint font-medium text-shell-text'
+            : row?.hidden
+              ? 'text-shell-icon hover:bg-shell-ground'
+              : 'text-shell-text hover:bg-shell-ground',
         isDropTarget && 'ring-2 ring-shell-accent/60',
       )}
       style={{ paddingLeft: `${0.5 + indent}rem` }}
     >
       <span
-        className="flex w-2.5 shrink-0 justify-center text-shell-subtle"
+        className="flex w-2.5 shrink-0 justify-center"
         onClick={(e) => toggleExpanded(item, e)}
       >
         {item.isFolder() && (
-          <svg
-            width="10"
-            height="10"
-            viewBox="0 0 10 10"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d={item.isExpanded() ? 'M2 3.5l3 3 3-3' : 'M3.5 2l3 3-3 3'} />
-          </svg>
+          <Chevron direction={item.isExpanded() ? 'down' : 'right'} />
         )}
       </span>
       <span
         className={cn(
           'flex w-3 shrink-0 justify-center text-[0.75rem] leading-none',
-          selected
-            ? 'text-shell-accent-pale'
-            : row?.hidden
-              ? 'text-shell-disabled opacity-70'
-              : 'text-shell-muted',
+          current
+            ? 'text-shell-text'
+            : selected
+              ? 'text-shell-accent-pale'
+              : row?.hidden
+                ? 'text-shell-disabled'
+                : 'text-shell-muted',
         )}
       >
         {row?.icon}

@@ -133,6 +133,7 @@ export function DocumentTree({
         decorate={nodeTree.decorate}
         onItemContextMenu={nodeTree.openMenu}
         selectOnContextMenu
+        selectionLook="current"
         alphaRow={(item) =>
           alphaNodeRow(
             item,
@@ -154,6 +155,10 @@ export function DocumentTree({
                   )}
                   <RowAction
                     label={t('tree.alpha.pageMenu', 'Page menu')}
+                    open={
+                      nodeTree.menu?.target.address.nodeAggregateId ===
+                      item.getId()
+                    }
                     onClick={(event) => nodeTree.openMenu(item, event)}
                   >
                     <RowMoreIcon />

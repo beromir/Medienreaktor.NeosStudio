@@ -13,39 +13,14 @@ import { DocumentSearchList } from '@/features/tree/DocumentSearchList'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { PlusIcon, SearchIcon } from './icons'
-import { PanelHeader } from './primitives'
-
-/** The Pages panel: the shell's own, not a registered panel. */
-export const PAGES = 'shellAlpha:pages'
 
 /** The filter's search cadence, as in the Documents panel. */
 const FILTER_DEBOUNCE_MS = 300
 
-export function PagesPanel({
-  className,
-  pin,
-  onClose,
-}: {
-  className: string
-  pin: React.ReactNode
-  onClose: () => void
-}) {
-  return (
-    <aside aria-label={t('shellAlpha.pages', 'Pages')} className={className}>
-      <PanelHeader
-        title={t('shellAlpha.pages', 'Pages')}
-        pin={pin}
-        onClose={onClose}
-      />
-      <PagesBody />
-    </aside>
-  )
-}
-
 /**
- * The page tree (R33): a filter, the site's documents with hover actions
- * and drag to reorder, "New page" at the bottom. Opening a page keeps it
- * open; the breadcrumb's dropdown shows the same and closes (onOpened).
+ * The breadcrumb's page dropdown (R33): a filter, the site's documents
+ * with hover actions and drag to reorder, "New page" at the bottom. A pick
+ * closes it (onOpened).
  */
 export function PagesBody({ onOpened }: { onOpened?: () => void }) {
   const {

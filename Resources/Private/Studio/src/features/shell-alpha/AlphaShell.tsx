@@ -18,47 +18,51 @@ import { TreeStyleContext } from '@/features/tree/treeStyle'
 import { translate as t } from '@/lib/i18n'
 import { useRegistry } from '@/lib/registry'
 import { cn } from '@/lib/utils'
+import { useLatestRef } from '@/hooks/use-latest-ref'
 import { ActionBar } from './ActionBar'
 import {
   closeFloating,
   closeLeft,
-  NO_PANELS,
   openLeft,
   type Panels,
   PROPERTIES,
-  restorePanels,
+  restoreLeft,
   setProperties,
+  STRUCTURE,
   toggleLeft,
   togglePinned,
 } from './dock'
-import { PAGES, PagesPanel } from './PagesPanel'
-import { usePinnedPanels } from './preferences'
+import {
+  LEFT_PANEL_PREFERENCE,
+  usePinnedPanels,
+  useUserPreference,
+} from './preferences'
 import { PanelHeader, PinButton } from './primitives'
 import { PropertiesPanel } from './PropertiesPanel'
 import { SearchDialog } from './SearchDialog'
 import { Rail } from './Rail'
+import { StructurePanel } from './StructurePanel'
 import { DEVICE_WIDTHS, type Device, TopBar } from './TopBar'
 
 const EDITOR = 'visual-editor'
-const PANELS_KEY = 'neos-studio.alpha.panels'
+const PROPERTIES_KEY = 'neos-studio.alpha.properties'
 const DEVICE_KEY = 'neos-studio.alpha.device'
 /** Panels with a place of their own in this layout, not in the rail. */
-const PLACED_ELSEWHERE = new Set(['documents', 'inspector'])
-const EDITOR_TOOLS = ['outline', 'clipboard', 'trash']
-/** Pages: the shell's own document tree panel, first in the rail. */
-const PAGES_DEFINITION: PanelDefinition = {
-  id: PAGES,
-  title: () => t('shellAlpha.pages', 'Pages'),
+const PLACED_ELSEWHERE = new Set(['documents', 'inspector', 'outline'])
+const EDITOR_TOOLS = ['clipboard', 'trash']
+/** Pages and Outline: the shell's own panel, first in the rail. */
+const STRUCTURE_DEFINITION: PanelDefinition = {
+  id: STRUCTURE,
+  title: () => t('shellAlpha.structure', 'Pages and outline'),
   component: () => null,
   defaultPlacement: { kind: 'dock', region: 'sidebar' },
 }
 
 /*
- * Floating panels lie over the preview card, 14px inside its edges. The
- * action bar centres between them: its stack sits in the card's content
- * box, 7px (border and padding) inside the card.
+ * A floating Properties panel lies over the preview card, 14px inside its
+ * edge. The action bar centres in the rest: its stack sits in the card's
+ * content box, 7px (border and padding) inside the card.
  */
-const LEFT_WIDTH = 280
 const RIGHT_WIDTH = 300
 const FLOAT_INSET = 14
 const CARD_INSET = 7
@@ -121,49 +125,54 @@ export function AlphaShell({
     const history = others.find((definition) => definition.id === 'history')
     const second = [...rest, ...(history ? [history] : [])]
     return [
-      PAGES_DEFINITION,
+      STRUCTURE_DEFINITION,
       ...tools,
       ...(second.length ? [null] : []),
       ...second,
     ]
   }, [definitions])
 
-  const exists = React.useCallback(
-    (panel: string) =>
-      panel === PAGES ||
-      panelRegistry.getAll().some((definition) => definition.id === panel),
+  const restoreLeftPanel = React.useCallback(
+    (value: unknown) =>
+      restoreLeft(value, (panel) =>
+        panelRegistry.getAll().some((definition) => definition.id === panel),
+      ),
     [],
   )
-  const [storedPanels, setPanels] = usePersistedState<Panels>(
-    PANELS_KEY,
-    NO_PANELS,
+  // The column is the user's; Properties opens per browser.
+  const [left, setLeft] = useUserPreference(
+    LEFT_PANEL_PREFERENCE,
+    restoreLeftPanel,
   )
-  const panels = restorePanels(storedPanels, exists)
+  const [properties, setPropertiesOpen] = usePersistedState<boolean>(
+    PROPERTIES_KEY,
+    false,
+  )
+  const panels: Panels = { left, properties: properties === true }
+  const panelsRef = useLatestRef(panels)
   const updatePanels = React.useCallback(
-    (change: (panels: Panels) => Panels) =>
-      setPanels((current) => change(restorePanels(current, exists))),
-    [setPanels, exists],
+    (change: (panels: Panels) => Panels) => {
+      const current = panelsRef.current
+      const next = change(current)
+      if (next.left !== current.left) setLeft(next.left)
+      if (next.properties !== current.properties)
+        setPropertiesOpen(next.properties)
+    },
+    [panelsRef, setLeft, setPropertiesOpen],
   )
   const [pinnedPanels, setPinnedPanels] = usePinnedPanels()
-  const isPinned = (panel: string) => pinnedPanels.includes(panel)
-  const pinButton = (panel: string) => (
-    <PinButton
-      pinned={isPinned(panel)}
-      onClick={() => setPinnedPanels(togglePinned(pinnedPanels, panel))}
-    />
-  )
+  const propertiesPinnedPreference = pinnedPanels.includes(PROPERTIES)
 
   const editor = mode === EDITOR
   const leftDefinition =
     !editor || panels.left === null
       ? null
-      : panels.left === PAGES
-        ? PAGES_DEFINITION
+      : panels.left === STRUCTURE
+        ? STRUCTURE_DEFINITION
         : (definitions.find((definition) => definition.id === panels.left) ??
           null)
-  const leftPinned = leftDefinition !== null && isPinned(leftDefinition.id)
   const propertiesOpen = editor && panels.properties
-  const propertiesPinned = propertiesOpen && isPinned(PROPERTIES)
+  const propertiesPinned = propertiesOpen && propertiesPinnedPreference
 
   // Reveal requests for panels that are not modes open them on the left
   // (the panel system handles the modes itself).
@@ -177,7 +186,7 @@ export function AlphaShell({
           !definition ||
           (definition.defaultPlacement.kind === 'dock' &&
             definition.defaultPlacement.region === 'main') ||
-          PLACED_ELSEWHERE.has(definition.id)
+          (PLACED_ELSEWHERE.has(definition.id) && definition.id !== 'outline')
         )
           return
         activate(EDITOR)
@@ -199,7 +208,7 @@ export function AlphaShell({
       inspectNode(selectedDocument)
       return true
     }
-    const next = closeFloating(panels, isPinned)
+    const next = closeFloating(panels, propertiesPinnedPreference)
     if (next === panels) return false
     updatePanels(() => next)
     return true
@@ -247,18 +256,16 @@ export function AlphaShell({
             }
           />
           {leftDefinition &&
-            (leftDefinition.id === PAGES ? (
-              <PagesPanel
-                className={panelFrame('left', leftPinned)}
-                pin={pinButton(PAGES)}
-                onClose={() => closeLeftPanel(PAGES)}
+            (leftDefinition.id === STRUCTURE ? (
+              <StructurePanel
+                className={LEFT_FRAME}
+                onClose={() => closeLeftPanel(STRUCTURE)}
               />
             ) : (
               <LeftPanel
                 key={leftDefinition.id}
-                className={panelFrame('left', leftPinned)}
+                className={LEFT_FRAME}
                 definition={leftDefinition}
-                pin={pinButton(leftDefinition.id)}
                 onClose={() => closeLeftPanel(leftDefinition.id)}
               />
             ))}
@@ -288,10 +295,7 @@ export function AlphaShell({
                   onSearch={() => setSearchOpen(true)}
                   onOpenMode={activate}
                   insets={{
-                    left:
-                      leftDefinition && !leftPinned
-                        ? FLOAT_INSET + LEFT_WIDTH - CARD_INSET
-                        : 0,
+                    left: 0,
                     right:
                       propertiesOpen && !propertiesPinned
                         ? FLOAT_INSET + RIGHT_WIDTH - CARD_INSET
@@ -312,8 +316,15 @@ export function AlphaShell({
           </main>
           {propertiesOpen && (
             <PropertiesPanel
-              className={panelFrame('right', propertiesPinned)}
-              pin={pinButton(PROPERTIES)}
+              className={propertiesFrame(propertiesPinned)}
+              pin={
+                <PinButton
+                  pinned={propertiesPinned}
+                  onClick={() =>
+                    setPinnedPanels(togglePinned(pinnedPanels, PROPERTIES))
+                  }
+                />
+              }
               onClose={() =>
                 updatePanels((current) => setProperties(current, false))
               }
@@ -334,31 +345,32 @@ export function AlphaShell({
 }
 
 /**
- * A panel's frame: docked beside the preview when pinned, else floating
- * over the preview card's edge - the row's left edge is the rail's (44px
- * and an 8px gap), its right edge the card's.
+ * The left column: docked between rail and preview, the preview card's
+ * surface. One width for every left panel, so the site reflows only when
+ * the column opens or closes.
  */
-function panelFrame(side: 'left' | 'right', pinned: boolean): string {
+const LEFT_FRAME =
+  'flex w-70 shrink-0 flex-col overflow-hidden rounded-shell-surface border border-shell-border bg-shell-surface'
+
+/**
+ * The Properties panel's frame: docked beside the preview when pinned,
+ * else floating over the preview card's right edge.
+ */
+function propertiesFrame(pinned: boolean): string {
   return cn(
-    'flex shrink-0 flex-col overflow-hidden rounded-shell-surface bg-shell-surface',
-    side === 'left' ? 'w-70' : 'w-75',
+    'flex w-75 shrink-0 flex-col overflow-hidden rounded-shell-surface bg-shell-surface',
     pinned
       ? 'border border-shell-border'
-      : cn(
-          'absolute top-3.5 bottom-3.5 z-20 border border-shell-tooltip-border shadow-shell-panel',
-          side === 'left' ? 'left-[66px]' : 'right-3.5',
-        ),
+      : 'absolute top-3.5 right-3.5 bottom-3.5 z-20 border border-shell-tooltip-border shadow-shell-panel',
   )
 }
 
 function LeftPanel({
   definition,
-  pin,
   onClose,
   className,
 }: {
   definition: PanelDefinition
-  pin: React.ReactNode
   onClose: () => void
   className: string
 }) {
@@ -368,7 +380,6 @@ function LeftPanel({
       <PanelHeader
         title={panelTitle(definition)}
         subtitle={selectedDocument?.label}
-        pin={pin}
         onClose={onClose}
       />
       <div className="min-h-0 flex-1 overflow-y-auto">

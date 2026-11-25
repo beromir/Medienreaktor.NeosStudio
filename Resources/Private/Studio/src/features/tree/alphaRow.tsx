@@ -2,6 +2,12 @@ import type { ItemInstance } from '@headless-tree/core'
 import type * as React from 'react'
 import type { NodeTypeMap } from '@/api/neos/endpoints/nodeTypes'
 import { translate as t } from '@/lib/i18n'
+import { DOCUMENT_NODE_TYPE } from '@/api/neos/endpoints/nodes'
+import { isOfType } from '@/api/neos/endpoints/nodeTypes'
+import { ActionIcon, TypeIcon } from '@/features/shell-alpha/icons'
+import { Tooltip } from '@/features/shell-alpha/Tooltip'
+import type { TypeIconName } from '@/lib/iconSet'
+import { cn } from '@/lib/utils'
 import { NodeTypeIcon, resolveNodeTypeIconClass } from './nodeTypeIcon'
 import type { AlphaRow } from './treeStyle'
 import { nodeOfItem, type NodeTreeItem } from './useNodeTree'
@@ -20,7 +26,13 @@ export function alphaNodeRow(
   if (node === null) return null
   const hidden = node.isHidden
   return {
-    icon: <AlphaTypeIcon nodeTypes={nodeTypes} nodeTypeName={node.nodeType} />,
+    icon: (
+      <AlphaTypeIcon
+        nodeTypes={nodeTypes}
+        nodeTypeName={node.nodeType}
+        hidden={hidden}
+      />
+    ),
     hidden,
     note: hidden
       ? t('tree.alpha.hidden', 'hidden')
@@ -31,30 +43,40 @@ export function alphaNodeRow(
   }
 }
 
+/** Node type icons the set draws itself, by the configured icon. */
+const SET_ICONS: [RegExp, TypeIconName][] = [
+  [/\bfa-(header|heading)\b/, 'headline'],
+  [/\bfa-(file-text|file-lines|paragraph|align-left|font)\b/, 'text'],
+  [/\bfa-(columns|table-columns)\b/, 'columns'],
+  [/\bfa-folder/, 'area'],
+]
+
 /**
- * The type icon of an alpha row: the node type's own, but no folders -
- * collections without an icon of their own get a frame (R34).
+ * The type icon of an alpha row: the set's own for pages (home for the
+ * site's home), areas, columns, headlines and text, else the node type's
+ * icon at the same size. Hidden ones are dashed.
  */
 export function AlphaTypeIcon({
   nodeTypes,
   nodeTypeName,
+  hidden = false,
 }: {
   nodeTypes: NodeTypeMap | undefined
   nodeTypeName: string
+  hidden?: boolean
 }) {
-  if (/\bfa-folder/.test(resolveNodeTypeIconClass(nodeTypes, nodeTypeName)))
+  const iconClass = resolveNodeTypeIconClass(nodeTypes, nodeTypeName)
+  const document =
+    nodeTypes !== undefined &&
+    isOfType(nodeTypes, nodeTypeName, DOCUMENT_NODE_TYPE)
+  const name: TypeIconName | undefined = document
+    ? /\bfa-(globe|home|house)\b/.test(iconClass)
+      ? 'home'
+      : 'page'
+    : SET_ICONS.find(([pattern]) => pattern.test(iconClass))?.[1]
+  if (name)
     return (
-      <svg
-        width="12"
-        height="12"
-        viewBox="0 0 12 12"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        aria-hidden
-      >
-        <rect x="1" y="2" width="10" height="8" rx="1.5" />
-      </svg>
+      <TypeIcon name={name} strokeDasharray={hidden ? '2 1.6' : undefined} />
     )
   return (
     <NodeTypeIcon
@@ -68,65 +90,39 @@ export function AlphaTypeIcon({
 /** A hover action of an alpha row: inside the row's button, so a span. */
 export function RowAction({
   label,
+  open = false,
   onClick,
   children,
 }: {
   label: string
+  /** Its menu is open. */
+  open?: boolean
   onClick: (event: React.MouseEvent) => void
   children: React.ReactNode
 }) {
   return (
-    <span
-      role="button"
-      tabIndex={-1}
-      aria-label={label}
-      title={label}
-      onClick={(event) => {
-        event.stopPropagation()
-        onClick(event)
-      }}
-      className="flex size-5.5 cursor-pointer items-center justify-center rounded-md text-shell-label hover:bg-shell-hover hover:text-shell-text"
-    >
-      {children}
-    </span>
+    <Tooltip label={label}>
+      <span
+        role="button"
+        tabIndex={-1}
+        aria-label={label}
+        onClick={(event) => {
+          event.stopPropagation()
+          onClick(event)
+        }}
+        className={cn(
+          'flex size-5.5 shrink-0 cursor-pointer items-center justify-center rounded-md',
+          open
+            ? 'bg-shell-active text-shell-text'
+            : 'text-shell-muted hover:bg-shell-active hover:text-shell-text',
+        )}
+      >
+        {children}
+      </span>
+    </Tooltip>
   )
 }
 
-export const RowPlusIcon = () => (
-  <svg
-    width="10"
-    height="10"
-    viewBox="0 0 14 14"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    aria-hidden
-  >
-    <path d="M7 1v12M1 7h12" />
-  </svg>
-)
+export const RowPlusIcon = () => <ActionIcon name="plus" />
 
-export const RowMoreIcon = () => (
-  <svg width="12" height="4" viewBox="0 0 14 4" aria-hidden>
-    <circle cx="2" cy="2" r="1.4" fill="currentColor" />
-    <circle cx="7" cy="2" r="1.4" fill="currentColor" />
-    <circle cx="12" cy="2" r="1.4" fill="currentColor" />
-  </svg>
-)
-
-export const RowEyeIcon = ({ off = false }: { off?: boolean }) => (
-  <svg
-    width="13"
-    height="10"
-    viewBox="0 0 15 12"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.3"
-    aria-hidden
-  >
-    <path d="M1 6s2.5-4.5 6.5-4.5S14 6 14 6s-2.5 4.5-6.5 4.5S1 6 1 6z" />
-    <circle cx="7.5" cy="6" r="1.8" />
-    {off && <path d="M2 11L13 1" strokeLinecap="round" />}
-  </svg>
-)
+export const RowMoreIcon = () => <ActionIcon name="more" />

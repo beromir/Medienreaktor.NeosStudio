@@ -174,19 +174,6 @@ export const TasksModeIcon = (props: IconProps) => (
   </Svg>
 )
 
-export const OutlineIcon = (props: IconProps) => (
-  <Svg
-    width={14}
-    height={12}
-    viewBox="0 0 14 12"
-    strokeWidth={1.5}
-    strokeLinecap="round"
-    {...props}
-  >
-    <path d="M1 1.5h12M3.5 6H13M6 10.5h7" />
-  </Svg>
-)
-
 export const ClipboardIcon = (props: IconProps) => (
   <Svg width={12} height={14} viewBox="0 0 12 14" strokeWidth={1.4} {...props}>
     <rect x=".8" y="2" width="10.4" height="11.2" rx="2" />
@@ -402,17 +389,21 @@ export const CalendarIcon = (props: IconProps) => (
   </Svg>
 )
 
-export const PagesIcon = (props: IconProps) => (
+/** Pages and Outline: one node with two branches. */
+export const StructureIcon = (props: IconProps) => (
   <Svg
     width={14}
     height={14}
     viewBox="0 0 14 14"
-    strokeWidth={1.4}
+    strokeWidth={1.3}
+    strokeLinecap="round"
     strokeLinejoin="round"
     {...props}
   >
-    <path d="M3 1.5h5l3 3v8H3z" />
-    <path d="M8 1.5v3h3" />
+    <rect x="1.5" y="1.5" width="5" height="3" rx="1" />
+    <rect x="7.5" y="6" width="5" height="3" rx="1" />
+    <rect x="7.5" y="10" width="5" height="3" rx="1" />
+    <path d="M4 4.5v7h3.5M4 7.5h3.5" />
   </Svg>
 )
 
