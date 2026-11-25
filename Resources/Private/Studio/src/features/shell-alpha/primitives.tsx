@@ -3,7 +3,7 @@ import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { cn } from '@/lib/utils'
 import { containedPortal } from '@/lib/portalContainer'
 import { translate as t } from '@/lib/i18n'
-import { CloseIcon, PinIcon } from './icons'
+import { ActionIcon } from './icons'
 import { Tooltip } from './Tooltip'
 
 const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
@@ -216,8 +216,44 @@ export function BarDivider() {
 }
 
 /**
- * A panel's pin: pinned, the panel docks beside the preview and the
- * preview narrows; unpinned, it floats over the preview.
+ * A 28px icon action of a panel header (the set's 14px icons): #9A9A9A at
+ * rest, #EDEDED on a grey fill while on.
+ */
+export const HeaderAction = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<'button'> & { label: string; on?: boolean }
+>(function HeaderAction({ label, on = false, className, ...props }, ref) {
+  return (
+    <Tooltip label={label}>
+      <button
+        ref={ref}
+        type="button"
+        aria-label={label}
+        className={cn(
+          'inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-shell-control outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60 disabled:cursor-default disabled:text-shell-disabled disabled:hover:bg-transparent',
+          on
+            ? 'bg-shell-raised text-shell-text'
+            : 'text-shell-muted hover:bg-shell-ground hover:text-shell-text data-popup-open:bg-shell-raised data-popup-open:text-shell-text',
+          className,
+        )}
+        {...props}
+      />
+    </Tooltip>
+  )
+})
+
+/** The hairline before a panel's own actions (close, pin). */
+export function HeaderDivider() {
+  return (
+    <span className="flex h-7 w-2.25 shrink-0 items-center justify-center">
+      <span className="h-4 w-px bg-shell-divider" />
+    </span>
+  )
+}
+
+/**
+ * The Properties panel's pin: pinned, the panel docks beside the preview
+ * and the preview narrows; unpinned, it floats over the preview.
  */
 export function PinButton({
   pinned,
@@ -226,30 +262,26 @@ export function PinButton({
   pinned: boolean
   onClick: () => void
 }) {
-  const label = pinned
-    ? t('shellAlpha.unpin', 'Unpin')
-    : t('shellAlpha.pin', 'Pin')
   return (
-    <Tooltip label={label}>
-      <button
-        type="button"
-        aria-pressed={pinned}
-        aria-label={label}
-        onClick={onClick}
-        className={cn(
-          'inline-flex size-7 shrink-0 cursor-pointer items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
-          pinned
-            ? 'rounded-full bg-shell-ground text-shell-text'
-            : 'rounded-shell-control text-shell-muted hover:bg-shell-hover hover:text-shell-text',
-        )}
-      >
-        <PinIcon
-          filled={pinned}
-          width={pinned ? 12 : 14}
-          height={pinned ? 12 : 14}
-        />
-      </button>
-    </Tooltip>
+    <HeaderAction
+      label={
+        pinned ? t('shellAlpha.unpin', 'Unpin') : t('shellAlpha.pin', 'Pin')
+      }
+      aria-pressed={pinned}
+      on={pinned}
+      onClick={onClick}
+    >
+      <ActionIcon name={pinned ? 'pinned' : 'pin'} />
+    </HeaderAction>
+  )
+}
+
+/** A panel's close. */
+export function CloseAction({ onClick }: { onClick: () => void }) {
+  return (
+    <HeaderAction label={t('common.close', 'Close')} onClick={onClick}>
+      <ActionIcon name="close" />
+    </HeaderAction>
   )
 }
 
@@ -266,27 +298,20 @@ export function PanelHeader({
   onClose: () => void
 }) {
   return (
-    <div className="flex h-12 shrink-0 items-center justify-between pr-2 pl-3.5">
+    <div className="flex h-11 shrink-0 items-center justify-between gap-2 pr-2 pl-4">
       <div className="flex min-w-0 items-baseline gap-2">
-        <span className="type-shell-control font-semibold text-shell-text">
+        <span className="shrink-0 type-shell-control font-semibold text-shell-text">
           {title}
         </span>
         {subtitle && (
-          <span className="truncate type-shell-secondary text-shell-subtle">
+          <span className="truncate type-shell-secondary text-shell-muted">
             {subtitle}
           </span>
         )}
       </div>
       <div className="flex shrink-0 items-center gap-0.5">
         {pin}
-        <IconButton
-          size="sm"
-          className="size-7 rounded-shell-control text-shell-muted"
-          onClick={onClose}
-          aria-label={t('common.close', 'Close')}
-        >
-          <CloseIcon />
-        </IconButton>
+        <CloseAction onClick={onClose} />
       </div>
     </div>
   )

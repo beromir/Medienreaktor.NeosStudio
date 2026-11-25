@@ -314,10 +314,6 @@ export function AlphaShell({
             <PropertiesPanel
               className={panelFrame('right', propertiesPinned)}
               pin={pinButton(PROPERTIES)}
-              showBranchMap={panels.left !== 'outline'}
-              onShowOutline={() =>
-                updatePanels((current) => openLeft(current, 'outline'))
-              }
               onClose={() =>
                 updatePanels((current) => setProperties(current, false))
               }

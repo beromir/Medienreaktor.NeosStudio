@@ -316,12 +316,6 @@ export const DoubleChevronIcon = (props: IconProps) => (
   </Svg>
 )
 
-export const FolderIcon = (props: IconProps) => (
-  <Svg width={12} height={10} viewBox="0 0 14 12" strokeWidth={1.3} {...props}>
-    <path d="M1 2h4l1.5 1.5H13v7.5H1z" />
-  </Svg>
-)
-
 export const UploadIcon = (props: IconProps) => (
   <Svg width={12} height={12} viewBox="0 0 12 12" strokeWidth={1.5} {...props}>
     <path d="M6 8V1M3 4l3-3 3 3M1 8v3h10V8" />
@@ -363,21 +357,6 @@ export const LayoutIcon = (props: IconProps) => (
   <Svg width={14} height={12} viewBox="0 0 14 12" strokeWidth={1.3} {...props}>
     <rect x=".7" y=".7" width="12.6" height="10.6" rx="2" />
     <path d="M4.5 .7v10.6" />
-  </Svg>
-)
-
-export const PinIcon = ({
-  filled = false,
-  ...props
-}: IconProps & { filled?: boolean }) => (
-  <Svg width={14} height={14} viewBox="0 0 14 14" {...props}>
-    <path
-      d="M8.6 1.4l4 4-1.6.8-2.3 2.3.3 2.6-1 1L2 6.1l1-1 2.6.3 2.3-2.3z"
-      fill={filled ? 'currentColor' : 'none'}
-      strokeWidth={1.2}
-      strokeLinejoin="round"
-    />
-    <path d="M4.6 9.4L1.4 12.6" strokeWidth={1.4} strokeLinecap="round" />
   </Svg>
 )
 
@@ -434,38 +413,6 @@ export const PagesIcon = (props: IconProps) => (
   >
     <path d="M3 1.5h5l3 3v8H3z" />
     <path d="M8 1.5v3h3" />
-  </Svg>
-)
-
-/** The tree rows' chevron: right when closed, down when open. */
-export const TreeChevronIcon = ({
-  open = false,
-  ...props
-}: IconProps & { open?: boolean }) => (
-  <Svg
-    width={10}
-    height={10}
-    viewBox="0 0 10 10"
-    strokeWidth={1.4}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d={open ? 'M2 3.5l3 3 3-3' : 'M3.5 2l3 3-3 3'} />
-  </Svg>
-)
-
-export const UpArrowIcon = (props: IconProps) => (
-  <Svg
-    width={10}
-    height={10}
-    viewBox="0 0 10 10"
-    strokeWidth={1.4}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M5 9V1.5M1.5 5L5 1.5 8.5 5" />
   </Svg>
 )
 

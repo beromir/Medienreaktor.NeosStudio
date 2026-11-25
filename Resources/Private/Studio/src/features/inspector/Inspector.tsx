@@ -45,6 +45,8 @@ import { translate as t } from '@/lib/i18n'
 import { Tooltip } from '@/features/shell-alpha/Tooltip'
 import { useRegistrySelector } from '@/lib/registry'
 import { cn } from '@/lib/utils'
+import { ActionIcon, Chevron } from '@/features/shell-alpha/icons'
+import type { ActionIconName } from '@/lib/iconSet'
 import {
   clientEvalNode,
   clientEvalUsesParentNode,
@@ -716,6 +718,27 @@ function PropertyGroup(props: PropertyGroupProps) {
 }
 
 /** A tab configured without an icon: the classic tab icons, else a sliders glyph. */
+/** The icon set's own for the usual tab icons, else the configured one. */
+const SET_TAB_ICONS: Record<string, ActionIconName> = {
+  pencil: 'pencil',
+  'icon-pencil': 'pencil',
+  cog: 'gear',
+  'icon-cog': 'gear',
+  gear: 'gear',
+  gears: 'gear',
+  sliders: 'sliders',
+  'icon-sliders': 'sliders',
+}
+
+function TabIcon({ name }: { name: string }) {
+  const own = SET_TAB_ICONS[name]
+  return own ? (
+    <ActionIcon name={own} />
+  ) : (
+    <Icon name={name} className="text-[0.875rem] leading-none" />
+  )
+}
+
 function tabIcon(tab: InspectorTab): string {
   if (tab.icon) return tab.icon
   if (tab.id === 'default') return 'pencil'
@@ -797,16 +820,13 @@ function AlphaTabs({
               value={tab.id}
               aria-label={tab.label}
               className={cn(
-                'relative flex h-7 w-8 shrink-0 cursor-pointer items-center justify-center rounded-shell-control outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
+                'relative flex h-7 w-7.5 shrink-0 cursor-pointer items-center justify-center rounded-shell-control outline-none focus-visible:ring-2 focus-visible:ring-shell-accent/60',
                 active
                   ? 'bg-shell-ground text-shell-text'
                   : 'text-shell-muted hover:bg-shell-hover-inset hover:text-shell-text',
               )}
             >
-              <Icon
-                name={tabIcon(tab)}
-                className="text-[0.8125rem] leading-none"
-              />
+              <TabIcon name={tabIcon(tab)} />
               {errorCount > 0 && (
                 <span className="absolute top-1 right-1 size-1.5 rounded-full bg-destructive" />
               )}
@@ -1056,20 +1076,7 @@ function PropertySection({
 }) {
   const { group } = props
   const [open, setOpen] = useState(!group.collapsed)
-  const chevron = (
-    <svg
-      width="8"
-      height="5"
-      viewBox="0 0 8 5"
-      fill="none"
-      stroke="var(--color-shell-muted)"
-      strokeWidth={1.4}
-      aria-hidden
-      className={cn('shrink-0 transition-transform', !open && '-rotate-90')}
-    >
-      <path d="M1 1l3 3 3-3" />
-    </svg>
-  )
+  const chevron = <Chevron direction={open ? 'down' : 'right'} />
   const inline =
     half === 'start'
       ? 'pr-1.75 pl-3.5'

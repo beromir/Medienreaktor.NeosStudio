@@ -10,10 +10,10 @@ import { isOfType, useNodeTypes } from '@/api/neos/endpoints/nodeTypes'
 import { neosKeys } from '@/api/neos/keys'
 import { type Node, nodeAddressOf } from '@/api/neos/schema'
 import { useStudio } from '@/app/StudioContext'
-import { NodeTypeIcon } from '@/features/tree/nodeTypeIcon'
 import { translate as t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { CheckIcon, FolderIcon, GlobeIcon } from './icons'
+import { AlphaTypeIcon } from '@/features/tree/alphaRow'
+import { CheckIcon } from './icons'
 import { containedPortal } from '@/lib/portalContainer'
 
 const MenuPortalContained = containedPortal(MenuPrimitive.Portal)
@@ -86,35 +86,20 @@ export function PathMenu({
         className={cn(
           'flex h-8 shrink-0 cursor-default items-center gap-2 rounded-shell-control pr-2.5 type-shell-secondary outline-none select-none data-highlighted:bg-shell-hover',
           kind === 'self'
-            ? 'font-semibold text-shell-accent-light'
+            ? 'font-semibold text-shell-accent-pale'
             : page
               ? 'text-shell-muted'
               : 'text-shell-text',
         )}
       >
-        {page ? (
-          <GlobeIcon className="text-shell-muted" />
-        ) : kind === 'self' ? (
-          <NodeTypeIcon
-            nodeTypes={nodeTypes}
-            nodeTypeName={entry.nodeType}
-            className="type-icon-s"
-          />
-        ) : entry.classification === 'tethered' ||
-          (nodeTypes &&
-            isOfType(
-              nodeTypes,
-              entry.nodeType,
-              'Neos.Neos:ContentCollection',
-            )) ? (
-          <FolderIcon />
-        ) : (
-          <NodeTypeIcon
-            nodeTypes={nodeTypes}
-            nodeTypeName={entry.nodeType}
-            className="type-icon-s text-shell-muted"
-          />
-        )}
+        <span
+          className={cn(
+            'flex w-3 shrink-0 justify-center text-[0.75rem] leading-none',
+            kind !== 'self' && 'text-shell-muted',
+          )}
+        >
+          <AlphaTypeIcon nodeTypes={nodeTypes} nodeTypeName={entry.nodeType} />
+        </span>
         <span className="min-w-0 flex-1 truncate">{label}</span>
         {page && kind !== 'self' && (
           <span className="text-[0.6875rem] leading-3.5 text-[#5a5a5a]">
