@@ -2,7 +2,7 @@
  * The alpha layout's tokens, hand-written: styles/ is generated from the
  * Figma file and must not be edited. Everything here waits to move into the
  * Figma source (medienreaktor/figma-tools) once the design settles - see
- * Documentation/AlphaLayout.md for the list.
+ * Documentation/Alpha/Foundations.md for the list.
  */
 @theme {
   --color-shell-ground: #262626;

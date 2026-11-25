@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   tools on the left, the Properties panel with a branch map on the right,
   opened from the node pill's Settings. Panels, header actions, node actions
   and node decorators of plugins keep working. See
-  Documentation/AlphaLayout.md.
+  Documentation/Alpha/README.md.
 
 ## [2.6.1] - 2026-11-19
 
