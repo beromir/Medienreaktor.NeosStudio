@@ -1,4 +1,13 @@
 import type { SVGProps } from 'react'
+import {
+  ACTION_ICONS,
+  type ActionIconName,
+  chevronPath,
+  type ChevronDirection,
+  TYPE_ICONS,
+  type TypeIconName,
+} from '@/lib/iconSet'
+import { cn } from '@/lib/utils'
 
 /*
  * The alpha layout's icons, as drawn in the Paper file. currentColor where
@@ -458,4 +467,60 @@ export const UpArrowIcon = (props: IconProps) => (
   >
     <path d="M5 9V1.5M1.5 5L5 1.5 8.5 5" />
   </Svg>
+)
+
+function SetIcon({
+  size,
+  body,
+  ...props
+}: Omit<SVGProps<SVGSVGElement>, 'width' | 'height' | 'viewBox'> & {
+  size: number
+  body: string
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      aria-hidden
+      className="shrink-0"
+      {...props}
+      dangerouslySetInnerHTML={{ __html: body }}
+    />
+  )
+}
+
+type SetIconProps = Omit<
+  SVGProps<SVGSVGElement>,
+  'width' | 'height' | 'viewBox' | 'children'
+>
+
+/** The set's 10px chevron, #8A8A8A unless the caller colours it. */
+export const Chevron = ({
+  direction = 'down',
+  className,
+  ...props
+}: SetIconProps & { direction?: ChevronDirection }) => (
+  <SetIcon
+    size={10}
+    body={`<path d="${chevronPath(direction)}" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`}
+    className={cn('shrink-0 text-shell-subtle', className)}
+    {...props}
+  />
+)
+
+/** A 12px type icon of the set. */
+export const TypeIcon = ({
+  name,
+  ...props
+}: SetIconProps & { name: TypeIconName }) => (
+  <SetIcon size={12} body={TYPE_ICONS[name]} {...props} />
+)
+
+/** A 14px action icon of the set. */
+export const ActionIcon = ({
+  name,
+  ...props
+}: SetIconProps & { name: ActionIconName }) => (
+  <SetIcon size={14} body={ACTION_ICONS[name]} {...props} />
 )
