@@ -11,12 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - An opt-in alpha of the redesigned shell (user menu → "Try the new layout
   (alpha)"): top bar, rail with modes and panels, and the preview as a card
-  with a floating action bar - Add menu, fade on scroll. Dark only. Panels
-  float over the preview and dock when pinned: Pages, Outline and the other
-  tools on the left, the Properties panel with a branch map on the right,
-  opened from the node pill's Settings. Panels, header actions, node actions
-  and node decorators of plugins keep working. See
-  Documentation/Alpha/README.md.
+  with a floating action bar - Add menu, fade on scroll. Dark only. The left
+  column docks beside the preview: Pages and Outline in one panel, and the
+  other tools. The Properties panel floats on the right (its pin docks it),
+  opens from the node pill's Settings and its heading opens the selection's
+  path. Text tools sit on the selection's handle and in a bubble over
+  selected words. Panels, header actions, node actions and node decorators
+  of plugins keep working. See Documentation/Alpha/README.md.
 
 ## [2.6.1] - 2026-11-19
 
