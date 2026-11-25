@@ -47,7 +47,7 @@ import {
   type RichTextHooks,
 } from './richtext'
 import { highlightText, textHighlightStyles } from './textHighlight'
-import { relabelToolbars, TOOLBAR_CLASS } from './toolbar'
+import { relabelToolbars, repositionToolbars, TOOLBAR_CLASS } from './toolbar'
 import {
   applyChrome,
   chromeStyles,
@@ -1600,8 +1600,6 @@ function onDragLeaveDocument(event: DragEvent): void {
  * chip under the pointer, the auto-scroll and Esc stay the guest's.
  */
 let nodeTypes: Record<string, { label: string; icon: string | null }> = {}
-/** The editor types in the page: the tab steps aside until the mouse moves. */
-let typing = false
 
 function nodeTypeLabel(nodeTypeName: string | null): string {
   if (!nodeTypeName) return ''
@@ -1630,26 +1628,12 @@ function drawAlphaChrome(): void {
       tabLabel: movable
         ? nodeTypeLabel(movable.getAttribute(NODE_TYPE_ATTRIBUTE))
         : null,
-      typing,
       dragging: pointerDrag?.started === true,
     },
     selectionTab(onTabPointerDown),
   )
-}
-
-function onTypingKeyDown(event: KeyboardEvent): void {
-  if (typing || event.key === 'Escape') return
-  if (event.metaKey || event.ctrlKey || event.altKey) return
-  const target = event.target as HTMLElement | null
-  if (!target?.isContentEditable) return
-  typing = true
-  scheduleHandleUpdate()
-}
-
-function onTypingMouseMove(): void {
-  if (!typing) return
-  typing = false
-  scheduleHandleUpdate()
+  // The text tools' strip continues the tab wherever it went.
+  repositionToolbars()
 }
 
 /** "After **Button** in Teaser area" for an insertion point. */
@@ -2473,8 +2457,6 @@ function init(): void {
   document.addEventListener('mousemove', reportPointer, { passive: true })
   window.addEventListener('keydown', onDragKeyDown, true)
   document.addEventListener('keydown', reportEscape)
-  document.addEventListener('keydown', onTypingKeyDown, true)
-  document.addEventListener('mousemove', onTypingMouseMove, { passive: true })
   window.addEventListener('scroll', onDragScroll, true)
   document.addEventListener('pointerdown', reportPointerDown, true)
   window.addEventListener('scroll', positionInsertLine, true)

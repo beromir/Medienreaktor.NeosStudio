@@ -24,6 +24,7 @@
  */
 import type { Editor } from '@tiptap/core'
 import { CellSelection } from '@tiptap/pm/tables'
+import { isMinimalChrome } from './chrome'
 import { editorFormatting } from './formatting'
 import { label, registerLabels } from './labels'
 import { requestLinkEdit } from './linkEditing'
@@ -32,6 +33,13 @@ import {
   guardedToolbarCall,
   richTextExtensionRegistry,
 } from './richTextExtensions'
+import {
+  connectTextTools,
+  hideTextTools,
+  relabelTextTools,
+  repositionTextTools,
+  showTextTools,
+} from './textTools'
 import {
   isStyleActive,
   isStyleAvailable,
@@ -109,6 +117,22 @@ export function registerToolbarItem(item: ToolbarItem): void {
 function toolbarLabelKey(item: ToolbarItem): string {
   return `toolbar.${item.id}`
 }
+
+/** The registered items, in order (the alpha text tools draw them too). */
+export function toolbarItems(): readonly ToolbarItem[] {
+  return items
+}
+
+/** An item's label, translated. */
+export function itemLabel(item: ToolbarItem): string {
+  return label(toolbarLabelKey(item), item.label)
+}
+
+connectTextTools({
+  items: toolbarItems,
+  label: itemLabel,
+  className: TOOLBAR_CLASS,
+})
 
 let stylesInjected = false
 
@@ -500,6 +524,16 @@ export function updateToolbars(editor: Editor): void {
   // this editor's own bars are taken down by its blur.
   if (!editor.isEditable || !editor.isFocused) return
   const { selection } = editor.state
+  if (isMinimalChrome()) {
+    inlineToolbar.hide()
+    blockToolbar.hide()
+    showTextTools(
+      editor,
+      !selection.empty && !(selection instanceof CellSelection),
+    )
+    return
+  }
+  hideTextTools()
   // A cell selection (dragging across table cells) is non-empty but is not a
   // text range - it drives the table ops (merge, ...), so route it to the
   // block toolbar alongside the collapsed-caret case, not the inline bubble.
@@ -515,6 +549,7 @@ export function updateToolbars(editor: Editor): void {
 export function hideToolbars(): void {
   inlineToolbar.hide()
   blockToolbar.hide()
+  hideTextTools()
 }
 
 /**
@@ -525,11 +560,13 @@ export function relabelToolbars(): void {
   hideToolbars()
   inlineToolbar.invalidate()
   blockToolbar.invalidate()
+  relabelTextTools()
 }
 
-function repositionToolbars(): void {
+export function repositionToolbars(): void {
   inlineToolbar.reposition()
   blockToolbar.reposition()
+  repositionTextTools()
 }
 
 // Keep both bars pinned as the selection moves (capture catches nested
@@ -1101,6 +1138,7 @@ function syncPluginItems(): void {
   hideToolbars()
   inlineToolbar.invalidate()
   blockToolbar.invalidate()
+  relabelTextTools()
 }
 syncPluginItems()
 richTextExtensionRegistry.subscribe(syncPluginItems)

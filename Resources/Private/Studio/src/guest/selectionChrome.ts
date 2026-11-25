@@ -1,6 +1,6 @@
 import { isMinimalChrome } from './chrome'
 
-const SELECTION_ID = 'neos-studio-selection-box'
+export const SELECTION_ID = 'neos-studio-selection-box'
 const HOVER_ID = 'neos-studio-hover-box'
 export const TAB_ID = 'neos-studio-selection-tab'
 const GHOST_ID = 'neos-studio-drag-ghost'
@@ -10,7 +10,7 @@ export const DRAG_SOURCE_CLASS = 'neos-studio-drag-source'
 const OUTLINE_GAP = 4
 const SELECTION_WIDTH = 2
 const HOVER_WIDTH = 1
-const TAB_HEIGHT = 22
+const TAB_HEIGHT = 24
 
 const ACCENT = '#00adee'
 const FONT = `"Noto Sans", system-ui, -apple-system, sans-serif`
@@ -36,7 +36,10 @@ export function selectionChromeStyles(minimal: string): string {
       border: ${SELECTION_WIDTH}px solid ${ACCENT};
       border-radius: 0 4px 4px 4px;
     }
-    #${SELECTION_ID}[data-tab='inside'], #${SELECTION_ID}[data-tab='none'] {
+    #${SELECTION_ID}[data-tab='below'] {
+      border-radius: 4px 4px 4px 0;
+    }
+    #${SELECTION_ID}[data-tab='none'] {
       border-radius: 4px;
     }
     #${SELECTION_ID}[data-state='hidden'] {
@@ -75,8 +78,16 @@ export function selectionChromeStyles(minimal: string): string {
       -webkit-user-select: none;
       touch-action: none;
     }
-    #${TAB_ID}[data-inside] {
-      border-radius: 0 0 6px 0;
+    #${TAB_ID}[data-place='below'] {
+      border-radius: 0 0 6px 6px;
+    }
+    /* The text tools' strip continues the tab (textTools.ts). */
+    #${TAB_ID}[data-attached] {
+      border-radius: 6px 0 0 0;
+      box-shadow: 0 6px 18px #00000040;
+    }
+    #${TAB_ID}[data-attached][data-place='below'] {
+      border-radius: 0 0 0 6px;
     }
     #${TAB_ID} > span {
       overflow: hidden;
@@ -176,8 +187,6 @@ export interface SelectionChromeState {
   hidden: boolean
   /** Type label for the tab; null draws no tab (not movable). */
   tabLabel: string | null
-  /** The editor is typing: the tab steps aside until the mouse moves. */
-  typing: boolean
   dragging: boolean
 }
 
@@ -215,10 +224,7 @@ export function drawSelectionChrome(
       : 'selected'
 
   const showTab =
-    state.tabLabel !== null &&
-    !state.dragging &&
-    !state.typing &&
-    outline.bottom > TAB_HEIGHT
+    state.tabLabel !== null && !state.dragging && outline.bottom > TAB_HEIGHT
   if (!showTab) {
     selectionBox.dataset.tab = 'none'
     tab.style.display = 'none'
@@ -227,16 +233,15 @@ export function drawSelectionChrome(
   const label = tab.querySelector('span')
   if (label && label.textContent !== state.tabLabel)
     label.textContent = state.tabLabel
-  // No room above: the tab tucks inside the outline, under the frame's top.
-  const inside = outline.top < TAB_HEIGHT
-  selectionBox.dataset.tab = inside ? 'inside' : 'above'
-  tab.toggleAttribute('data-inside', inside)
+  // No room above: the tab moves to the outline's bottom edge, so it never
+  // covers the text being edited.
+  const place = outline.top < TAB_HEIGHT ? 'below' : 'above'
+  selectionBox.dataset.tab = place
+  tab.dataset.place = place
   tab.style.display = 'flex'
   tab.style.left = `${outline.left}px`
-  tab.style.top = inside
-    ? `${Math.max(outline.top, 0) + SELECTION_WIDTH}px`
-    : `${outline.top - TAB_HEIGHT}px`
-  if (inside) tab.style.left = `${outline.left + SELECTION_WIDTH}px`
+  tab.style.top =
+    place === 'below' ? `${outline.bottom}px` : `${outline.top - TAB_HEIGHT}px`
 }
 
 /** The chip that follows the pointer while an element is dragged. */
