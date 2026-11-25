@@ -7,13 +7,18 @@ layout (alpha)") and back in the account menu; the choice is the
 `studio.layout` user preference (`classic` | `alpha`), served in the boot
 config as `layout`.
 
-The design is work in progress (Paper file "Neos Studio", frames R3-R36).
+The design is work in progress (Paper file "Neos Studio", frames R3-R45;
+the Editor part of milestone M1).
 
 ## Where it lives
 
 - `src/features/shell-alpha/`: the shell (`AlphaShell`), `TopBar`, `Rail`,
-  `ActionBar`, the panels (`PagesPanel`, `PropertiesPanel` with the
-  `BranchMap`), primitives and icons, and `shell-alpha.css`.
+  `ActionBar`, the panels (`StructurePanel` with Pages and Outline,
+  `PropertiesPanel`), the breadcrumb's page dropdown (`PagesPanel`),
+  primitives and icons, and `shell-alpha.css`.
+- `src/lib/iconSet.ts`: the icon set as SVG markup, shared by the shell
+  (`icons.tsx`: `Chevron`, `TypeIcon`, `ActionIcon`) and the guest's text
+  tools.
 - `src/lib/layoutMode.ts`: the switch.
 - `src/features/preview/chromeStore.ts` and `src/guest/chrome.ts`: what the
   shell asks of the preview - minimal in-page chrome (no "..." handle, no "+"
@@ -22,7 +27,7 @@ The design is work in progress (Paper file "Neos Studio", frames R3-R36).
   the element a shell row outlines while hovered (`hoverNode`) - and the
   guest's scroll and pointer reports that fade the bar.
   `src/guest/selectionChrome.ts` draws the selection, its tab and the drag
-  chip.
+  chip, `src/guest/textTools.ts` the text tools.
 - `src/features/tree/treeStyle.ts`: the alpha tree row (see Trees).
 
 Panels come from the panel registry, plugin panels included: main-region
@@ -32,31 +37,38 @@ Pages panel and the page tree dropdown; the Properties panel shows the
 Inspector's own fields (`InspectorPanel layout="panel"`). Header actions
 sit in the top bar, node actions in the node pill's element menu.
 
-## Panels (R31-R33)
+## Panels (R44)
 
 Left is where you go, right is what you selected. The left column holds
-Pages, Outline, Clipboard, Trash, then plugin panels and History - one at
-a time; opening another replaces it in the same floating or pinned state.
-The right side holds the Properties panel and nothing else.
+Pages and Outline (one panel), Clipboard, Trash, then plugin panels and
+History - one at a time, docked between the rail and the preview: 280px
+for every panel, full height, 8px from both, the preview card's surface
+(16px corners, hairline border, no shadow). The preview narrows; switching
+panels swaps the content, never the width, so the site only reflows when
+the column opens or closes. There is no pin on the left: the panel's close
+or its rail button folds the column. Which panel is open is the
+`studio.alpha.leftPanel` user preference, so the column stays as the
+editor left it across sessions and browsers.
 
-Every panel floats by default: it lies over the preview 14px inside the
-card, with a shadow, and the preview keeps its full width, so the site
-keeps its real desktop layout. The pin in its header docks it beside the
-preview, which narrows instead; with both sides pinned the site may switch
-to a narrower layout - the editor's choice. Each panel keeps its pin as
-the `studio.alpha.pinnedPanels` user preference (the list of pinned panel
-ids), so it holds across sessions and browsers; which panels are open is
-kept per browser. A floating panel stays open until it is closed - its ✕,
-its rail button (Settings for Properties) or Esc; a click in the page
-never closes it. The action bar centres in the part of the preview no
-floating panel covers. The rules live in `shell-alpha/dock.ts`.
+The right side holds the Properties panel and nothing else. It floats over
+the preview's right edge, 14px inside the card, with a shadow, and the
+site keeps its width; its pin docks it beside the preview, which narrows
+further. The pin is the `studio.alpha.pinnedPanels` user preference;
+whether Properties is open is kept per browser. A floating Properties
+panel stays open until it is closed - its ✕, Settings or Esc; a click in
+the page never closes it. The action bar centres in the part of the
+preview nothing covers: between the docked column and a floating
+Properties panel. The rules live in `shell-alpha/dock.ts`.
 
 The Properties panel opens only on purpose: from the node pill's Settings
 button, which shows grey while the panel is open. Selecting never opens
 it, so the preview does not jump between widths. While open it follows
 the selection and shows the page when the page is selected - its title,
-URL path and menu visibility first. Its header names the node; the fields
-scroll, the branch map stays at the bottom. An element with nothing to set
+URL path and menu visibility first. Its heading - the type icon, the
+node's name and a chevron - opens the path menu (`PathMenu`): the page,
+the parents, the node itself (checked) and its children; picking one
+selects it. Pin and close follow as 14px icons; the fields scroll. An
+element with nothing to set
 once the element menu's properties are left out (an untouched content
 collection) has no Settings button.
 
@@ -69,8 +81,8 @@ A click on an element selects it. A second click on the selected element
 deselects it - the page becomes the selection - unless the element has
 text of its own to type in (the guest knows from its inline-editable
 properties), where the click places the caret as before. Esc deselects
-anywhere; with the page selected, Esc closes the floating panels,
-Properties first. Esc always closes an open Add menu first.
+anywhere; with the page selected, Esc closes a floating Properties
+panel. Esc always closes an open Add menu first.
 
 The element types listed in the Add menu can be dragged into the page as
 well as picked. While one is dragged the menu turns see-through, the
@@ -81,25 +93,28 @@ when the type has one; the new element is selected.
 
 The Properties panel shows a content element's content settings in the
 node type's inspector tabs (`ui.inspector.tabs`, icons from the tab
-config, pencil / cog / sliders when none is set), at the top as 32x28
-icons at fixed positions, the label as tooltip; a single tab has no tab
-row. Every group of the active tab starts open and collapses with its
-chevron; only groups configured `collapsed: true` start closed. The node
-pill names the node.
+config, pencil / cog / sliders when none is set - those three drawn from
+the icon set), at the top as 30x28 tabs with 14px icons at fixed
+positions, the active one on a `shell-ground` pill, the label as tooltip;
+a single tab has no tab row. Every group of the active tab starts open and
+collapses with its 10px chevron; only groups configured `collapsed: true`
+start closed. The node pill names the node.
 
 The rail's mode switcher, open, always lists Editor, Media, Workspaces,
 Tasks (plugin modes after them), the current one highlighted in its own
 slot and the chevron last (R21). The open-tasks dot sits on Tasks while
 open, on the current mode's button while closed.
 
-## Selection and drag (R36)
+## Selection and drag (R36, R45)
 
 The selected element gets a 2px blue outline, 4px from the element, with a
-tab on its top-left edge (22px, grip and the node type's label). The tab is
-the only Studio UI on the page and the only place a drag starts, so clicks
-and text selection inside the element stay untouched. It tucks inside the
-outline when there is no room above it (the element touches the top of the
-preview), and steps aside while the editor types until the mouse moves.
+tab on its top-left edge (24px, grip and the node type's label). The tab is
+the only Studio UI on the page besides the text tools and the only place a
+drag starts, so clicks and text selection inside the element stay
+untouched. It stays while the editor types, so the element can be dragged
+at any time. When there is no room above it (the element touches the top
+of the preview), it moves to the outline's bottom edge with rounded bottom
+corners - it never covers the text being edited.
 Collections get the outline without a tab: they are moved with their
 element. Hovering outlines the innermost element under the pointer (1px,
 60%), never the selection. Outline and tab are boxes of their own over the
@@ -133,51 +148,97 @@ only type names: the shell sends the content types' labels and icons
 Follow-up: an open Outline should mirror the insert line and accept the
 drop too (R36).
 
-## The branch map (R30)
+## Pages and Outline (R41-R44)
 
-At the bottom of the Properties panel, under a hairline: the branch
-around the selection in seven rows of 26px, always the same height, so
-nothing moves when the selection does. It hides while the Outline is open,
-which shows the whole tree already, and replaces the path menu the panel's
-header had (R15).
+The rail's first button (a tree) opens one panel with two sections, Pages
+on top and the Outline below. Each has a 44px header: a 10px chevron that
+folds the section, the 13px title and 28px icon actions - Pages: filter
+and + (a new page inside the current one); Outline: Collapse all and
+filter. The panel's close follows after a hairline in the first header.
 
-The rows fill in this order: the path line (the page down to the level
-above the parent, folded to the page and the two nearest levels with
-"…"); the parent, open; the selection with up to two siblings on either
-side and up to three of its children; then the parent's next siblings,
-closed. With the page selected: the page and its collections. What does
-not fit becomes "+ n more", which opens the Outline. The arrow of the path
-line selects the level above the parent, a segment selects that level, a
-row selects its element, which scrolls the preview to it; hovering a row
-outlines its element in the preview. Closed rows show how many elements
-they hold ("3 inside").
+Pages opens at five rows and scrolls inside, the current page scrolled
+into view; the handle between the sections (a 28x3 grip on a hairline)
+resizes it, and the Outline always gets the rest. Folded, the Pages header
+shows the current page next to its title and only the close; a folded
+Outline gives Pages the whole height. The height and both folds are the
+`studio.alpha.structure` user preference.
 
-## Pages (R33)
+The filter takes the header in place: the search icon (or typing while
+the tree has focus) turns the section's header into a 30px field with the
+match count and ✕, and the close steps aside meanwhile. Esc closes the
+filter first, then the panel. Results keep their parents, muted, for
+context, the match marked in `shell-accent-pale`; picking one opens the
+page or selects the element, and the filter stays until it is closed.
+Pages searches the site's titles on the server (as the Documents panel
+does); the Outline reads the page's content once and filters the labels.
+Both sort the results in tree order (`features/tree/filterRows.ts`).
 
-The rail's first panel button: the site's document tree with a filter
-(the server-side search of the Documents panel), hover actions on each row
-(+ a new page inside, ⋯ the page menu), drag to reorder, and "New page"
-(inside the current page) at the bottom. Opening a page keeps the panel
-open. The breadcrumb's page dropdown shows the same tree for quick jumps
-and closes on a pick. Pages and content stay separate panels.
+The Outline reveals the selection - opens its parents, scrolls it into
+view - and never folds anything by itself; Collapse all folds every row.
+Opening a page keeps the panel as it is. The breadcrumb's page dropdown
+stays for quick jumps, Search for everything else.
 
-## Trees (R34)
+## Trees (R34, R43)
 
-The Outline, Pages and the branch map draw one row: 28px (the map 26px,
-12px text), 8px corners, a fixed 10px chevron slot and a 12px type icon
-slot, so labels line up at every level, 16px indent per level. The icon is
-the node type's own; collections without an icon of their own get a frame
-instead of a folder. The selection - in Pages the current page - gets the
-blue tint, its icon `shell-accent-pale`; hover a grey fill, and the
-trailing note ("n inside" on closed rows once their children are loaded,
-"hidden" on hidden ones) gives way to the row's actions: in the Outline
-show/hide and ⋯ (the element menu), in Pages + and ⋯. Hovering an Outline
-row outlines its element in the preview. The Outline leaves out its root
-row; the panel header names the page.
+The Outline and Pages draw one row: 28px, 8px corners, a fixed 10px
+chevron slot and a 12px type icon slot, so labels line up at every level,
+16px indent per level, labels in `shell-text`. The icon set draws pages
+(a house for the home page), areas, columns, headlines and text; other
+types keep their own icon at the same size. The current page gets the grey
+fill (`shell-raised`, semibold), the selected element the blue tint with a
+`shell-accent-pale` icon - the column never shows two blues. Hover is a
+`shell-ground` fill, and the trailing note ("n inside" on closed rows once
+their children are loaded) gives way to two 22px actions. Pages: + (a new
+page inside) and ⋯ (the page menu). Outline: + and ⋯ (the element menu,
+with Hide / Unhide first). The Outline's + adds after an element, and
+inside, at the end, on anything that holds elements (areas, columns); its
+tooltip says which ("Add after" / "Add inside"), and it opens the action
+bar's Add menu with that position set (`shell-alpha/addRequest.ts`).
+Hidden rows stay faded with a dashed icon and "hidden". Hovering an
+Outline row outlines its element in the preview. The Outline leaves out
+its root row.
 
 `TreeList` draws these rows when the alpha shell provides the tree style
 (`TreeStyleContext`) and the tree passes `alphaRow`; other trees (the
 media folders) keep their classic rows inside the alpha layout too.
+
+## The icon set (R41)
+
+Chevrons 10px, type icons 12px, actions 14px, one 1.3 stroke with round
+caps and joins (`src/lib/iconSet.ts`). Colours: `shell-muted` at rest,
+`shell-text` when on or for the current page, `shell-accent-pale` only on
+the selection, `shell-subtle` for chevrons. The left column, the
+Properties panel's header and tabs and the text tools use it; the bars
+keep their own icons for now.
+
+## Text tools (R45)
+
+The classic toolbars' long rows give way to two small pieces, both 24px
+high with 20px controls and the icon set's 14px icons; the classic layout
+keeps its toolbars (`guest/toolbar.ts` routes to `guest/textTools.ts` in
+the minimal chrome).
+
+- **The strip** - while the caret is in inline-editable text, a dark strip
+  continues the handle tab to the right as one piece: Paragraph ▾
+  (paragraph, headings, quote, code; its label is the current style),
+  Lists ▾ (bulleted, numbered; indent and outdent stay on Tab and
+  Shift+Tab) and ⋯ (alignment, table and its operations, horizontal line,
+  special characters, soft hyphen, the property's block styles, remove
+  formatting, plugin items). 6px top corners on the free side, flat on
+  the outline, hairlines between the three, 4px corners on the controls.
+  It moves with the tab, also to the outline's bottom edge.
+- **The marks bubble** - selected words get Bold, Italic, Link and ⋯
+  (underline, strikethrough, sub- and superscript, code, the inline
+  styles, clear formatting, plugin items) in a pill above the selection:
+  round ends, 1px `#FFFFFF0F` border, shadow, round controls. It never
+  covers the handle or sits on the outline: above the selection (above
+  the outline where the selection starts the element), below it when there
+  is no room above or it would touch the strip.
+
+Only what the property's editor options allow is shown, and a menu with
+nothing in it leaves its button out. Active marks and lists are on/off:
+the blue tint with a `shell-accent-pale` icon. Buttons act on mousedown,
+so the editor keeps its focus and selection.
 
 ## The element menu (R25)
 
